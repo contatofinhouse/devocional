@@ -147,6 +147,15 @@ export default function App() {
     return () => clearInterval(interval);
   }, [reminderTime, reminderEnabled, kidProfile.name]);
 
+  // Roll up / scroll to top on tab, devotional, or story changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    const scrollContainers = document.querySelectorAll('.custom-scroll, .screen-content');
+    scrollContainers.forEach(container => {
+      container.scrollTop = 0;
+    });
+  }, [activeTab, currentDevotional, storyIndex]);
+
   const handleShareDevotional = async () => {
     if (!currentDevotional) return;
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
@@ -295,35 +304,36 @@ export default function App() {
       <div className="app-screen">
         {showOnboarding ? (
           // ONBOARDING FORM
-          <div className="screen-content custom-scroll">
-            <div style={{ textAlign: 'center', marginBottom: 24, marginTop: 12 }}>
-              <div style={{ fontSize: 54, marginBottom: 8, display: 'inline-block', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.05))' }}>🙌</div>
-              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 700, color: 'var(--text-main)', marginTop: 8 }}>
+          <div className="screen-content custom-scroll" style={{ padding: '16px 20px 40px 20px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 12, marginTop: 4 }}>
+              <div style={{ fontSize: 44, marginBottom: 4, display: 'inline-block', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.05))' }}>🙌</div>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text-main)', marginTop: 4, lineHeight: '120%' }}>
                 Devocional Pais & Filhos Fortes
               </h1>
-              <p style={{ color: 'var(--text-second)', fontSize: 14, marginTop: 6 }}>
+              <p style={{ color: 'var(--text-second)', fontSize: 13, marginTop: 2 }}>
                 15 minutos de reflexão diárias
               </p>
             </div>
 
-            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, backgroundColor: '#FFFFFF' }}>
-                <h3 style={{ fontSize: 16, color: 'var(--text-main)', fontWeight: 600 }}>Perfil do Filho</h3>
+            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10, backgroundColor: '#FFFFFF', padding: 14 }}>
+                <h3 style={{ fontSize: 14, color: 'var(--text-main)', fontWeight: 700 }}>Perfil do Filho</h3>
                 
                 <div>
-                  <label style={{ fontSize: 12, color: 'var(--text-second)', display: 'block', marginBottom: 6 }}>Nome do filho(a)</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nome do filho(a)</label>
                   <input 
                     type="text" 
                     value={kidProfile.name} 
                     onChange={e => setKidProfile({...kidProfile, name: e.target.value})} 
                     required 
                     placeholder="Ex: Lucas"
+                    style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 10 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 12, color: 'var(--text-second)', display: 'block', marginBottom: 6 }}>Idade (8 a 14)</label>
+                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Idade (8 a 14)</label>
                     <input 
                       type="number" 
                       min={8} 
@@ -331,13 +341,15 @@ export default function App() {
                       value={kidProfile.age} 
                       onChange={e => setKidProfile({...kidProfile, age: parseInt(e.target.value, 10)})} 
                       required
+                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 12, color: 'var(--text-second)', display: 'block', marginBottom: 6 }}>Tempo diário</label>
+                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Tempo diário</label>
                     <select 
                       value={kidProfile.availableTime} 
                       onChange={e => setKidProfile({...kidProfile, availableTime: parseInt(e.target.value, 10)})}
+                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10, height: 37 }}
                     >
                       <option value={10}>10 min</option>
                       <option value={15}>15 min</option>
@@ -346,38 +358,42 @@ export default function App() {
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ fontSize: 12, color: 'var(--text-second)', display: 'block', marginBottom: 6 }}>Interesses da criança</label>
-                  <input 
-                    type="text" 
-                    value={kidProfile.interests} 
-                    onChange={e => setKidProfile({...kidProfile, interests: e.target.value})} 
-                    placeholder="Ex: Futebol, Minecraft, Livros"
-                  />
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Interesses</label>
+                    <input 
+                      type="text" 
+                      value={kidProfile.interests} 
+                      onChange={e => setKidProfile({...kidProfile, interests: e.target.value})} 
+                      placeholder="Ex: Futebol, Minecraft"
+                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Hobbies</label>
+                    <input 
+                      type="text" 
+                      value={kidProfile.hobbies} 
+                      onChange={e => setKidProfile({...kidProfile, hobbies: e.target.value})} 
+                      placeholder="Ex: Desenhar, videogame"
+                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: 12, color: 'var(--text-second)', display: 'block', marginBottom: 6 }}>Hobbies principais</label>
-                  <input 
-                    type="text" 
-                    value={kidProfile.hobbies} 
-                    onChange={e => setKidProfile({...kidProfile, hobbies: e.target.value})} 
-                    placeholder="Ex: Desenhar, jogar bola"
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontSize: 12, color: 'var(--text-second)', display: 'block', marginBottom: 6 }}>Dificuldades mais comuns</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Dificuldade principal</label>
                   <input 
                     type="text" 
                     value={kidProfile.difficulties} 
                     onChange={e => setKidProfile({...kidProfile, difficulties: e.target.value})} 
                     placeholder="Ex: Não aceita perder, ansiedade"
+                    style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                   />
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary">
+              <button type="submit" className="btn-primary" style={{ padding: 12, borderRadius: 12, fontSize: 14 }}>
                 Entrar no Aplicativo <ChevronRight size={18} />
               </button>
             </form>
