@@ -393,7 +393,7 @@ export default function App() {
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ padding: 12, borderRadius: 12, fontSize: 14 }}>
+              <button type="submit" className="btn-primary" style={{ padding: 12, borderRadius: 12, fontSize: 14, backgroundColor: '#FF385C', border: 'none' }}>
                 Entrar no Aplicativo <ChevronRight size={18} />
               </button>
             </form>
