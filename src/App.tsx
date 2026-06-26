@@ -62,6 +62,8 @@ export default function App() {
   const [splashClass, setSplashClass] = useState('');
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [activeTab, setActiveTab] = useState<'journey' | 'calendar' | 'crisis' | 'parent'>('journey');
   const [currentDevotional, setCurrentDevotional] = useState<Devotional | null>(null);
@@ -186,8 +188,10 @@ export default function App() {
           favoriteVerses: '',
           availableTime: profile.available_time || 15
         });
+        setIsPremium(profile.is_premium === true);
         setShowOnboarding(false);
       } else {
+        setIsPremium(false);
         setShowOnboarding(true);
       }
 
@@ -394,7 +398,24 @@ export default function App() {
     }
   };
 
-  const handleOpenDevotional = (id: string, customDevotional?: Devotional) => {
+  // trailThemeIndex: position within trail (0 = free, >0 = premium)
+  // nightNumber: calendar night number (1-5 = free, >5 = premium)
+  const handleOpenDevotional = (id: string, customDevotional?: Devotional, trailThemeIndex?: number, nightNumber?: number) => {
+    // Free tier limits:
+    // - Trails: only the 1st devotional per trail (index 0)
+    // - Calendar: only the first 5 nights
+    const isLocked =
+      !isPremium &&
+      (
+        (trailThemeIndex !== undefined && trailThemeIndex > 0) ||
+        (nightNumber !== undefined && nightNumber > 5)
+      );
+
+    if (isLocked) {
+      setShowPaywall(true);
+      return;
+    }
+
     setStoryIndex(0);
     if (customDevotional) {
       setCurrentDevotional(customDevotional);
@@ -511,10 +532,25 @@ export default function App() {
     <>
       {showSplash && (
         <div className={`splash-screen ${splashClass}`}>
-          <div className="splash-logo">🙌</div>
-          <h1 className="splash-title">Devocional Pais & Filhos Fortes</h1>
-          <p className="splash-subtitle">Fortalecendo valores e a conexão em família</p>
-          <div className="splash-loader"></div>
+          {/* Mosaic background of parent-child photos */}
+          <div className="splash-mosaic">
+            {['/splash/s1.png','/splash/s2.png','/splash/s3.png','/splash/s4.png','/splash/s5.png','/splash/s6.png'].map((src, i) => (
+              <div key={i} className="splash-mosaic-cell">
+                <img src={src} alt="" />
+              </div>
+            ))}
+          </div>
+
+          {/* Dark overlay */}
+          <div className="splash-overlay" />
+
+          {/* Frosted glass card */}
+          <div className="splash-card">
+            <div className="splash-logo">🙌</div>
+            <h1 className="splash-title">Devocional Pais & Filhos Fortes</h1>
+            <p className="splash-subtitle">Fortalecendo valores e a conexão em família</p>
+            <div className="splash-loader"></div>
+          </div>
         </div>
       )}
 
@@ -748,14 +784,15 @@ export default function App() {
                         {...dragScrollHandlers}
                         style={{ cursor: 'grab' }}
                       >
-                        {trail.themes.map((theme) => {
+                        {trail.themes.map((theme, themeIndex) => {
                           const IconComp = iconMap[theme.icon] || HelpCircle;
                           const isCompleted = unlockedMedals.includes(theme.name);
+                          const isLocked = !isPremium && themeIndex > 0;
                           
                           return (
                             <button
                               key={theme.id}
-                              onClick={() => handleOpenDevotional(theme.id)}
+                              onClick={() => handleOpenDevotional(theme.id, undefined, themeIndex)}
                               style={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -765,7 +802,8 @@ export default function App() {
                                 border: 'none',
                                 minWidth: 70,
                                 flexShrink: 0,
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                opacity: isLocked ? 0.55 : 1
                               }}
                             >
                               <div style={{
@@ -773,7 +811,7 @@ export default function App() {
                                 height: 44,
                                 borderRadius: '50%',
                                 backgroundColor: isCompleted ? '#FFFFFF' : 'rgba(0,0,0,0.03)',
-                                border: `1.5px solid ${isCompleted ? trail.color : 'rgba(0,0,0,0.06)'}`,
+                                border: `1.5px solid ${isCompleted ? trail.color : isLocked ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.06)'}`,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -781,8 +819,8 @@ export default function App() {
                                 transition: 'var(--transition-smooth)',
                                 position: 'relative'
                               }}>
-                                <IconComp size={18} />
-                                {isCompleted && (
+                                {isLocked ? <span style={{ fontSize: 16 }}>🔒</span> : <IconComp size={18} />}
+                                {isCompleted && !isLocked && (
                                   <div style={{
                                     position: 'absolute',
                                     bottom: -2,
@@ -853,20 +891,21 @@ export default function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }} className="custom-scroll">
                       {nights.map((night) => {
                         if (searchQuery && !night.title.toLowerCase().includes(searchQuery.toLowerCase())) return null;
+                        const isLocked = !isPremium && night.dayNumber > 5;
 
                         return (
                           <div 
                             key={night.dayNumber} 
-                            onClick={() => handleOpenDevotional(night.themeId)}
+                            onClick={() => handleOpenDevotional(night.themeId, undefined, undefined, night.dayNumber)}
                             style={{
                               display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
                               padding: 14,
-                              backgroundColor: '#FAFBFD',
+                              backgroundColor: isLocked ? '#F9FAFB' : '#FAFBFD',
                               borderRadius: 14,
                               border: '1px solid #E2E8F0',
-                              opacity: 1,
+                              opacity: isLocked ? 0.6 : 1,
                               cursor: 'pointer',
                               transition: 'var(--transition-smooth)'
                             }}
@@ -876,25 +915,27 @@ export default function App() {
                                 width: 30, 
                                 height: 30, 
                                 borderRadius: 8, 
-                                backgroundColor: '#F0F5FF',
-                                border: '1px solid #3B82F6',
+                                backgroundColor: isLocked ? '#F3F4F6' : '#F0F5FF',
+                                border: `1px solid ${isLocked ? '#D1D5DB' : '#3B82F6'}`,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontSize: 12,
                                 fontWeight: 700,
-                                color: '#3B82F6',
+                                color: isLocked ? '#9CA3AF' : '#3B82F6',
                                 flexShrink: 0
                               }}>
-                                {night.dayNumber}
+                                {isLocked ? '🔒' : night.dayNumber}
                               </div>
                               <div>
                                 <span style={{ fontSize: 10, color: 'var(--text-second)', display: 'block', fontWeight: 600 }}>NOITE {night.dayNumber}</span>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)' }}>{night.title}</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: isLocked ? 'var(--text-muted)' : 'var(--text-main)' }}>{night.title}</span>
                               </div>
                             </div>
                             <div>
-                              <ChevronRight size={16} style={{ color: 'var(--text-second)' }} />
+                              {isLocked 
+                                ? <span style={{ fontSize: 10, color: '#FF385C', fontWeight: 700, background: '#FFF0F2', padding: '3px 8px', borderRadius: 20 }}>Premium</span>
+                                : <ChevronRight size={16} style={{ color: 'var(--text-second)' }} />}
                             </div>
                           </div>
                         );
@@ -1186,6 +1227,96 @@ export default function App() {
             </div>
           </>
           )}
+
+        {/* PAYWALL MODAL */}
+        {showPaywall && (
+          <div
+            className="fade-in"
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 300,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              padding: '0 0 0 0'
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowPaywall(false); }}
+          >
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '28px 28px 0 0',
+              padding: '28px 24px 40px 24px',
+              width: '100%',
+              maxWidth: 540,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 20
+            }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ fontSize: 36, marginBottom: 6 }}>⭐</div>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--text-main)', lineHeight: '120%' }}>
+                    Devocional Premium
+                  </h2>
+                  <p style={{ fontSize: 13, color: 'var(--text-second)', marginTop: 4 }}>
+                    Desbloqueie toda a jornada da sua família
+                  </p>
+                </div>
+                <button onClick={() => setShowPaywall(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 22, lineHeight: 1, padding: 4 }}>✕</button>
+              </div>
+
+              {/* Benefits */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  { icon: '📖', title: 'Trilhas Completas', desc: 'Acesso a todos os temas de todas as trilhas' },
+                  { icon: '🌙', title: '50 Noites de Devocional', desc: 'O plano anual completo, noite a noite' },
+                  { icon: '🏆', title: 'Medalhas e Progresso', desc: 'Desbloqueie conquistas e veja o crescimento' },
+                  { icon: '📝', title: 'Diário dos Pais Completo', desc: 'Histórico ilimitado de anotações e avaliações' },
+                ].map((b, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ fontSize: 24, width: 40, height: 40, backgroundColor: '#FFF0F2', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {b.icon}
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>{b.title}</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-second)' }}>{b.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Price + CTA */}
+              <div style={{ borderRadius: 18, background: 'linear-gradient(135deg, #FF385C, #c0165a)', padding: '18px 20px', textAlign: 'center' }}>
+                <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>ACESSO VITALÍCIO</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>R$</span>
+                  <span style={{ color: '#FFFFFF', fontSize: 38, fontWeight: 800, lineHeight: 1 }}>29</span>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>,90</span>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 }}>pagamento único, para sempre</div>
+              </div>
+
+              <button
+                className="btn-primary"
+                style={{ backgroundColor: '#FF385C', border: 'none', fontSize: 15, padding: 16 }}
+                onClick={() => {
+                  alert('Em breve disponível na Play Store! 🚀\nO acesso Premium será desbloqueado após a compra no aplicativo.');
+                  setShowPaywall(false);
+                }}
+              >
+                🔓 Desbloquear Acesso Premium
+              </button>
+
+              <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
+                Compra única via Play Store • Sem assinatura • Sem renovação
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* DEVOTIONAL READER FULLSCREEN OVERLAY */}
         {currentDevotional && (() => {
