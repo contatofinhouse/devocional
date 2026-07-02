@@ -297,7 +297,7 @@ export default function App() {
       const currentFormatted = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       if (currentFormatted === reminderTime) {
         if (Notification.permission === 'granted') {
-          new Notification('Virtudes Fortes 🌙', {
+          new Notification('lecti 🌙', {
             body: `Hora do seu momento de desenvolvimento diário com o(a) ${kidProfile.name || 'seu filho(a)'}! Vamos lá?`,
           });
         }
@@ -319,12 +319,12 @@ export default function App() {
   const handleShareDevotional = async () => {
     if (!currentDevotional) return;
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
-    const shareText = `*Virtudes Fortes*\n\n*Tema:* ${currentDevotional.theme}\n*História:* ${activeStory.biblicalStoryTitle}\n\n*Desafio:* ${activeStory.challenge}\n\n*Mensagem Final:* "${activeStory.finalMessage}"`;
+    const shareText = `*lecti*\n\n*Tema:* ${currentDevotional.theme}\n*História:* ${activeStory.biblicalStoryTitle}\n\n*Desafio:* ${activeStory.challenge}\n\n*Mensagem Final:* "${activeStory.finalMessage}"`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Virtudes Fortes - ${currentDevotional.theme}`,
+          title: `lecti - ${currentDevotional.theme}`,
           text: shareText
         });
       } catch (e) {
@@ -730,7 +730,7 @@ export default function App() {
           {/* Frosted glass card */}
           <div className="splash-card">
             <div className="splash-logo">🙌</div>
-            <h1 className="splash-title">Virtudes Fortes</h1>
+            <h1 className="splash-title">lecti</h1>
             <p className="splash-subtitle">Desenvolvimento de caráter, meditação e conexão</p>
             <div className="splash-loader"></div>
           </div>
@@ -744,8 +744,17 @@ export default function App() {
             <div className="screen-content custom-scroll" style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '80vh' }}>
               <div style={{ textAlign: 'center', marginBottom: 30 }}>
                 <div style={{ fontSize: 64, marginBottom: 12, display: 'inline-block', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.06))' }}>🙌</div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: 'var(--text-main)', marginTop: 4, lineHeight: '120%' }}>
-                  Virtudes Fortes
+                <h1 style={{ 
+                  fontFamily: 'var(--font-display)', 
+                  fontSize: 48, 
+                  fontWeight: 900, 
+                  color: 'var(--text-main)', 
+                  marginTop: 6, 
+                  lineHeight: '100%',
+                  letterSpacing: '-0.06em',
+                  textTransform: 'lowercase'
+                }}>
+                  lecti
                 </h1>
                 <p style={{ color: 'var(--text-second)', fontSize: 14, marginTop: 8, padding: '0 20px', lineHeight: '140%' }}>
                   Fortaleça o caráter, a mente e a conexão familiar através de práticas diárias, meditações e reflexões guiadas de 15 minutos.
@@ -797,7 +806,7 @@ export default function App() {
                       Escolha o seu Foco
                     </h1>
                     <p style={{ color: 'var(--text-second)', fontSize: 13, marginTop: 4 }}>
-                      Como você deseja usar o aplicativo Virtudes Fortes?
+                      Como você deseja usar o aplicativo lecti?
                     </p>
                   </div>
 
@@ -1855,8 +1864,16 @@ export default function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ fontSize: 36, marginBottom: 6 }}>⭐</div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--text-main)', lineHeight: '120%' }}>
-                    Virtudes Fortes Premium
+                  <h2 style={{ 
+                    fontFamily: 'var(--font-display)', 
+                    fontSize: 22, 
+                    fontWeight: 900, 
+                    color: 'var(--text-main)', 
+                    lineHeight: '120%',
+                    letterSpacing: '-0.04em',
+                    textTransform: 'lowercase'
+                  }}>
+                    lecti premium
                   </h2>
                   <p style={{ fontSize: 13, color: 'var(--text-second)', marginTop: 4 }}>
                     Desbloqueie toda a jornada pessoal e familiar

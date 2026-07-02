@@ -1,7 +1,7 @@
 {
-  "name": "Virtudes Fortes",
-  "short_name": "Virtudes Fortes",
-  "description": "Desenvolvimento de caráter, meditação e conexão familiar.",
+  "name": "lecti",
+  "short_name": "lecti",
+  "description": "Práticas diárias de reflexão, meditação e conexão familiar.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
