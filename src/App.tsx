@@ -4,7 +4,6 @@ import {
   Calendar, 
   Heart, 
   HelpCircle, 
-  User, 
   ChevronLeft, 
   ChevronRight, 
   Check, 
@@ -24,15 +23,15 @@ import {
   Moon, 
   Sparkle,
   Share2,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react';
 
 import type { KidProfile, ParentLog, Devotional } from './data/mockDevotionals';
 import { 
   TRAILS, 
-  CRISIS_SITUATIONS, 
-  getStaticDevotional,
-  generatePersonalizedDevotional
+  KIDS_CRISIS_SITUATIONS,
+  ADULT_CRISIS_SITUATIONS
 } from './data/mockDevotionals';
 
 import { supabase } from './data/supabaseClient';
@@ -65,6 +64,9 @@ export default function App() {
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [onboardingStep, setOnboardingStep] = useState(1);
+  const [developmentMode, setDevelopmentMode] = useState<'personal' | 'kids'>('kids');
+  const [userAge, setUserAge] = useState<number>(35);
   const [activeTab, setActiveTab] = useState<'journey' | 'calendar' | 'crisis' | 'parent'>('journey');
   const [currentDevotional, setCurrentDevotional] = useState<Devotional | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
@@ -188,11 +190,14 @@ export default function App() {
           favoriteVerses: '',
           availableTime: profile.available_time || 15
         });
+        setDevelopmentMode(profile.development_mode || 'kids');
+        setUserAge(profile.user_age || 35);
         setIsPremium(profile.is_premium === true);
         setShowOnboarding(false);
       } else {
         setIsPremium(false);
         setShowOnboarding(true);
+        setOnboardingStep(1);
       }
 
       // Load Progress
@@ -328,12 +333,14 @@ export default function App() {
     try {
       const profileData = {
         id: user.id,
-        kid_name: kidProfile.name,
-        kid_age: kidProfile.age,
+        development_mode: developmentMode,
+        user_age: userAge,
+        kid_name: developmentMode === 'kids' ? kidProfile.name : null,
+        kid_age: developmentMode === 'kids' ? kidProfile.age : null,
         available_time: kidProfile.availableTime,
         interests: kidProfile.interests,
         hobbies: kidProfile.hobbies,
-        difficulties: kidProfile.difficulties,
+        difficulties: developmentMode === 'kids' ? kidProfile.difficulties : null,
         updated_at: new Date().toISOString()
       };
 
@@ -398,9 +405,96 @@ export default function App() {
     }
   };
 
+  const loadDevotional = async (themeId: string): Promise<Devotional | null> => {
+    try {
+      let ageGroup = 'adulto';
+      if (developmentMode === 'kids') {
+        if (kidProfile.age <= 8) {
+          ageGroup = 'kids';
+        } else if (kidProfile.age <= 14) {
+          ageGroup = 'teens';
+        } else {
+          ageGroup = 'young_adults';
+        }
+      }
+
+      // 1. Tentar buscar lições do Supabase
+      const { data: lessons, error } = await supabase
+        .from('dev_lessons')
+        .select(`
+          id,
+          theme_id,
+          theme_name,
+          title,
+          biblical_reference,
+          biblical_story,
+          reflection,
+          challenge,
+          final_message
+        `)
+        .eq('theme_id', themeId)
+        .eq('development_mode', developmentMode)
+        .eq('age_group', ageGroup)
+        .order('lesson_number', { ascending: true });
+
+      if (error) throw error;
+
+      if (lessons && lessons.length > 0) {
+        const lessonIds = lessons.map(l => l.id);
+        const { data: dbQuestions } = await supabase
+          .from('dev_questions')
+          .select('lesson_id, question_text, display_order')
+          .in('lesson_id', lessonIds)
+          .order('display_order', { ascending: true });
+
+        const { data: dbPrayers } = await supabase
+          .from('dev_prayers')
+          .select('lesson_id, role, text_content, display_order')
+          .in('lesson_id', lessonIds)
+          .order('display_order', { ascending: true });
+
+        const stories = lessons.map(lesson => {
+          const questions = (dbQuestions || [])
+            .filter((q: any) => q.lesson_id === lesson.id)
+            .map((q: any) => q.question_text);
+
+          const dialogue = (dbPrayers || [])
+            .filter((p: any) => p.lesson_id === lesson.id)
+            .map((p: any) => ({ role: p.role, text: p.text_content }));
+
+          return {
+            biblicalReference: lesson.biblical_reference,
+            biblicalStoryTitle: lesson.title,
+            biblicalStory: lesson.biblical_story,
+            reflection: lesson.reflection,
+            questions: questions.length > 0 ? questions : ['Como podemos aplicar isso em nossa vida?'],
+            challenge: lesson.challenge,
+            prayer: {
+              dialogue: dialogue.length > 0 ? dialogue : [
+                { role: (developmentMode === 'kids' ? 'Pai' : 'Individual') as any, text: 'Querido Deus, ajuda-nos a colocar em prática tudo o que aprendemos hoje. Amém.' }
+              ]
+            },
+            finalMessage: lesson.final_message
+          };
+        });
+
+        return {
+          id: themeId,
+          theme: lessons[0].theme_name,
+          stories: stories
+        };
+      }
+    } catch (err) {
+      console.warn('Erro ao carregar do Supabase:', err);
+    }
+
+    // Retorna null para indicar que a lição ainda não existe no banco
+    return null;
+  };
+
   // trailThemeIndex: position within trail (0 = free, >0 = premium)
   // nightNumber: calendar night number (1-5 = free, >5 = premium)
-  const handleOpenDevotional = (id: string, customDevotional?: Devotional, trailThemeIndex?: number, nightNumber?: number) => {
+  const handleOpenDevotional = async (id: string, customDevotional?: Devotional, trailThemeIndex?: number, nightNumber?: number) => {
     // Free tier limits:
     // - Trails: only the 1st devotional per trail (index 0)
     // - Calendar: only the first 5 nights
@@ -408,7 +502,7 @@ export default function App() {
       !isPremium &&
       (
         (trailThemeIndex !== undefined && trailThemeIndex > 0) ||
-        (nightNumber !== undefined && nightNumber > 5)
+        (nightNumber !== undefined && nightNumber > 3)
       );
 
     if (isLocked) {
@@ -417,20 +511,59 @@ export default function App() {
     }
 
     setStoryIndex(0);
+    
+    let dev: Devotional | null = null;
     if (customDevotional) {
-      setCurrentDevotional(customDevotional);
-      return;
+      dev = customDevotional;
+    } else {
+      dev = await loadDevotional(id);
     }
-    const staticDev = getStaticDevotional(id);
-    setCurrentDevotional(staticDev);
+
+    if (dev) {
+      // Se for modo Pessoal (adulto), garante que o devocional está com formato e linguagem adaptados
+      if (developmentMode === 'personal') {
+        const adaptedStories = dev.stories.map(story => {
+          const isIndividualAlready = story.prayer.dialogue.some(d => d.role === 'Individual');
+          const combinedPrayerText = isIndividualAlready
+            ? story.prayer.dialogue[0].text
+            : story.prayer.dialogue.map(d => d.text).join(' ');
+
+          const adaptedReflection = story.reflection
+            .replace(/os nossos filhos/g, 'nossa própria vida')
+            .replace(/seus filhos/g, 'sua vida')
+            .replace(/em nosso lar com as crianças/g, 'em nossa vida diária')
+            .replace(/escola/g, 'trabalho e relações');
+
+          return {
+            ...story,
+            reflection: adaptedReflection,
+            prayer: {
+              dialogue: [
+                { role: 'Individual' as const, text: combinedPrayerText }
+              ]
+            }
+          };
+        });
+        dev = {
+          ...dev,
+          stories: adaptedStories
+        };
+      }
+      
+      setCurrentDevotional(dev);
+    } else {
+      alert('Esta trilha está sendo gerada pela IA e cadastrada no banco de dados. Por favor, aguarde alguns instantes ou tente outra virtude!');
+    }
+  };
+
+  const getCrisisSituations = () => {
+    return developmentMode === 'kids' ? KIDS_CRISIS_SITUATIONS : ADULT_CRISIS_SITUATIONS;
   };
 
   const handleSelectCrisis = (situationId: string) => {
-    const sit = CRISIS_SITUATIONS.find((s: any) => s.id === situationId);
+    const sit = getCrisisSituations().find((s: any) => s.id === situationId);
     const themeId = sit ? sit.id : 'humildade';
-    // Generate simple personalized devotional
-    const generated = generatePersonalizedDevotional(kidProfile, themeId);
-    handleOpenDevotional(`personalized-${situationId}`, generated);
+    handleOpenDevotional(themeId);
   };
 
   const handleCompleteDevotional = async () => {
@@ -465,9 +598,7 @@ export default function App() {
     setNewLogHowItWent(`Conversamos sobre o tema ${currentDevotional.theme}. Lemos "${activeStory.biblicalStoryTitle}" e o diálogo foi produtivo.`);
     setNewLogTags(['Conversa Fluida']);
     setNewLogRating(5);
-    
     setCurrentDevotional(null);
-    setActiveTab('parent');
   };
 
   const handleAddLog = async (e: React.FormEvent) => {
@@ -603,100 +734,233 @@ export default function App() {
           ) : showOnboarding ? (
             // ONBOARDING FORM
             <div className="screen-content custom-scroll" style={{ padding: '16px 20px 40px 20px' }}>
-              <div style={{ textAlign: 'center', marginBottom: 12, marginTop: 4 }}>
-                <div style={{ fontSize: 44, marginBottom: 4, display: 'inline-block', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.05))' }}>🙌</div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text-main)', marginTop: 4, lineHeight: '120%' }}>
-                  Configurar Perfil do Filho
-                </h1>
-                <p style={{ color: 'var(--text-second)', fontSize: 13, marginTop: 2 }}>
-                  Insira os dados para personalizar a experiência do devocional
-                </p>
-              </div>
+              {onboardingStep === 1 ? (
+                // PASSO 1: Escolha do Modo
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 10 }}>
+                  <div style={{ textAlign: 'center', marginBottom: 10 }}>
+                    <div style={{ fontSize: 44, marginBottom: 4, display: 'inline-block' }}>🙌</div>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text-main)', lineHeight: '120%' }}>
+                      Escolha o seu Foco
+                    </h1>
+                    <p style={{ color: 'var(--text-second)', fontSize: 13, marginTop: 4 }}>
+                      Como você deseja usar o aplicativo de devocional?
+                    </p>
+                  </div>
 
-            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10, backgroundColor: '#FFFFFF', padding: 14 }}>
-                <h3 style={{ fontSize: 14, color: 'var(--text-main)', fontWeight: 700 }}>Perfil do Filho</h3>
-                
+                  {/* Card 1: Desenvolvimento Filhos */}
+                  <div 
+                    onClick={() => {
+                      setDevelopmentMode('kids');
+                      setOnboardingStep(2);
+                    }}
+                    className="card"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 16,
+                      padding: 20,
+                      backgroundColor: '#FFF5F5',
+                      border: '1.5px solid #FFD8D8',
+                      cursor: 'pointer',
+                      transition: 'var(--transition-smooth)',
+                    }}
+                  >
+                    <div style={{ fontSize: 36, backgroundColor: '#FFE3E3', width: 56, height: 56, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👨‍👩‍👧‍👦</div>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#C92A2A' }}>Desenvolvimento Filhos</h3>
+                      <p style={{ fontSize: 12, color: '#E03131', marginTop: 4, lineHeight: '135%' }}>
+                        Fortalecer valores, caráter e ter momentos de diálogo e oração com seus filhos.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Desenvolvimento Pessoal */}
+                  <div 
+                    onClick={() => {
+                      setDevelopmentMode('personal');
+                      setOnboardingStep(2);
+                    }}
+                    className="card"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 16,
+                      padding: 20,
+                      backgroundColor: '#F0F5FF',
+                      border: '1.5px solid #D0E2FF',
+                      cursor: 'pointer',
+                      transition: 'var(--transition-smooth)',
+                    }}
+                  >
+                    <div style={{ fontSize: 36, backgroundColor: '#E0EBFF', width: 56, height: 56, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🎯</div>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1A365D' }}>Desenvolvimento Pessoal</h3>
+                      <p style={{ fontSize: 12, color: '#2B6CB0', marginTop: 4, lineHeight: '135%' }}>
+                        Crescimento próprio e individual. Reflexões sobre fé, maturidade e autogoverno.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // PASSO 2: Formulário de Perfil correspondente
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nome do filho(a)</label>
-                  <input 
-                    type="text" 
-                    value={kidProfile.name} 
-                    onChange={e => setKidProfile({...kidProfile, name: e.target.value})} 
-                    required 
-                    placeholder="Ex: Lucas"
-                    style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Idade (8 a 14)</label>
-                    <input 
-                      type="number" 
-                      min={8} 
-                      max={14}
-                      value={kidProfile.age} 
-                      onChange={e => setKidProfile({...kidProfile, age: parseInt(e.target.value, 10)})} 
-                      required
-                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
-                    />
+                  <div style={{ textAlign: 'center', marginBottom: 12, marginTop: 4 }}>
+                    <div style={{ fontSize: 44, marginBottom: 4, display: 'inline-block' }}>📝</div>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text-main)', lineHeight: '120%' }}>
+                      {developmentMode === 'kids' ? 'Perfil da Família' : 'Seu Perfil'}
+                    </h1>
+                    <p style={{ color: 'var(--text-second)', fontSize: 13, marginTop: 2 }}>
+                      {developmentMode === 'kids' 
+                        ? 'Insira os dados para personalizar a experiência com seu filho' 
+                        : 'Insira os dados para personalizar a sua jornada individual'}
+                    </p>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Tempo diário</label>
-                    <select 
-                      value={kidProfile.availableTime} 
-                      onChange={e => setKidProfile({...kidProfile, availableTime: parseInt(e.target.value, 10)})}
-                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10, height: 37 }}
-                    >
-                      <option value={10}>10 min</option>
-                      <option value={15}>15 min</option>
-                      <option value={20}>20 min</option>
-                    </select>
-                  </div>
-                </div>
 
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Interesses</label>
-                    <input 
-                      type="text" 
-                      value={kidProfile.interests} 
-                      onChange={e => setKidProfile({...kidProfile, interests: e.target.value})} 
-                      placeholder="Ex: Futebol, Minecraft"
-                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Hobbies</label>
-                    <input 
-                      type="text" 
-                      value={kidProfile.hobbies} 
-                      onChange={e => setKidProfile({...kidProfile, hobbies: e.target.value})} 
-                      placeholder="Ex: Desenhar, videogame"
-                      style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
-                    />
-                  </div>
-                </div>
+                  <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12, backgroundColor: '#FFFFFF', padding: 16 }}>
+                      {/* Campo de Idade do Usuário (sempre solicitado) */}
+                      <div>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Idade (Anos)</label>
+                        <input 
+                          type="number" 
+                          min={18}
+                          max={100}
+                          value={userAge} 
+                          onChange={e => setUserAge(parseInt(e.target.value, 10))} 
+                          required 
+                          placeholder="Sua idade"
+                          style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                        />
+                      </div>
 
-                <div>
-                  <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Dificuldade principal</label>
-                  <input 
-                    type="text" 
-                    value={kidProfile.difficulties} 
-                    onChange={e => setKidProfile({...kidProfile, difficulties: e.target.value})} 
-                    placeholder="Ex: Não aceita perder, ansiedade"
-                    style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
-                  />
-                </div>
-              </div>
+                      {/* Tempo diário (sempre solicitado) */}
+                      <div>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Tempo diário disponível</label>
+                        <select 
+                          value={kidProfile.availableTime} 
+                          onChange={e => setKidProfile({...kidProfile, availableTime: parseInt(e.target.value, 10)})}
+                          style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10, height: 37 }}
+                        >
+                          <option value={10}>10 min</option>
+                          <option value={15}>15 min</option>
+                          <option value={20}>20 min</option>
+                        </select>
+                      </div>
 
-              <button type="submit" className="btn-primary" style={{ padding: 12, borderRadius: 12, fontSize: 14, backgroundColor: '#FF385C', border: 'none' }}>
-                Entrar no Aplicativo <ChevronRight size={18} />
-              </button>
-            </form>
-          </div>
-        ) : (
+                      {developmentMode === 'kids' ? (
+                        // Campos Específicos do Modo Filhos
+                        <>
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nome do filho(a)</label>
+                              <input 
+                                type="text" 
+                                value={kidProfile.name} 
+                                onChange={e => setKidProfile({...kidProfile, name: e.target.value})} 
+                                required={developmentMode === 'kids'}
+                                placeholder="Ex: Lucas"
+                                style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                              />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Idade do filho(a)</label>
+                              <input 
+                                type="number" 
+                                min={4} 
+                                max={18}
+                                value={kidProfile.age} 
+                                onChange={e => setKidProfile({...kidProfile, age: parseInt(e.target.value, 10)})} 
+                                required={developmentMode === 'kids'}
+                                style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                              />
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Interesses dele(a)</label>
+                              <input 
+                                type="text" 
+                                value={kidProfile.interests} 
+                                onChange={e => setKidProfile({...kidProfile, interests: e.target.value})} 
+                                placeholder="Ex: Futebol, games"
+                                style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                              />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Hobbies dele(a)</label>
+                              <input 
+                                type="text" 
+                                value={kidProfile.hobbies} 
+                                onChange={e => setKidProfile({...kidProfile, hobbies: e.target.value})} 
+                                placeholder="Ex: Desenhar"
+                                style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Dificuldade do filho(a)</label>
+                            <input 
+                              type="text" 
+                              value={kidProfile.difficulties} 
+                              onChange={e => setKidProfile({...kidProfile, difficulties: e.target.value})} 
+                              placeholder="Ex: Teimosia, ansiedade"
+                              style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        // Campos Específicos do Modo Pessoal (Adulto)
+                        <>
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Seus Interesses</label>
+                              <input 
+                                type="text" 
+                                value={kidProfile.interests} 
+                                onChange={e => setKidProfile({...kidProfile, interests: e.target.value})} 
+                                placeholder="Ex: Livros, liderança"
+                                style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                              />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Seus Hobbies</label>
+                              <input 
+                                type="text" 
+                                value={kidProfile.hobbies} 
+                                onChange={e => setKidProfile({...kidProfile, hobbies: e.target.value})} 
+                                placeholder="Ex: Corrida, música"
+                                style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setOnboardingStep(1)} 
+                        className="btn-secondary" 
+                        style={{ padding: 12, borderRadius: 12, fontSize: 14 }}
+                      >
+                        Voltar
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="btn-primary" 
+                        style={{ padding: 12, borderRadius: 12, fontSize: 14, backgroundColor: '#FF385C', border: 'none', flex: 2 }}
+                      >
+                        Concluir Cadastro <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          ) : (
           // MAIN DASHBOARD
           <>
             {/* STREAK & MEDALS PANEL */}
@@ -856,20 +1120,16 @@ export default function App() {
               {/* TAB 2: SMART CALENDAR */}
               {activeTab === 'calendar' && (() => {
                 const allThemes = TRAILS.flatMap(t => t.themes);
-                const nights = Array.from({ length: 50 }).map((_, i) => {
+                const nights = Array.from({ length: 90 }).map((_, i) => {
                   const dayNumber = i + 1;
-                  const theme = allThemes[i % allThemes.length];
-                  
-                  // Simple titles list mapping or fallback to name
-                  const staticDev = getStaticDevotional(theme.id);
-                  const baseTitle = staticDev.stories[0]?.biblicalStoryTitle || theme.name;
-                  const cleanTitle = baseTitle.replace(/\(Lição \d+ de \d+\)/g, '').trim();
+                  const themeIndex = (dayNumber - 1) % allThemes.length;
+                  const theme = allThemes[themeIndex];
                   
                   return {
                     dayNumber,
                     themeId: theme.id,
                     themeName: theme.name,
-                    title: `${theme.name}: ${cleanTitle}`
+                    title: theme.name
                   };
                 });
 
@@ -891,7 +1151,7 @@ export default function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }} className="custom-scroll">
                       {nights.map((night) => {
                         if (searchQuery && !night.title.toLowerCase().includes(searchQuery.toLowerCase())) return null;
-                        const isLocked = !isPremium && night.dayNumber > 5;
+                        const isLocked = !isPremium && night.dayNumber > 3;
 
                         return (
                           <div 
@@ -951,12 +1211,14 @@ export default function App() {
                   <div>
                     <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>Passando por isso...</h2>
                     <p style={{ fontSize: 13, color: 'var(--text-second)' }}>
-                      Selecione um sentimento ou situação real que seu filho viveu hoje para iniciar uma conversa focada.
+                      {developmentMode === 'kids'
+                        ? 'Selecione um sentimento ou situação real que seu filho viveu hoje para iniciar uma conversa focada.'
+                        : 'Selecione um sentimento ou situação real que você viveu hoje para iniciar uma reflexão focada.'}
                     </p>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    {CRISIS_SITUATIONS.slice(0, 14).map((sit: any) => (
+                    {getCrisisSituations().map((sit: any) => (
                       <button
                         key={sit.id}
                         onClick={() => handleSelectCrisis(sit.id)}
@@ -979,12 +1241,18 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 4: PARENTS DIARY & SETTINGS */}
+              {/* TAB 4: PROFILE CONFIG & DIARY */}
               {activeTab === 'parent' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>Diário dos Pais</h2>
-                    <p style={{ fontSize: 13, color: 'var(--text-second)' }}>Acompanhe o desenvolvimento e os diálogos noturnos.</p>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>
+                      {developmentMode === 'kids' ? 'Diário dos Pais & Ajustes' : 'Diário Pessoal & Ajustes'}
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-second)' }}>
+                      {developmentMode === 'kids' 
+                        ? 'Acompanhe o desenvolvimento e ajuste os parâmetros familiares.' 
+                        : 'Acompanhe seu progresso e ajuste as configurações do perfil.'}
+                    </p>
                   </div>
 
                   {/* Account panel */}
@@ -1017,6 +1285,183 @@ export default function App() {
                     </div>
                   )}
 
+                  {/* Development Mode Toggle Switcher */}
+                  <div className="card" style={{ padding: 16, backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <label style={{ fontSize: 11, color: 'var(--text-second)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>Modo de Uso</label>
+                    <div style={{ display: 'flex', backgroundColor: '#F3F4F6', borderRadius: 12, padding: 4 }}>
+                      <button
+                        onClick={async () => {
+                          setDevelopmentMode('kids');
+                          setCurrentDevotional(null);
+                          if (user) {
+                            await supabase.from('dev_profiles').update({ development_mode: 'kids' }).eq('id', user.id);
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: 10,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          border: 'none',
+                          cursor: 'pointer',
+                          backgroundColor: developmentMode === 'kids' ? '#FFFFFF' : 'transparent',
+                          color: developmentMode === 'kids' ? '#C92A2A' : 'var(--text-second)',
+                          boxShadow: developmentMode === 'kids' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none',
+                          transition: 'var(--transition-smooth)'
+                        }}
+                      >
+                        👨‍👩‍👧‍👦 Desenvolvimento Filhos
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setDevelopmentMode('personal');
+                          setCurrentDevotional(null);
+                          if (user) {
+                            await supabase.from('dev_profiles').update({ development_mode: 'personal' }).eq('id', user.id);
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: 10,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          border: 'none',
+                          cursor: 'pointer',
+                          backgroundColor: developmentMode === 'personal' ? '#FFFFFF' : 'transparent',
+                          color: developmentMode === 'personal' ? '#1A365D' : 'var(--text-second)',
+                          boxShadow: developmentMode === 'personal' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none',
+                          transition: 'var(--transition-smooth)'
+                        }}
+                      >
+                        🎯 Pessoal (Adulto)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Edit Profile Configuration Form */}
+                  <div className="card" style={{ padding: 16, backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <h3 style={{ fontSize: 13, color: 'var(--text-main)', fontWeight: 700 }}>Editar Dados de Perfil</h3>
+                    
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Idade</label>
+                        <input 
+                          type="number" 
+                          min={18}
+                          value={userAge} 
+                          onChange={e => setUserAge(parseInt(e.target.value, 10))} 
+                          style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Tempo diário</label>
+                        <select 
+                          value={kidProfile.availableTime} 
+                          onChange={e => setKidProfile({...kidProfile, availableTime: parseInt(e.target.value, 10)})}
+                          style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10, height: 35 }}
+                        >
+                          <option value={10}>10 min</option>
+                          <option value={15}>15 min</option>
+                          <option value={20}>20 min</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {developmentMode === 'kids' && (
+                      <>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nome do filho(a)</label>
+                            <input 
+                              type="text" 
+                              value={kidProfile.name} 
+                              onChange={e => setKidProfile({...kidProfile, name: e.target.value})} 
+                              placeholder="Nome do filho"
+                              style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Idade do filho(a)</label>
+                            <input 
+                              type="number" 
+                              min={4} 
+                              max={18}
+                              value={kidProfile.age} 
+                              onChange={e => setKidProfile({...kidProfile, age: parseInt(e.target.value, 10)})} 
+                              style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Dificuldade do filho(a)</label>
+                          <input 
+                            type="text" 
+                            value={kidProfile.difficulties} 
+                            onChange={e => setKidProfile({...kidProfile, difficulties: e.target.value})} 
+                            placeholder="Ex: ansiedade, teimosia"
+                            style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>{developmentMode === 'kids' ? 'Interesses do filho' : 'Seus Interesses'}</label>
+                        <input 
+                          type="text" 
+                          value={kidProfile.interests} 
+                          onChange={e => setKidProfile({...kidProfile, interests: e.target.value})} 
+                          placeholder="Futebol, leitura, etc"
+                          style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>{developmentMode === 'kids' ? 'Hobbies do filho' : 'Seus Hobbies'}</label>
+                        <input 
+                          type="text" 
+                          value={kidProfile.hobbies} 
+                          onChange={e => setKidProfile({...kidProfile, hobbies: e.target.value})} 
+                          placeholder="Jogos, artes, etc"
+                          style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
+                        />
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (user) {
+                          const profileData = {
+                            id: user.id,
+                            development_mode: developmentMode,
+                            user_age: userAge,
+                            kid_name: developmentMode === 'kids' ? kidProfile.name : null,
+                            kid_age: developmentMode === 'kids' ? kidProfile.age : null,
+                            available_time: kidProfile.availableTime,
+                            interests: kidProfile.interests,
+                            hobbies: kidProfile.hobbies,
+                            difficulties: developmentMode === 'kids' ? kidProfile.difficulties : null,
+                            updated_at: new Date().toISOString()
+                          };
+                          const { error } = await supabase.from('dev_profiles').upsert(profileData);
+                          if (error) {
+                            alert('Erro ao atualizar perfil: ' + error.message);
+                          } else {
+                            alert('Perfil atualizado com sucesso!');
+                          }
+                        }
+                      }}
+                      className="btn-primary" 
+                      style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10, height: 35, width: 'auto', alignSelf: 'flex-end', marginTop: 4 }}
+                    >
+                      Salvar Alterações Perfil
+                    </button>
+                  </div>
+
                   {/* Bedtime Reminder settings */}
                   <div className="card" style={{ padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1047,11 +1492,15 @@ export default function App() {
 
                   {/* Log new dialog form */}
                   <form onSubmit={handleAddLog} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, backgroundColor: '#FFFFFF' }}>
-                    <h3 style={{ fontSize: 14, color: 'var(--text-main)', fontWeight: 700 }}>Anotar Conversa de Hoje</h3>
+                    <h3 style={{ fontSize: 14, color: 'var(--text-main)', fontWeight: 700 }}>
+                      {developmentMode === 'kids' ? 'Anotar Conversa de Hoje' : 'Anotar Reflexão de Hoje'}
+                    </h3>
                     
                     {/* Airbnb-style Star Rating */}
                     <div>
-                      <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 6, fontWeight: 600 }}>Avaliação da conversa</label>
+                      <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 6, fontWeight: 600 }}>
+                        {developmentMode === 'kids' ? 'Avaliação da conversa' : 'Avaliação do meu foco/atenção'}
+                      </label>
                       <div style={{ display: 'flex', gap: 6 }}>
                         {Array.from({ length: 5 }).map((_, i) => {
                           const starValue = i + 1;
@@ -1083,16 +1532,28 @@ export default function App() {
 
                     {/* Predefined Quick Tags */}
                     <div>
-                      <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 6, fontWeight: 600 }}>O que aconteceu hoje?</label>
+                      <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 6, fontWeight: 600 }}>
+                        {developmentMode === 'kids' ? 'O que aconteceu hoje?' : 'Como foi o seu momento?'}
+                      </label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {[
-                          'Conversa Fluida',
-                          'Filho distraído',
-                          'Teve choro',
-                          'Pediu oração',
-                          'Focou no desafio',
-                          'Muitas dúvidas'
-                        ].map((tag) => {
+                        {(developmentMode === 'kids' 
+                          ? [
+                              'Conversa Fluida',
+                              'Filho distraído',
+                              'Teve choro',
+                              'Pediu oração',
+                              'Focou no desafio',
+                              'Muitas dúvidas'
+                            ]
+                          : [
+                              'Foco total',
+                              'Mente dispersa',
+                              'Senti paz',
+                              'Novas decisões',
+                              'Dificuldade em focar',
+                              'Aprendizado forte'
+                            ]
+                        ).map((tag) => {
                           const isSelected = newLogTags.includes(tag);
                           return (
                             <button
@@ -1126,12 +1587,14 @@ export default function App() {
 
                     {/* Optional Annotation Field */}
                     <div>
-                      <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 4, fontWeight: 600 }}>Anotação (opcional)</label>
+                      <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 4, fontWeight: 600 }}>
+                        {developmentMode === 'kids' ? 'Anotação (opcional)' : 'Suas anotações / decisões'}
+                      </label>
                       <textarea 
                         rows={2} 
                         value={newLogHowItWent}
                         onChange={e => setNewLogHowItWent(e.target.value)}
-                        placeholder="Escreva alguma observação ou momento marcante..." 
+                        placeholder={developmentMode === 'kids' ? 'Escreva alguma observação ou momento marcante...' : 'Escreva suas reflexões ou resoluções de hoje...'} 
                         style={{
                           width: '100%',
                           padding: 10,
@@ -1197,32 +1660,32 @@ export default function App() {
             {/* TAB NAV BAR */}
             <div className="bottom-nav">
               <button 
-                onClick={() => setActiveTab('journey')} 
+                onClick={() => { setActiveTab('journey'); setCurrentDevotional(null); }} 
                 className={`nav-tab ${activeTab === 'journey' ? 'active' : ''}`}
               >
                 <BookOpen size={20} />
                 <span>Trilhas</span>
               </button>
               <button 
-                onClick={() => setActiveTab('calendar')} 
+                onClick={() => { setActiveTab('calendar'); setCurrentDevotional(null); }} 
                 className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`}
               >
                 <Calendar size={20} />
                 <span>Calendário</span>
               </button>
               <button 
-                onClick={() => setActiveTab('crisis')} 
+                onClick={() => { setActiveTab('crisis'); setCurrentDevotional(null); }} 
                 className={`nav-tab ${activeTab === 'crisis' ? 'active' : ''}`}
               >
                 <Heart size={20} />
                 <span>Situações</span>
               </button>
               <button 
-                onClick={() => setActiveTab('parent')} 
+                onClick={() => { setActiveTab('parent'); setCurrentDevotional(null); }} 
                 className={`nav-tab ${activeTab === 'parent' ? 'active' : ''}`}
               >
-                <User size={20} />
-                <span>Pais</span>
+                <Settings size={20} />
+                <span>Config</span>
               </button>
             </div>
           </>
@@ -1329,7 +1792,7 @@ export default function App() {
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0,
+                bottom: 76,
                 backgroundColor: readingTheme === 'sepia' ? '#FAF4EB' : readingTheme === 'darker' ? '#12131C' : '#FFFFFF',
                 color: readingTheme === 'sepia' ? '#433422' : readingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
                 zIndex: 200,
@@ -1529,34 +1992,41 @@ export default function App() {
                 </p>
               </div>
 
-              {/* 5. Joint Dialogue Prayer */}
+              {/* 5. Prayer */}
               <div style={{ marginBottom: 28 }}>
-                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-second)', letterSpacing: 1.2, marginBottom: 12 }}>5. ORAÇÃO EM CONJUNTO</h4>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-second)', letterSpacing: 1.2, marginBottom: 12 }}>
+                  {developmentMode === 'kids' ? '5. ORAÇÃO EM CONJUNTO' : '5. ORAÇÃO PESSOAL'}
+                </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {activeStory.prayer.dialogue.map((line, idx) => (
-                    <div 
-                      key={idx}
-                      style={{
-                        padding: 10,
-                        borderRadius: 12,
-                        backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.04)' : 'rgba(0,0,0,0.02)',
-                        borderLeft: `3px solid ${
-                          line.role === 'Pai' 
-                            ? 'var(--text-second)' 
-                            : line.role === 'Filho' 
-                              ? 'var(--text-muted)' 
-                              : 'var(--text-main)'
-                        }`,
-                        alignSelf: line.role === 'Pai' ? 'flex-start' : line.role === 'Filho' ? 'flex-end' : 'center',
-                        maxWidth: '85%'
-                      }}
-                    >
-                      <strong style={{ fontSize: 10, display: 'block', color: 'inherit', marginBottom: 2 }}>
-                        {line.role.toUpperCase()}:
-                      </strong>
-                      <span style={{ fontSize: 13 }}>{line.text}</span>
-                    </div>
-                  ))}
+                  {activeStory.prayer.dialogue.map((line, idx) => {
+                    const isIndividual = line.role === 'Individual';
+                    return (
+                      <div 
+                        key={idx}
+                        style={{
+                          padding: 12,
+                          borderRadius: 12,
+                          backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.04)' : 'rgba(0,0,0,0.02)',
+                          borderLeft: `3px solid ${
+                            line.role === 'Pai' 
+                              ? 'var(--text-second)' 
+                              : line.role === 'Filho' 
+                                ? 'var(--text-muted)' 
+                                : 'var(--text-main)'
+                          }`,
+                          alignSelf: isIndividual ? 'stretch' : line.role === 'Pai' ? 'flex-start' : line.role === 'Filho' ? 'flex-end' : 'center',
+                          maxWidth: isIndividual ? '100%' : '85%'
+                        }}
+                      >
+                        {!isIndividual && (
+                          <strong style={{ fontSize: 10, display: 'block', color: 'inherit', marginBottom: 2 }}>
+                            {line.role.toUpperCase()}:
+                          </strong>
+                        )}
+                        <span style={{ fontSize: 13, fontStyle: isIndividual ? 'italic' : 'normal' }}>{line.text}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
