@@ -1,0 +1,18 @@
+{
+  "name": "Virtudes Fortes",
+  "short_name": "Virtudes Fortes",
+  "description": "Desenvolvimento de caráter, meditação e conexão familiar.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF385C",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.contatofinhouse.devocional',
-  appName: 'Devocional Pais & Filhos Fortes',
+  appId: 'com.contatofinhouse.virtudesfortes',
+  appName: 'Virtudes Fortes',
   webDir: 'dist'
 };
 

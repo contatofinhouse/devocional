@@ -4,11 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🙌</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Noite em Família - Devocionais e Conexão Diária com Seus Filhos</title>
-    <meta name="description" content="Ajude pais cristãos a criarem o hábito de conversar com seus filhos de 8 a 14 anos através de histórias bíblicas, diálogo e oração em devocionais personalizados de 10 a 15 minutos." />
+    <title>Virtudes Fortes - Meditação, Caráter e Conexão Familiar</title>
+    <meta name="description" content="Fortaleça o caráter, as virtudes e a conexão emocional, seja de forma individual ou com seus filhos, através de práticas diárias de virtudes, meditações interativas e reflexões de 15 minutos." />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#FF385C" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registrado com sucesso!', reg.scope))
+            .catch(err => console.warn('Falha ao registrar SW:', err));
+        });
+      }
+    </script>
   </body>
 </html>

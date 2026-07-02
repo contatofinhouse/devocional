@@ -59,6 +59,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashClass, setSplashClass] = useState('');
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
@@ -85,6 +86,8 @@ export default function App() {
 
   const [streakCount, setStreakCount] = useState(0);
   const [unlockedMedals, setUnlockedMedals] = useState<string[]>([]);
+  const [completedCalendarNights, setCompletedCalendarNights] = useState<number[]>([]);
+  const [currentCalendarNight, setCurrentCalendarNight] = useState<number | null>(null);
   
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
   const [readingTheme, setReadingTheme] = useState<'default' | 'sepia' | 'darker'>('default');
@@ -160,12 +163,23 @@ export default function App() {
         setSplashClass('fade-out-splash');
         const hiddenTimer = setTimeout(() => {
           setShowSplash(false);
-        }, 500); // match transition duration
+        }, 1200); // match transition duration
         return () => clearTimeout(hiddenTimer);
-      }, 1500);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [authLoading]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const loadUserData = async (userId: string) => {
     try {
@@ -283,8 +297,8 @@ export default function App() {
       const currentFormatted = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       if (currentFormatted === reminderTime) {
         if (Notification.permission === 'granted') {
-          new Notification('Devocional Pais & Filhos Fortes 🌙', {
-            body: `Hora do devocional com o(a) ${kidProfile.name || 'seu filho(a)'}! Vamos passar 15 minutos juntos?`,
+          new Notification('Virtudes Fortes 🌙', {
+            body: `Hora do seu momento de desenvolvimento diário com o(a) ${kidProfile.name || 'seu filho(a)'}! Vamos lá?`,
           });
         }
       }
@@ -305,12 +319,12 @@ export default function App() {
   const handleShareDevotional = async () => {
     if (!currentDevotional) return;
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
-    const shareText = `*Devocional Pais & Filhos Fortes*\n\n*Tema:* ${currentDevotional.theme}\n*História:* ${activeStory.biblicalStoryTitle}\n\n*Desafio da Semana:* ${activeStory.challenge}\n\n*Mensagem Final:* "${activeStory.finalMessage}"`;
+    const shareText = `*Virtudes Fortes*\n\n*Tema:* ${currentDevotional.theme}\n*História:* ${activeStory.biblicalStoryTitle}\n\n*Desafio:* ${activeStory.challenge}\n\n*Mensagem Final:* "${activeStory.finalMessage}"`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Devocional Pais & Filhos Fortes - ${currentDevotional.theme}`,
+          title: `Virtudes Fortes - ${currentDevotional.theme}`,
           text: shareText
         });
       } catch (e) {
@@ -406,18 +420,32 @@ export default function App() {
   };
 
   const loadDevotional = async (themeId: string): Promise<Devotional | null> => {
-    try {
-      let ageGroup = 'adulto';
-      if (developmentMode === 'kids') {
-        if (kidProfile.age <= 8) {
-          ageGroup = 'kids';
-        } else if (kidProfile.age <= 14) {
-          ageGroup = 'teens';
-        } else {
-          ageGroup = 'young_adults';
+    let ageGroup = 'adulto';
+    if (developmentMode === 'kids') {
+      if (kidProfile.age <= 8) {
+        ageGroup = 'kids';
+      } else if (kidProfile.age <= 14) {
+        ageGroup = 'teens';
+      } else {
+        ageGroup = 'young_adults';
+      }
+    }
+    const cacheKey = `vf_cache_${themeId}_${developmentMode}_${ageGroup}`;
+
+    // Se estiver offline, tenta carregar do cache local imediatamente
+    if (!navigator.onLine) {
+      const localCached = localStorage.getItem(cacheKey);
+      if (localCached) {
+        try {
+          console.log(`Carregando do cache offline: ${themeId}`);
+          return JSON.parse(localCached);
+        } catch (e) {
+          console.warn('Erro ao ler cache local offline:', e);
         }
       }
+    }
 
+    try {
       // 1. Tentar buscar lições do Supabase
       const { data: lessons, error } = await supabase
         .from('dev_lessons')
@@ -478,17 +506,33 @@ export default function App() {
           };
         });
 
-        return {
+        const result = {
           id: themeId,
           theme: lessons[0].theme_name,
           stories: stories
         };
+
+        // Salvar no cache local para uso offline posterior
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(result));
+        } catch (e) {
+          console.warn('Erro ao salvar no cache local:', e);
+        }
+
+        return result;
       }
     } catch (err) {
-      console.warn('Erro ao carregar do Supabase:', err);
+      console.warn('Erro ao carregar do Supabase, tentando cache local:', err);
+      const localCached = localStorage.getItem(cacheKey);
+      if (localCached) {
+        try {
+          return JSON.parse(localCached);
+        } catch (e) {
+          console.warn('Erro ao ler cache local após falha de rede:', e);
+        }
+      }
     }
 
-    // Retorna null para indicar que a lição ainda não existe no banco
     return null;
   };
 
@@ -510,6 +554,8 @@ export default function App() {
       return;
     }
 
+    // Rastreia qual noite do calendário foi aberta
+    setCurrentCalendarNight(nightNumber !== undefined ? nightNumber : null);
     setStoryIndex(0);
     
     let dev: Devotional | null = null;
@@ -598,6 +644,12 @@ export default function App() {
     setNewLogHowItWent(`Conversamos sobre o tema ${currentDevotional.theme}. Lemos "${activeStory.biblicalStoryTitle}" e o diálogo foi produtivo.`);
     setNewLogTags(['Conversa Fluida']);
     setNewLogRating(5);
+
+    // Marca a noite do calendário como concluída
+    if (currentCalendarNight !== null && !completedCalendarNights.includes(currentCalendarNight)) {
+      setCompletedCalendarNights(prev => [...prev, currentCalendarNight!]);
+    }
+    setCurrentCalendarNight(null);
     setCurrentDevotional(null);
   };
 
@@ -611,7 +663,7 @@ export default function App() {
       id: `log-${Date.now()}`,
       date: 'Hoje às ' + logDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       devotionalId: currentDevotional?.id || 'personalizado',
-      devotionalTitle: currentDevotional ? (currentDevotional.stories[storyIndex]?.biblicalStoryTitle || currentDevotional.stories[0].biblicalStoryTitle) : 'Devocional de hoje',
+      devotionalTitle: currentDevotional ? (currentDevotional.stories[storyIndex]?.biblicalStoryTitle || currentDevotional.stories[0].biblicalStoryTitle) : 'Prática de hoje',
       howItWent: newLogHowItWent.trim() || 'Conversa realizada com sucesso.',
       reaction,
       learnings: newLogTags.join(', '),
@@ -678,8 +730,8 @@ export default function App() {
           {/* Frosted glass card */}
           <div className="splash-card">
             <div className="splash-logo">🙌</div>
-            <h1 className="splash-title">Devocional Pais & Filhos Fortes</h1>
-            <p className="splash-subtitle">Fortalecendo valores e a conexão em família</p>
+            <h1 className="splash-title">Virtudes Fortes</h1>
+            <p className="splash-subtitle">Desenvolvimento de caráter, meditação e conexão</p>
             <div className="splash-loader"></div>
           </div>
         </div>
@@ -693,39 +745,41 @@ export default function App() {
               <div style={{ textAlign: 'center', marginBottom: 30 }}>
                 <div style={{ fontSize: 64, marginBottom: 12, display: 'inline-block', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.06))' }}>🙌</div>
                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, color: 'var(--text-main)', marginTop: 4, lineHeight: '120%' }}>
-                  Devocional Pais & Filhos Fortes
+                  Virtudes Fortes
                 </h1>
                 <p style={{ color: 'var(--text-second)', fontSize: 14, marginTop: 8, padding: '0 20px', lineHeight: '140%' }}>
-                  Fortaleça o caráter, as virtudes e a conexão emocional com seus filhos através de devocionais interativos de 15 minutos.
+                  Fortaleça o caráter, a mente e a conexão familiar através de práticas diárias, meditações e reflexões guiadas de 15 minutos.
                 </p>
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 20, backgroundColor: '#FFFFFF', padding: 24, textAlign: 'center' }}>
-                <h3 style={{ fontSize: 16, color: 'var(--text-main)', fontWeight: 700 }}>Comece sua Jornada Familiar</h3>
+                <h3 style={{ fontSize: 16, color: 'var(--text-main)', fontWeight: 700 }}>Comece sua Jornada</h3>
                 <p style={{ fontSize: 13, color: 'var(--text-second)', lineHeight: '145%' }}>
-                  Para salvar o progresso dos seus filhos, manter sua ofensiva de preces e sincronizar as anotações do diário dos pais.
+                  Para salvar o seu progresso ou o dos seus filhos, manter sua ofensiva diária e sincronizar as anotações no diário.
                 </p>
-                
                 <button 
                   onClick={handleGoogleLogin} 
-                  className="btn-primary" 
                   style={{ 
                     padding: '14px 20px', 
                     borderRadius: 12, 
                     fontSize: 14, 
                     backgroundColor: '#FF385C', 
+                    color: '#FFFFFF',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 10
+                    gap: 10,
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    width: '100%'
                   }}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.87-2.6-3.3-4.53-6.16-4.53z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#FFFFFF"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#FFFFFF"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.87-2.6-3.3-4.53-6.16-4.53z" fill="#FFFFFF"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#FFFFFF"/>
                   </svg>
                   Entrar com Google
                 </button>
@@ -743,7 +797,7 @@ export default function App() {
                       Escolha o seu Foco
                     </h1>
                     <p style={{ color: 'var(--text-second)', fontSize: 13, marginTop: 4 }}>
-                      Como você deseja usar o aplicativo de devocional?
+                      Como você deseja usar o aplicativo Virtudes Fortes?
                     </p>
                   </div>
 
@@ -986,7 +1040,25 @@ export default function App() {
                   🙌
                 </div>
                 <div>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-main)' }}>{streakCount} Noites de celebração</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-main)' }}>{streakCount} Noites de celebração</span>
+                    {isOffline && (
+                      <span style={{
+                        fontSize: 9,
+                        fontWeight: 600,
+                        backgroundColor: '#F3F4F6',
+                        color: 'var(--text-second)',
+                        padding: '2px 6px',
+                        borderRadius: 6,
+                        border: '1px solid var(--border-light)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 3
+                      }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#9CA3AF' }} /> Offline
+                      </span>
+                    )}
+                  </div>
                   <div style={{ fontSize: 10, color: 'var(--text-second)' }}>Sua família unida no hábito</div>
                 </div>
               </div>
@@ -1021,7 +1093,11 @@ export default function App() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div style={{ marginTop: 4 }}>
                     <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>Trilhas de Desenvolvimento</h2>
-                    <p style={{ fontSize: 13, color: 'var(--text-second)' }}>Escolha um tema e comecem a ler juntos.</p>
+                    <p style={{ fontSize: 13, color: 'var(--text-second)' }}>
+                      {developmentMode === 'kids' 
+                        ? 'Escolha um tema e comecem a ler juntos.' 
+                        : 'Escolha um tema para refletir e praticar.'}
+                    </p>
                   </div>
 
                   {TRAILS.map((trail) => (
@@ -1117,85 +1193,142 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 2: SMART CALENDAR */}
+              {/* TAB 2: CALENDAR — agrupado por trilha (Opção B) */}
               {activeTab === 'calendar' && (() => {
-                const allThemes = TRAILS.flatMap(t => t.themes);
-                const nights = Array.from({ length: 90 }).map((_, i) => {
-                  const dayNumber = i + 1;
-                  const themeIndex = (dayNumber - 1) % allThemes.length;
-                  const theme = allThemes[themeIndex];
-                  
-                  return {
-                    dayNumber,
-                    themeId: theme.id,
-                    themeName: theme.name,
-                    title: theme.name
-                  };
-                });
+                // Gera noites agrupadas: cada tema tem 6 noites, ordenadas por trilha
+                let globalNight = 0;
+                const trailGroups = TRAILS.map(trail => ({
+                  ...trail,
+                  nightItems: trail.themes.flatMap(theme =>
+                    Array.from({ length: 6 }, (_, i) => {
+                      globalNight++;
+                      return {
+                        dayNumber: globalNight,
+                        nightOfTheme: i + 1,
+                        themeId: theme.id,
+                        themeName: theme.name,
+                        trailColor: trail.color,
+                        trailBg: trail.bgColor,
+                        title: `${theme.name}`
+                      };
+                    })
+                  )
+                }));
+
+                const allNights = trailGroups.flatMap(g => g.nightItems);
 
                 return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div>
-                      <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>Plano de 365 Dias</h2>
-                      <p style={{ fontSize: 13, color: 'var(--text-second)' }}>Navegue pelas noites do ano em progressão natural.</p>
+                      <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>Jornada por Trilhas</h2>
+                      <p style={{ fontSize: 13, color: 'var(--text-second)' }}>
+                        {allNights.length} noites organizadas por trilha — uma trilha por vez, do início ao fim.
+                      </p>
                     </div>
 
                     <input 
                       type="text" 
-                      placeholder="🔍 Buscar por temas ou passagens..." 
+                      placeholder="🔍 Buscar por tema..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{ marginBottom: 4, backgroundColor: '#FAFAFB', border: '1px solid var(--border-light)', padding: 10, borderRadius: 10, outline: 'none', width: '100%', fontSize: 13 }}
+                      style={{ backgroundColor: '#FAFAFB', border: '1px solid var(--border-light)', padding: 10, borderRadius: 10, outline: 'none', width: '100%', fontSize: 13 }}
                     />
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }} className="custom-scroll">
-                      {nights.map((night) => {
-                        if (searchQuery && !night.title.toLowerCase().includes(searchQuery.toLowerCase())) return null;
-                        const isLocked = !isPremium && night.dayNumber > 3;
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }} className="custom-scroll">
+                      {trailGroups.map(trail => {
+                        const filteredNights = trail.nightItems.filter(n =>
+                          !searchQuery || n.title.toLowerCase().includes(searchQuery.toLowerCase())
+                        );
+                        if (filteredNights.length === 0) return null;
+
+                        const doneInTrail = filteredNights.filter(n => completedCalendarNights.includes(n.dayNumber)).length;
 
                         return (
-                          <div 
-                            key={night.dayNumber} 
-                            onClick={() => handleOpenDevotional(night.themeId, undefined, undefined, night.dayNumber)}
-                            style={{
+                          <div key={trail.id}>
+                            {/* Cabeçalho da Trilha */}
+                            <div style={{
                               display: 'flex',
-                              justifyContent: 'space-between',
                               alignItems: 'center',
-                              padding: 14,
-                              backgroundColor: isLocked ? '#F9FAFB' : '#FAFBFD',
-                              borderRadius: 14,
-                              border: '1px solid #E2E8F0',
-                              opacity: isLocked ? 0.6 : 1,
-                              cursor: 'pointer',
-                              transition: 'var(--transition-smooth)'
-                            }}
-                          >
-                            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                              <div style={{ 
-                                width: 30, 
-                                height: 30, 
-                                borderRadius: 8, 
-                                backgroundColor: isLocked ? '#F3F4F6' : '#F0F5FF',
-                                border: `1px solid ${isLocked ? '#D1D5DB' : '#3B82F6'}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: 12,
-                                fontWeight: 700,
-                                color: isLocked ? '#9CA3AF' : '#3B82F6',
-                                flexShrink: 0
-                              }}>
-                                {isLocked ? '🔒' : night.dayNumber}
-                              </div>
+                              justifyContent: 'space-between',
+                              marginBottom: 10,
+                              padding: '10px 14px',
+                              backgroundColor: trail.bgColor,
+                              borderRadius: 12,
+                              border: `1px solid ${trail.color}30`
+                            }}>
                               <div>
-                                <span style={{ fontSize: 10, color: 'var(--text-second)', display: 'block', fontWeight: 600 }}>NOITE {night.dayNumber}</span>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: isLocked ? 'var(--text-muted)' : 'var(--text-main)' }}>{night.title}</span>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: trail.color }}>{trail.title.toUpperCase()}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginTop: 1 }}>
+                                  {trail.themes.length} temas · {trail.nightItems.length} noites
+                                </span>
                               </div>
+                              {doneInTrail > 0 && (
+                                <span style={{ fontSize: 11, color: trail.color, fontWeight: 700, background: `${trail.color}20`, padding: '3px 10px', borderRadius: 20 }}>
+                                  {doneInTrail}/{filteredNights.length} feitas
+                                </span>
+                              )}
                             </div>
-                            <div>
-                              {isLocked 
-                                ? <span style={{ fontSize: 10, color: '#FF385C', fontWeight: 700, background: '#FFF0F2', padding: '3px 8px', borderRadius: 20 }}>Premium</span>
-                                : <ChevronRight size={16} style={{ color: 'var(--text-second)' }} />}
+
+                            {/* Noites da Trilha */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                              {filteredNights.map((night) => {
+                                const isLocked = !isPremium && night.dayNumber > 3;
+                                const isDone = completedCalendarNights.includes(night.dayNumber);
+
+                                return (
+                                  <div 
+                                    key={night.dayNumber}
+                                    onClick={() => handleOpenDevotional(night.themeId, undefined, undefined, night.dayNumber)}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      padding: '12px 14px',
+                                      backgroundColor: isDone ? '#F0FFF4' : isLocked ? '#F9FAFB' : '#fff',
+                                      borderRadius: 12,
+                                      border: `1px solid ${isDone ? '#86EFAC' : '#E9EDF2'}`,
+                                      opacity: isLocked ? 0.6 : 1,
+                                      cursor: 'pointer',
+                                      transition: 'var(--transition-smooth)'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                      {/* Badge da noite do tema */}
+                                      <div style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: 8,
+                                        backgroundColor: isDone ? '#22C55E' : isLocked ? '#F3F4F6' : `${trail.color}15`,
+                                        border: `1.5px solid ${isDone ? '#16A34A' : isLocked ? '#D1D5DB' : trail.color}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 11,
+                                        fontWeight: 800,
+                                        color: isDone ? '#fff' : isLocked ? '#9CA3AF' : trail.color,
+                                        flexShrink: 0
+                                      }}>
+                                        {isLocked ? '🔒' : isDone ? '✓' : night.nightOfTheme}
+                                      </div>
+                                      <div>
+                                        <span style={{ fontSize: 13, fontWeight: 700, color: isDone ? '#15803D' : isLocked ? 'var(--text-muted)' : 'var(--text-main)', display: 'block' }}>
+                                          {isLocked ? 'Conteúdo Premium' : night.themeName}
+                                        </span>
+                                        <span style={{ fontSize: 11, color: isDone ? '#16A34A' : 'var(--text-second)', fontWeight: 500, marginTop: 1, display: 'block' }}>
+                                          {isDone ? `Noite ${night.nightOfTheme} de 6 · Concluída ✨` : `Noite ${night.nightOfTheme} de 6`}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      {isLocked
+                                        ? <span style={{ fontSize: 10, color: '#FF385C', fontWeight: 700, background: '#FFF0F2', padding: '3px 8px', borderRadius: 20 }}>Premium</span>
+                                        : isDone
+                                          ? <span style={{ fontSize: 10, color: '#16A34A', fontWeight: 700, background: '#DCFCE7', padding: '3px 8px', borderRadius: 20 }}>✓ Feita</span>
+                                          : <ChevronRight size={16} style={{ color: 'var(--text-second)' }} />}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
@@ -1723,10 +1856,10 @@ export default function App() {
                 <div>
                   <div style={{ fontSize: 36, marginBottom: 6 }}>⭐</div>
                   <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--text-main)', lineHeight: '120%' }}>
-                    Devocional Premium
+                    Virtudes Fortes Premium
                   </h2>
                   <p style={{ fontSize: 13, color: 'var(--text-second)', marginTop: 4 }}>
-                    Desbloqueie toda a jornada da sua família
+                    Desbloqueie toda a jornada pessoal e familiar
                   </p>
                 </div>
                 <button onClick={() => setShowPaywall(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 22, lineHeight: 1, padding: 4 }}>✕</button>
@@ -1736,7 +1869,7 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
                   { icon: '📖', title: 'Trilhas Completas', desc: 'Acesso a todos os temas de todas as trilhas' },
-                  { icon: '🌙', title: '50 Noites de Devocional', desc: 'O plano anual completo, noite a noite' },
+                  { icon: '🌙', title: '50 Noites de Práticas', desc: 'O plano completo de meditações e reflexões diárias' },
                   { icon: '🏆', title: 'Medalhas e Progresso', desc: 'Desbloqueie conquistas e veja o crescimento' },
                   { icon: '📝', title: 'Diário dos Pais Completo', desc: 'Histórico ilimitado de anotações e avaliações' },
                 ].map((b, i) => (
