@@ -1,4 +1,4 @@
-package com.contatofinhouse.devocional;
+package com.contatofinhouse.lecti;
 
 import com.getcapacitor.BridgeActivity;
 

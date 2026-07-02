@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Devocional Pais &amp; Filhos Fortes</string>
-    <string name="title_activity_main">Devocional Pais &amp; Filhos Fortes</string>
-    <string name="package_name">com.contatofinhouse.devocional</string>
-    <string name="custom_url_scheme">com.contatofinhouse.devocional</string>
+    <string name="app_name">lecti</string>
+    <string name="title_activity_main">lecti</string>
+    <string name="package_name">com.contatofinhouse.lecti</string>
+    <string name="custom_url_scheme">com.contatofinhouse.lecti</string>
 </resources>
