@@ -35,6 +35,8 @@ import {
 } from './data/mockDevotionals';
 
 import { supabase } from './data/supabaseClient';
+import { Capacitor } from '@capacitor/core';
+import { Purchases } from '@revenuecat/purchases-capacitor';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
@@ -212,6 +214,24 @@ export default function App() {
         setIsPremium(false);
         setShowOnboarding(true);
         setOnboardingStep(1);
+      }
+
+      // Configure RevenueCat on Native Device
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await Purchases.configure({ apiKey: "goog_sua_chave_publica_android" });
+          await Purchases.logIn({ appUserID: userId });
+          
+          const { customerInfo } = await Purchases.getCustomerInfo();
+          if (customerInfo.entitlements.active['premium_access'] !== undefined) {
+            setIsPremium(true);
+            if (profile && !profile.is_premium) {
+              await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId);
+            }
+          }
+        } catch (e) {
+          console.warn('Erro ao carregar compras do RevenueCat:', e);
+        }
       }
 
       // Load Progress
@@ -1916,9 +1936,40 @@ export default function App() {
               <button
                 className="btn-primary"
                 style={{ backgroundColor: '#FF385C', border: 'none', fontSize: 15, padding: 16 }}
-                onClick={() => {
-                  alert('Em breve disponível na Play Store! 🚀\nO acesso Premium será desbloqueado após a compra no aplicativo.');
-                  setShowPaywall(false);
+                onClick={async () => {
+                  if (Capacitor.isNativePlatform()) {
+                    try {
+                      const offerings = await Purchases.getOfferings();
+                      if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
+                        const packageToBuy = offerings.current.availablePackages[0];
+                        const purchaseResult = await Purchases.purchasePackage({ aPackage: packageToBuy });
+                        if (purchaseResult.customerInfo.entitlements.active['premium_access'] !== undefined) {
+                          setIsPremium(true);
+                          setShowPaywall(false);
+                          if (user) {
+                            await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
+                          }
+                          alert('Parabéns! Seu acesso Premium foi desbloqueado com sucesso.');
+                        }
+                      } else {
+                        alert('Nenhum plano disponível no momento.');
+                      }
+                    } catch (e) {
+                      if ((e as any).userCancelled) {
+                        console.log('Compra cancelada pelo usuário');
+                      } else {
+                        alert('Erro ao processar compra: ' + (e as any).message);
+                      }
+                    }
+                  } else {
+                    // Fallback para Web/PWA ou simulação em desenvolvimento
+                    alert('Para testar na Web: Acesso Premium simulado ativado!');
+                    setIsPremium(true);
+                    setShowPaywall(false);
+                    if (user) {
+                      await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
+                    }
+                  }
                 }}
               >
                 🔓 Desbloquear Acesso Premium
