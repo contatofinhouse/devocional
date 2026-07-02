@@ -37,6 +37,7 @@ import {
 import { supabase } from './data/supabaseClient';
 import { Capacitor } from '@capacitor/core';
 import { Purchases } from '@revenuecat/purchases-capacitor';
+import { RevenueCatUI } from '@revenuecat/purchases-capacitor-ui';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
@@ -219,14 +220,30 @@ export default function App() {
       // Configure RevenueCat on Native Device
       if (Capacitor.isNativePlatform()) {
         try {
-          await Purchases.configure({ apiKey: "goog_sua_chave_publica_android" });
+          await Purchases.configure({ apiKey: "test_edDnofYJWMdesMIPkgfNrWeLJQO" });
           await Purchases.logIn({ appUserID: userId });
           
+          // Setup customer info update listener
+          await Purchases.addCustomerInfoUpdateListener((info) => {
+            if (info.entitlements.active['lecti Premium'] !== undefined) {
+              setIsPremium(true);
+              supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
+            } else {
+              setIsPremium(false);
+              supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId).then();
+            }
+          });
+
           const { customerInfo } = await Purchases.getCustomerInfo();
-          if (customerInfo.entitlements.active['premium_access'] !== undefined) {
+          if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
             setIsPremium(true);
             if (profile && !profile.is_premium) {
               await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId);
+            }
+          } else {
+            setIsPremium(false);
+            if (profile && profile.is_premium) {
+              await supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId);
             }
           }
         } catch (e) {
@@ -1429,21 +1446,46 @@ export default function App() {
                           <span style={{ fontSize: 10, color: 'var(--text-second)' }}>Conta Google</span>
                         </div>
                       </div>
-                      <button 
-                        onClick={handleLogout}
-                        style={{ 
-                          padding: '6px 12px', 
-                          borderRadius: 8, 
-                          fontSize: 11, 
-                          backgroundColor: '#FFF0F2', 
-                          color: '#FF385C', 
-                          border: 'none', 
-                          fontWeight: 600,
-                          cursor: 'pointer' 
-                        }}
-                      >
-                        Sair
-                      </button>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {isPremium && Capacitor.isNativePlatform() && (
+                          <button 
+                            onClick={async () => {
+                              try {
+                                await RevenueCatUI.presentCustomerCenter();
+                              } catch (e) {
+                                alert('Erro ao abrir central de assinatura: ' + (e as any).message);
+                              }
+                            }}
+                            style={{ 
+                              padding: '6px 12px', 
+                              borderRadius: 8, 
+                              fontSize: 11, 
+                              backgroundColor: '#F3F4F6', 
+                              color: 'var(--text-main)', 
+                              border: 'none', 
+                              fontWeight: 600,
+                              cursor: 'pointer' 
+                            }}
+                          >
+                            💳 Assinatura
+                          </button>
+                        )}
+                        <button 
+                          onClick={handleLogout}
+                          style={{ 
+                            padding: '6px 12px', 
+                            borderRadius: 8, 
+                            fontSize: 11, 
+                            backgroundColor: '#FFF0F2', 
+                            color: '#FF385C', 
+                            border: 'none', 
+                            fontWeight: 600,
+                            cursor: 'pointer' 
+                          }}
+                        >
+                          Sair
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -1939,27 +1981,22 @@ export default function App() {
                 onClick={async () => {
                   if (Capacitor.isNativePlatform()) {
                     try {
-                      const offerings = await Purchases.getOfferings();
-                      if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
-                        const packageToBuy = offerings.current.availablePackages[0];
-                        const purchaseResult = await Purchases.purchasePackage({ aPackage: packageToBuy });
-                        if (purchaseResult.customerInfo.entitlements.active['premium_access'] !== undefined) {
-                          setIsPremium(true);
-                          setShowPaywall(false);
-                          if (user) {
-                            await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
-                          }
-                          alert('Parabéns! Seu acesso Premium foi desbloqueado com sucesso.');
+                      // Present native RevenueCat paywall
+                      const { result } = await RevenueCatUI.presentPaywall();
+                      console.log('Paywall result:', result);
+                      
+                      // After paywall is closed/completed, double check entitlements
+                      const { customerInfo } = await Purchases.getCustomerInfo();
+                      if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
+                        setIsPremium(true);
+                        setShowPaywall(false);
+                        if (user) {
+                          await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
                         }
-                      } else {
-                        alert('Nenhum plano disponível no momento.');
+                        alert('Acesso Premium ativado! Obrigado pelo seu apoio.');
                       }
                     } catch (e) {
-                      if ((e as any).userCancelled) {
-                        console.log('Compra cancelada pelo usuário');
-                      } else {
-                        alert('Erro ao processar compra: ' + (e as any).message);
-                      }
+                      alert('Erro ao exibir paywall: ' + (e as any).message);
                     }
                   } else {
                     // Fallback para Web/PWA ou simulação em desenvolvimento
