@@ -40,14 +40,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // SPA navigation fallback: serve index.html for page navigation
+  // SPA navigation fallback: serve index.html for page navigation, except for other static html files
   if (event.request.mode === 'navigate') {
-    event.respondWith(
-      caches.match('/index.html').then((response) => {
-        return response || fetch(event.request);
-      })
-    );
-    return;
+    const isStaticHtml = url.pathname.endsWith('.html') && url.pathname !== '/index.html';
+    if (!isStaticHtml) {
+      event.respondWith(
+        caches.match('/index.html').then((response) => {
+          return response || fetch(event.request);
+        })
+      );
+      return;
+    }
   }
 
   event.respondWith(
