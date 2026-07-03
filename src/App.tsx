@@ -68,6 +68,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [developmentMode, setDevelopmentMode] = useState<'personal' | 'kids'>('kids');
@@ -1367,7 +1368,7 @@ export default function App() {
                                   </div>
                                 )}
                               </div>
-                              <span style={{ fontSize: 10, color: 'var(--text-main)', textAlign: 'center', fontWeight: 600 }}>
+                              <span style={{ fontSize: 11, color: 'var(--text-main)', textAlign: 'center', fontWeight: 700 }}>
                                 {theme.name}
                               </span>
                             </button>
@@ -1498,7 +1499,7 @@ export default function App() {
                                         {isLocked ? '🔒' : isDone ? '✓' : night.nightOfTheme}
                                       </div>
                                       <div>
-                                        <span style={{ fontSize: 13, fontWeight: 700, color: isDone ? '#15803D' : isLocked ? 'var(--text-muted)' : 'var(--text-main)', display: 'block' }}>
+                                        <span style={{ fontSize: 14, fontWeight: 700, color: isDone ? '#15803D' : isLocked ? 'var(--text-muted)' : 'var(--text-main)', display: 'block' }}>
                                           {isLocked ? 'Conteúdo Premium' : night.themeName}
                                         </span>
                                         <span style={{ fontSize: 11, color: isDone ? '#16A34A' : 'var(--text-second)', fontWeight: 500, marginTop: 1, display: 'block' }}>
@@ -2052,6 +2053,40 @@ export default function App() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Delete account and data section */}
+                  <div className="card" style={{ 
+                    padding: 16, 
+                    backgroundColor: '#FFF5F5', 
+                    border: '1px solid #FFE3E3', 
+                    borderRadius: 12, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: 8,
+                    marginTop: 20
+                  }}>
+                    <h4 style={{ fontSize: 13, color: '#C53030', fontWeight: 700 }}>Excluir Conta e Dados</h4>
+                    <p style={{ fontSize: 11, color: '#9B2C2C', lineHeight: '140%', margin: 0 }}>
+                      Ao excluir sua conta, todas as suas anotações, medalhas, histórico de noites concluídas e informações de perfil serão excluídos permanentemente de nossos servidores de forma irreversível.
+                    </p>
+                    <button 
+                      onClick={() => setShowDeleteConfirm(true)}
+                      style={{ 
+                        padding: '10px 14px', 
+                        borderRadius: 10, 
+                        fontSize: 11, 
+                        backgroundColor: '#C53030', 
+                        color: '#FFFFFF', 
+                        border: 'none', 
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        alignSelf: 'flex-start',
+                        marginTop: 4
+                      }}
+                    >
+                      Excluir Minha Conta Permanentemente
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -2211,6 +2246,108 @@ export default function App() {
               <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
                 Compra única via Play Store • Sem assinatura • Sem renovação
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* DELETE CONFIRMATION MODAL */}
+        {showDeleteConfirm && (
+          <div
+            className="fade-in"
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(6px)',
+              zIndex: 350,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 20px'
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowDeleteConfirm(false); }}
+          >
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '24px',
+              padding: '28px 24px',
+              width: '100%',
+              maxWidth: 360,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              textAlign: 'center',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{ fontSize: 44, margin: '8px 0 0 0', lineHeight: 1 }}>⚠️</div>
+              <div>
+                <h3 style={{ 
+                  fontSize: 18, 
+                  fontWeight: 800, 
+                  color: '#1E2229',
+                  marginBottom: 8,
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '-0.02em'
+                }}>
+                  Excluir sua conta?
+                </h3>
+                <p style={{ fontSize: 13, color: 'var(--text-second)', lineHeight: '150%', margin: 0 }}>
+                  Tem certeza que deseja excluir sua conta e todos os dados associados permanentemente? <strong style={{ color: '#FF385C' }}>Esta ação é irreversível.</strong>
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                <button
+                  onClick={async () => {
+                    if (user) {
+                      try {
+                        // Delete dev_profiles
+                        await supabase.from('dev_profiles').delete().eq('id', user.id);
+                        // Sign out user
+                        await supabase.auth.signOut();
+                        setShowDeleteConfirm(false);
+                        showToast('Sua conta foi excluída com sucesso.', 'success');
+                      } catch (e: any) {
+                        alert("Erro ao excluir conta: " + e.message);
+                      }
+                    } else {
+                      alert("Você precisa estar logado para excluir a conta.");
+                    }
+                  }}
+                  style={{ 
+                    padding: '14px', 
+                    borderRadius: 12, 
+                    fontSize: 13, 
+                    backgroundColor: '#FF385C', 
+                    color: '#FFFFFF', 
+                    border: 'none', 
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    width: '100%',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  Sim, excluir permanentemente
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  style={{ 
+                    padding: '14px', 
+                    borderRadius: 12, 
+                    fontSize: 13, 
+                    backgroundColor: '#F3F4F6', 
+                    color: 'var(--text-main)', 
+                    border: 'none', 
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         )}

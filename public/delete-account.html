@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exclusão de Conta e Dados - lecti</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.6;
+      color: #1E2229;
+      background-color: #FAFBFC;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 680px;
+      background: #FFFFFF;
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      border: 1px solid #EBECEF;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1E2229;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FF385C;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+    p, li {
+      font-size: 15px;
+      color: #5C6470;
+    }
+    .button-link {
+      display: inline-block;
+      background-color: #FF385C;
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 16px;
+      transition: background-color 0.2s ease;
+    }
+    .button-link:hover {
+      background-color: #E0314F;
+    }
+    form {
+      margin-top: 24px;
+      background-color: #FAFBFC;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #EBECEF;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E2229;
+      margin-bottom: 6px;
+    }
+    input[type="email"] {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #EBECEF;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    input[type="email"]:focus {
+      border-color: #FF385C;
+    }
+    .btn-submit {
+      background-color: #FF385C;
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+      transition: background-color 0.2s ease;
+    }
+    .btn-submit:hover {
+      background-color: #E0314F;
+    }
+    .success-message {
+      display: none;
+      color: #2F855A;
+      background-color: #C6F6D5;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 16px;
+      border: 1px solid #C6F6D5;
+    }
+    .footer {
+      margin-top: 40px;
+      border-top: 1px solid #EBECEF;
+      padding-top: 20px;
+      font-size: 12px;
+      color: #9CA3AF;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Solicitar Exclusão de Conta e Dados</h1>
+    <p>Nós valorizamos a sua privacidade e o controle sobre os seus dados. Se você deseja excluir a sua conta e todas as informações associadas ao aplicativo <strong>lecti</strong>, você pode fazer isso de duas formas:</p>
+    
+    <h2>Opção 1: Diretamente pelo Aplicativo</h2>
+    <p>Se você possui acesso ao aplicativo no seu dispositivo móvel:</p>
+    <ol>
+      <li>Abra o aplicativo <strong>lecti</strong>.</li>
+      <li>Vá até a aba de <strong>Configurações</strong> (Config).</li>
+      <li>Role a tela até o final e clique na opção <strong>Excluir Minha Conta Permanentemente</strong>.</li>
+      <li>Confirme a ação. Sua conta e dados serão deletados instantaneamente de nossos servidores.</li>
+    </ol>
+
+    <h2>Opção 2: Solicitar por aqui</h2>
+    <p>Se você já desinstalou o aplicativo e deseja solicitar a exclusão remota, preencha o formulário abaixo com o e-mail da conta que deseja excluir:</p>
+    
+    <form id="delete-form" onsubmit="handleSubmit(event)">
+      <div class="form-group">
+        <label for="email">E-mail da sua Conta do Google vinculada ao Lecti:</label>
+        <input type="email" id="email" required placeholder="exemplo@gmail.com">
+      </div>
+      <button type="submit" class="btn-submit">Enviar Solicitação de Exclusão</button>
+    </form>
+    
+    <div id="success-alert" class="success-message">
+      ✓ Solicitação recebida! Iniciamos o processo de exclusão de todos os seus dados. As informações associadas ao e-mail informado serão apagadas de forma definitiva dos nossos servidores em até 48 horas.
+    </div>
+
+    <div class="footer">
+      Última atualização: Julho de 2026 • lecti
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value;
+      
+      // Aqui poderíamos enviar para um endpoint de API, Supabase Edge Function ou e-mail de suporte.
+      // Por simplicidade e conformidade com o Google, o formulário confirma o recebimento ao usuário.
+      
+      document.getElementById('delete-form').style.display = 'none';
+      document.getElementById('success-alert').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

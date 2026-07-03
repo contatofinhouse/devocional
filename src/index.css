@@ -145,6 +145,10 @@ body {
 }
 
 /* Inputs & buttons */
+button, input, textarea, select {
+  font-family: var(--font-sans);
+}
+
 input, textarea, select {
   width: 100%;
   padding: 14px 16px;
