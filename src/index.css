@@ -75,7 +75,7 @@ body {
 
 .screen-content {
   flex: 1;
-  padding: 24px 24px 100px 24px;
+  padding: 24px 24px calc(100px + env(safe-area-inset-bottom, 0px)) 24px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -88,15 +88,16 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 540px;
-  height: 76px;
+  height: calc(76px + env(safe-area-inset-bottom, 0px));
   background-color: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border-light);
   display: flex;
   justify-content: space-around;
-  align-items: center;
-  padding: 0 16px;
+  align-items: flex-start;
+  padding: 6px 16px calc(6px + env(safe-area-inset-bottom, 0px)) 16px;
   z-index: 100;
+  box-sizing: border-box;
 }
 
 .nav-tab {

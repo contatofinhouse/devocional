@@ -36,8 +36,9 @@ import {
 
 import { supabase } from './data/supabaseClient';
 import { Capacitor } from '@capacitor/core';
-import { Purchases } from '@revenuecat/purchases-capacitor';
+import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 import { RevenueCatUI } from '@revenuecat/purchases-capacitor-ui';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
@@ -74,6 +75,24 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'journey' | 'calendar' | 'crisis' | 'parent'>('journey');
   const [currentDevotional, setCurrentDevotional] = useState<Devotional | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
+
+  const getAgeFromBirthdate = (birthdateStr: string): number => {
+    if (!birthdateStr) return 0;
+    const today = new Date();
+    const birthDate = new Date(birthdateStr);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const getBirthdateFromAge = (age: number): string => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - age);
+    return date.toISOString().split('T')[0];
+  };
   
   const [kidProfile, setKidProfile] = useState<KidProfile>({
     name: '',
@@ -105,16 +124,42 @@ export default function App() {
   const [reminderTime, setReminderTime] = useState('20:30');
   const [reminderEnabled, setReminderEnabled] = useState(true);
 
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   // Load static configurations from localStorage (non-user configurations)
   useEffect(() => {
     const savedReminder = localStorage.getItem('nf_reminder_time');
     const savedReminderEnabled = localStorage.getItem('nf_reminder_enabled');
-    if (savedReminder) setReminderTime(savedReminder);
-    if (savedReminderEnabled) setReminderEnabled(JSON.parse(savedReminderEnabled));
+    
+    let currentEnabled = true;
+    let currentTime = '20:30';
 
-    if (Notification.permission === 'default') {
+    if (savedReminder) {
+      currentTime = savedReminder;
+      setReminderTime(savedReminder);
+    }
+    if (savedReminderEnabled) {
+      currentEnabled = JSON.parse(savedReminderEnabled);
+      setReminderEnabled(currentEnabled);
+    }
+
+    if (Notification.permission === 'default' && !Capacitor.isNativePlatform()) {
       Notification.requestPermission();
     }
+
+    // Schedule native notification on boot
+    scheduleBedtimeReminder(currentEnabled, currentTime);
   }, []);
 
   // Supabase Auth and Data synchronization
@@ -220,7 +265,9 @@ export default function App() {
       // Configure RevenueCat on Native Device
       if (Capacitor.isNativePlatform()) {
         try {
-          await Purchases.configure({ apiKey: "test_edDnofYJWMdesMIPkgfNrWeLJQO" });
+          await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+          const rcApiKey = import.meta.env.VITE_REVENUECAT_API_KEY || "test_nSahrsbeWqCJKgFtryNASRNEjTO";
+          await Purchases.configure({ apiKey: rcApiKey });
           await Purchases.logIn({ appUserID: userId });
           
           // Setup customer info update listener
@@ -326,6 +373,59 @@ export default function App() {
     localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
   };
 
+  const scheduleBedtimeReminder = async (enabled: boolean, timeStr: string) => {
+    if (!Capacitor.isNativePlatform()) {
+      console.log('Skipping native local notification: Not on a native platform.');
+      return;
+    }
+
+    try {
+      // 1. Cancel previous notifications
+      await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
+
+      if (!enabled) {
+        console.log('Bedtime reminder disabled on native.');
+        return;
+      }
+
+      // 2. Request permissions if not already granted
+      const checkPerms = await LocalNotifications.checkPermissions();
+      if (checkPerms.display !== 'granted') {
+        const reqPerms = await LocalNotifications.requestPermissions();
+        if (reqPerms.display !== 'granted') {
+          console.warn('Native LocalNotification permissions not granted.');
+          return;
+        }
+      }
+
+      // 3. Parse hours and minutes
+      const [hours, minutes] = timeStr.split(':').map(Number);
+
+      // 4. Schedule daily notification
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: "Hora do seu momento lecti 🌙",
+            body: "Que tal reservar 15 minutinhos para fortalecer a fé e a conexão familiar hoje?",
+            id: 1,
+            schedule: {
+              on: {
+                hour: hours,
+                minute: minutes
+              },
+              allowWhileIdle: true,
+              repeats: true
+            },
+            sound: 'default'
+          }
+        ]
+      });
+      console.log(`Native local notification scheduled daily at ${timeStr}`);
+    } catch (err) {
+      console.error('Error setting native local notification:', err);
+    }
+  };
+
   // Bedtime alarm checker
   useEffect(() => {
     const interval = setInterval(() => {
@@ -421,7 +521,7 @@ export default function App() {
       setShowOnboarding(false);
     } catch (err) {
       console.error('Erro ao salvar perfil no Supabase:', err);
-      alert('Erro ao salvar perfil. Verifique sua conexão e tente novamente.');
+      showToast('Erro ao salvar perfil. Verifique sua conexão e tente novamente.', 'error');
     }
   };
 
@@ -678,8 +778,51 @@ export default function App() {
     }
 
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
-    setNewLogHowItWent(`Conversamos sobre o tema ${currentDevotional.theme}. Lemos "${activeStory.biblicalStoryTitle}" e o diálogo foi produtivo.`);
-    setNewLogTags(['Conversa Fluida']);
+    const logText = `Conversamos sobre o tema ${currentDevotional.theme}. Lemos "${activeStory.biblicalStoryTitle}" e o diálogo foi produtivo.`;
+    const logTags = ['Conversa Fluida'];
+    const logRating = 5;
+
+    const logDate = new Date();
+    const tempLog: ParentLog = {
+      id: `log-${Date.now()}`,
+      date: 'Hoje às ' + logDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      devotionalId: currentDevotional.id,
+      devotionalTitle: activeStory.biblicalStoryTitle || 'Prática de hoje',
+      howItWent: logText,
+      reaction: 'loved',
+      learnings: logTags.join(', '),
+      prayerRequests: '',
+      progressPerceived: 'Diálogo diário',
+      challengeStatus: 'ongoing',
+      rating: logRating,
+      tags: logTags
+    };
+
+    // Add to local state history
+    setLogs(prev => [tempLog, ...prev]);
+
+    // Insert log to database
+    if (user) {
+      try {
+        await supabase
+          .from('dev_logs')
+          .insert({
+            user_id: user.id,
+            date: logDate.toISOString().split('T')[0],
+            devotional_id: currentDevotional.id,
+            devotional_title: tempLog.devotionalTitle,
+            how_it_went: tempLog.howItWent,
+            rating: logRating,
+            tags: logTags
+          });
+      } catch (err) {
+        console.error('Erro ao salvar log no Supabase:', err);
+      }
+    }
+
+    // Reset prepared log form inputs
+    setNewLogHowItWent('');
+    setNewLogTags([]);
     setNewLogRating(5);
 
     // Marca a noite do calendário como concluída
@@ -740,6 +883,7 @@ export default function App() {
   const handleToggleReminderSetting = (checked: boolean) => {
     setReminderEnabled(checked);
     saveToStorage('nf_reminder_enabled', checked);
+    scheduleBedtimeReminder(checked, reminderTime);
   };
 
   const getReaderThemeClass = () => {
@@ -768,7 +912,7 @@ export default function App() {
           <div className="splash-card">
             <div className="splash-logo">🙌</div>
             <h1 className="splash-title">lecti</h1>
-            <p className="splash-subtitle">Desenvolvimento de caráter, meditação e conexão</p>
+            <p className="splash-subtitle">Desenvolvimento de caráter, fé, meditação e conexão</p>
             <div className="splash-loader"></div>
           </div>
         </div>
@@ -794,7 +938,7 @@ export default function App() {
                   lecti
                 </h1>
                 <p style={{ color: 'var(--text-second)', fontSize: 14, marginTop: 8, padding: '0 20px', lineHeight: '140%' }}>
-                  Fortaleça o caráter, a mente e a conexão familiar através de práticas diárias, meditações e reflexões guiadas de 15 minutos.
+                  Fortaleça o caráter, a fé, a mente e a conexão familiar através de práticas diárias, meditações e reflexões guiadas. O app que constrói fé e une a família.
                 </p>
               </div>
 
@@ -918,17 +1062,15 @@ export default function App() {
 
                   <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12, backgroundColor: '#FFFFFF', padding: 16 }}>
-                      {/* Campo de Idade do Usuário (sempre solicitado) */}
+                      {/* Campo de Data de Nascimento do Usuário (calcula idade) */}
                       <div>
-                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Idade (Anos)</label>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Data de Nascimento</label>
                         <input 
-                          type="number" 
-                          min={18}
-                          max={100}
-                          value={userAge} 
-                          onChange={e => setUserAge(parseInt(e.target.value, 10))} 
+                          type="date" 
+                          value={getBirthdateFromAge(userAge)} 
+                          onChange={e => setUserAge(getAgeFromBirthdate(e.target.value))} 
+                          onKeyDown={e => e.preventDefault()}
                           required 
-                          placeholder="Sua idade"
                           style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                         />
                       </div>
@@ -963,13 +1105,12 @@ export default function App() {
                               />
                             </div>
                             <div style={{ flex: 1 }}>
-                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Idade do filho(a)</label>
+                              <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nascimento do filho(a)</label>
                               <input 
-                                type="number" 
-                                min={4} 
-                                max={18}
-                                value={kidProfile.age} 
-                                onChange={e => setKidProfile({...kidProfile, age: parseInt(e.target.value, 10)})} 
+                                type="date" 
+                                value={getBirthdateFromAge(kidProfile.age)} 
+                                onChange={e => setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)})} 
+                                onKeyDown={e => e.preventDefault()}
                                 required={developmentMode === 'kids'}
                                 style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                               />
@@ -1550,12 +1691,12 @@ export default function App() {
                     
                     <div style={{ display: 'flex', gap: 10 }}>
                       <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Idade</label>
+                        <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Data de Nascimento</label>
                         <input 
-                          type="number" 
-                          min={18}
-                          value={userAge} 
-                          onChange={e => setUserAge(parseInt(e.target.value, 10))} 
+                          type="date" 
+                          value={getBirthdateFromAge(userAge)} 
+                          onChange={e => setUserAge(getAgeFromBirthdate(e.target.value))} 
+                          onKeyDown={e => e.preventDefault()}
                           style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
                         />
                       </div>
@@ -1587,13 +1728,12 @@ export default function App() {
                             />
                           </div>
                           <div style={{ flex: 1 }}>
-                            <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Idade do filho(a)</label>
+                            <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nascimento do filho(a)</label>
                             <input 
-                              type="number" 
-                              min={4} 
-                              max={18}
-                              value={kidProfile.age} 
-                              onChange={e => setKidProfile({...kidProfile, age: parseInt(e.target.value, 10)})} 
+                              type="date" 
+                              value={getBirthdateFromAge(kidProfile.age)} 
+                              onChange={e => setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)})} 
+                              onKeyDown={e => e.preventDefault()}
                               style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
                             />
                           </div>
@@ -1653,9 +1793,9 @@ export default function App() {
                           };
                           const { error } = await supabase.from('dev_profiles').upsert(profileData);
                           if (error) {
-                            alert('Erro ao atualizar perfil: ' + error.message);
+                            showToast('Erro ao atualizar perfil: ' + error.message, 'error');
                           } else {
-                            alert('Perfil atualizado com sucesso!');
+                            showToast('Perfil atualizado com sucesso!', 'success');
                           }
                         }
                       }}
@@ -1667,30 +1807,86 @@ export default function App() {
                   </div>
 
                   {/* Bedtime Reminder settings */}
-                  <div className="card" style={{ padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Bell size={18} style={{ color: 'var(--text-second)' }} />
+                  <div className="card" style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 12,
+                        backgroundColor: '#FFF0F2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#FF385C'
+                      }}>
+                        <Bell size={18} />
+                      </div>
                       <div>
-                        <span style={{ fontSize: 13, fontWeight: 600, display: 'block' }}>Lembrete diário</span>
-                        <span style={{ fontSize: 11, color: 'var(--text-second)' }}>Notificação de hora de dormir</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>Lembrete Diário</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, display: 'block' }}>Notificação na hora de dormir</span>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <input 
                         type="time" 
                         value={reminderTime} 
                         onChange={(e) => {
                           setReminderTime(e.target.value);
                           saveToStorage('nf_reminder_time', e.target.value);
+                          scheduleBedtimeReminder(reminderEnabled, e.target.value);
                         }}
-                        style={{ padding: 4, width: 70, border: 'none', background: '#F3F4F6', fontSize: 12 }} 
+                        style={{
+                          padding: '6px 4px',
+                          width: 104,
+                          border: '1.5px solid var(--border-light)',
+                          borderRadius: 10,
+                          background: '#FAFAFB',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: 'var(--text-main)',
+                          fontFamily: 'var(--font-sans)',
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)',
+                          boxSizing: 'border-box'
+                        }} 
                       />
-                      <input 
-                        type="checkbox" 
-                        checked={reminderEnabled} 
-                        onChange={(e) => handleToggleReminderSetting(e.target.checked)}
-                        style={{ width: 18, height: 18 }} 
-                      />
+
+                      {/* Custom sliding toggle switch */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleReminderSetting(!reminderEnabled)}
+                        style={{
+                          width: 44,
+                          height: 24,
+                          borderRadius: 20,
+                          backgroundColor: reminderEnabled ? '#FF385C' : '#E4E4E7',
+                          border: 'none',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          transition: 'background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                          padding: 0,
+                          outline: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          flexShrink: 0
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: '50%',
+                            backgroundColor: '#FFFFFF',
+                            position: 'absolute',
+                            left: reminderEnabled ? 22 : 4,
+                            transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                      </button>
                     </div>
                   </div>
 
@@ -2030,7 +2226,7 @@ export default function App() {
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 76,
+                bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
                 backgroundColor: readingTheme === 'sepia' ? '#FAF4EB' : readingTheme === 'darker' ? '#12131C' : '#FFFFFF',
                 color: readingTheme === 'sepia' ? '#433422' : readingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
                 zIndex: 200,
@@ -2118,7 +2314,7 @@ export default function App() {
             <div 
               className="screen-content custom-scroll" 
               style={{ 
-                padding: '24px 20px 100px 20px',
+                padding: '24px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px',
                 fontSize: fontSize === 'normal' ? '15px' : fontSize === 'large' ? '17px' : '19px',
                 lineHeight: '165%'
               }}
@@ -2299,6 +2495,41 @@ export default function App() {
       })()}
       </div>
     </div>
+
+    {/* TOAST NOTIFICATION */}
+    {toast && (
+      <div
+        className="fade-in"
+        style={{
+          position: 'fixed',
+          bottom: 92,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '90%',
+          maxWidth: 380,
+          backgroundColor: '#1E2229',
+          color: '#FFFFFF',
+          padding: '14px 20px',
+          borderRadius: 16,
+          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.16)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          fontWeight: 600,
+          fontSize: 13,
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}
+      >
+        {toast.type === 'success' ? (
+          <Check size={18} style={{ color: '#FF385C', flexShrink: 0 }} />
+        ) : (
+          <ShieldAlert size={18} style={{ color: '#FF5A5F', flexShrink: 0 }} />
+        )}
+        <span style={{ flex: 1, textAlign: 'left' }}>{toast.message}</span>
+      </div>
+    )}
     </>
   );
 }
