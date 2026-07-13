@@ -1036,7 +1036,7 @@ export default function App() {
       
       setCurrentDevotional(dev);
     } else {
-      alert('Esta trilha está sendo gerada pela IA e cadastrada no banco de dados. Por favor, aguarde alguns instantes ou tente outra virtude!');
+      showToast('Esta trilha não está disponível no momento. Por favor, selecione outra virtude!', 'info');
     }
   };
 
