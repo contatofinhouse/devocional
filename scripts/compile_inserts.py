@@ -74,7 +74,7 @@ def compile_all():
     print(f"Parsed {len(rows)} original rows.")
     
     print("Loading progress rewrite JSON...")
-    if os.path.existsSync(progress_path):
+    if os.path.exists(progress_path):
         with open(progress_path, 'r', encoding='utf-8') as f:
             progress = json.load(f)
     else:

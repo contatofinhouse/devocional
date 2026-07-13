@@ -19,6 +19,7 @@
     "@capacitor/core": "^8.4.1",
     "@capacitor/ios": "^8.4.1",
     "@capacitor/local-notifications": "^8.2.0",
+    "@capacitor/preferences": "^8.0.1",
     "@google/generative-ai": "^0.24.1",
     "@revenuecat/purchases-capacitor": "^13.2.1",
     "@revenuecat/purchases-capacitor-ui": "^13.2.1",
