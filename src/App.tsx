@@ -2879,97 +2879,66 @@ export default function App() {
           </div>
         );
       })()}
-      </div>
-    </div>
 
-    {/* BIBLE READER FULLSCREEN OVERLAY */}
-    {bibleOpen && (
-      <div 
-        className={`fade-in ${getReaderThemeClass()}`}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
-          backgroundColor: readingTheme === 'sepia' ? '#FAF4EB' : readingTheme === 'darker' ? '#12131C' : '#FFFFFF',
-          color: readingTheme === 'sepia' ? '#433422' : readingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
-          zIndex: 300,
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'var(--transition-smooth)'
-        }}
-      >
-        {/* Header config bar */}
-        <div style={{ 
-          padding: '12px 16px', 
-          borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 8
-        }}>
-          <button 
-            onClick={() => {
-              setBibleOpen(false);
-              setHighlightedVerses(null);
-            }}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: 'inherit', 
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: 13,
-              fontWeight: 600,
-              padding: '4px 0'
-            }}
-          >
-            <ChevronLeft size={22} />
-            <span>Voltar</span>
-          </button>
-
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {/* Book Selector */}
-            <select
-              value={currentBookName}
-              onChange={(e) => {
-                setCurrentBookName(e.target.value);
-                setCurrentChapterIndex(0);
+      {/* BIBLE READER FULLSCREEN OVERLAY */}
+      {bibleOpen && (
+        <div 
+          className={`fade-in ${getReaderThemeClass()}`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
+            backgroundColor: readingTheme === 'sepia' ? '#FAF4EB' : readingTheme === 'darker' ? '#12131C' : '#FFFFFF',
+            color: readingTheme === 'sepia' ? '#433422' : readingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
+            zIndex: 300,
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'var(--transition-smooth)'
+          }}
+        >
+          {/* Header config bar */}
+          <div style={{ 
+            padding: '12px 16px', 
+            borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 8
+          }}>
+            <button 
+              onClick={() => {
+                setBibleOpen(false);
                 setHighlightedVerses(null);
-                localStorage.setItem('bible_last_book', e.target.value);
-                localStorage.setItem('bible_last_chapter', '0');
               }}
-              style={{
-                backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
-                color: 'inherit',
-                border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                borderRadius: 8,
-                padding: '4px 8px',
-                fontSize: 12,
-                fontWeight: 700,
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'inherit', 
                 cursor: 'pointer',
-                maxWidth: 120
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: 13,
+                fontWeight: 600,
+                padding: '4px 0'
               }}
             >
-              {BIBLE_BOOKS.map((b) => (
-                <option key={b.name} value={b.name} style={{ color: '#000000' }}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+              <ChevronLeft size={22} />
+              <span>Voltar</span>
+            </button>
 
-            {/* Chapter Selector */}
-            {bibleBookData && (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {/* Book Selector */}
               <select
-                value={currentChapterIndex}
+                value={currentBookName}
                 onChange={(e) => {
-                  const idx = parseInt(e.target.value, 10);
-                  setCurrentChapterIndex(idx);
+                  setCurrentBookName(e.target.value);
+                  setCurrentChapterIndex(0);
                   setHighlightedVerses(null);
-                  localStorage.setItem('bible_last_chapter', String(idx));
+                  localStorage.setItem('bible_last_book', e.target.value);
+                  localStorage.setItem('bible_last_chapter', '0');
                 }}
                 style={{
                   backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
@@ -2979,182 +2948,214 @@ export default function App() {
                   padding: '4px 8px',
                   fontSize: 12,
                   fontWeight: 700,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  maxWidth: 120
                 }}
               >
-                {bibleBookData.chapters.map((_: any, idx: number) => (
-                  <option key={idx} value={idx} style={{ color: '#000000' }}>
-                    Cap. {idx + 1}
+                {BIBLE_BOOKS.map((b) => (
+                  <option key={b.name} value={b.name} style={{ color: '#000000' }}>
+                    {b.name}
                   </option>
                 ))}
               </select>
+
+              {/* Chapter Selector */}
+              {bibleBookData && (
+                <select
+                  value={currentChapterIndex}
+                  onChange={(e) => {
+                    const idx = parseInt(e.target.value, 10);
+                    setCurrentChapterIndex(idx);
+                    setHighlightedVerses(null);
+                    localStorage.setItem('bible_last_chapter', String(idx));
+                  }}
+                  style={{
+                    backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
+                    color: 'inherit',
+                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    borderRadius: 8,
+                    padding: '4px 8px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {bibleBookData.chapters.map((_: any, idx: number) => (
+                    <option key={idx} value={idx} style={{ color: '#000000' }}>
+                      Cap. {idx + 1}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {/* Font preference */}
+              <button 
+                onClick={() => setFontSize(fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xlarge' : 'normal')}
+                style={{
+                  background: 'none',
+                  border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  borderRadius: 8,
+                  padding: '4px 8px',
+                  fontSize: 11,
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                Letra: {fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}
+              </button>
+
+              {/* Theme preference */}
+              <button 
+                onClick={() => setReadingTheme(readingTheme === 'default' ? 'sepia' : readingTheme === 'sepia' ? 'darker' : 'default')}
+                style={{
+                  background: 'none',
+                  border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  borderRadius: 8,
+                  padding: '4px 8px',
+                  fontSize: 11,
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                Tema: {readingTheme === 'default' ? 'Claro' : readingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
+              </button>
+            </div>
+          </div>
+
+          {/* Reading scrollable area */}
+          <div 
+            ref={bibleScrollRef}
+            className="screen-content custom-scroll" 
+            style={{ 
+              padding: '24px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px',
+              fontSize: fontSize === 'normal' ? '15px' : fontSize === 'large' ? '17px' : '19px',
+              lineHeight: '165%',
+              overflowY: 'auto',
+              flex: 1
+            }}
+          >
+            {bibleBookData ? (
+              <div>
+                <h2 style={{ 
+                  fontFamily: 'var(--font-display)',
+                  fontSize: fontSize === 'normal' ? '22px' : fontSize === 'large' ? '25px' : '28px', 
+                  fontWeight: 700, 
+                  marginBottom: 20, 
+                  color: 'inherit',
+                  borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  paddingBottom: 8
+                }}>
+                  {bibleBookData.name} - Capítulo {currentChapterIndex + 1}
+                </h2>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {bibleBookData.chapters[currentChapterIndex]?.map((verseText: string, idx: number) => {
+                    const verseNum = idx + 1;
+                    const isHighlighted = highlightedVerses && (verseNum >= highlightedVerses[0] && verseNum <= highlightedVerses[1]);
+                    
+                    return (
+                      <p 
+                        key={idx} 
+                        style={{
+                          margin: 0,
+                          padding: '4px 6px',
+                          borderRadius: 6,
+                          backgroundColor: isHighlighted 
+                            ? (readingTheme === 'darker' ? 'rgba(255, 235, 59, 0.15)' : '#FFF9C4') 
+                            : 'transparent',
+                          borderLeft: isHighlighted 
+                            ? `4px solid ${readingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
+                            : 'none',
+                          transition: 'background-color 0.3s ease',
+                          lineHeight: '160%'
+                        }}
+                      >
+                        <span style={{ 
+                          fontSize: '0.8em', 
+                          fontWeight: 700, 
+                          marginRight: 8, 
+                          color: readingTheme === 'darker' ? '#FFD54F' : 'var(--primary)'
+                        }}>
+                          {verseNum}
+                        </span>
+                        {verseText}
+                      </p>
+                    );
+                  })}
+                </div>
+
+                {/* Previous / Next Chapter Buttons */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  marginTop: 32,
+                  borderTop: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  paddingTop: 20
+                }}>
+                  <button
+                    disabled={currentChapterIndex === 0}
+                    onClick={() => {
+                      if (currentChapterIndex > 0) {
+                        setCurrentChapterIndex(prev => prev - 1);
+                        setHighlightedVerses(null);
+                        localStorage.setItem('bible_last_chapter', String(currentChapterIndex - 1));
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                      borderRadius: 10,
+                      padding: '8px 16px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      color: 'inherit',
+                      opacity: currentChapterIndex === 0 ? 0.3 : 1
+                    }}
+                  >
+                    ← Capítulo Anterior
+                  </button>
+                  
+                  <button
+                    disabled={currentChapterIndex === bibleBookData.chapters.length - 1}
+                    onClick={() => {
+                      if (currentChapterIndex < bibleBookData.chapters.length - 1) {
+                        setCurrentChapterIndex(prev => prev + 1);
+                        setHighlightedVerses(null);
+                        localStorage.setItem('bible_last_chapter', String(currentChapterIndex + 1));
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                      borderRadius: 10,
+                      padding: '8px 16px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      color: 'inherit',
+                      opacity: currentChapterIndex === bibleBookData.chapters.length - 1 ? 0.3 : 1
+                    }}
+                  >
+                    Próximo Capítulo →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0', color: 'var(--text-second)' }}>
+                Carregando livro...
+              </div>
             )}
           </div>
-
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {/* Font preference */}
-            <button 
-              onClick={() => setFontSize(fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xlarge' : 'normal')}
-              style={{
-                background: 'none',
-                border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                borderRadius: 8,
-                padding: '4px 8px',
-                fontSize: 11,
-                color: 'inherit',
-                cursor: 'pointer',
-                fontWeight: 600
-              }}
-            >
-              Letra: {fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}
-            </button>
-
-            {/* Theme preference */}
-            <button 
-              onClick={() => setReadingTheme(readingTheme === 'default' ? 'sepia' : readingTheme === 'sepia' ? 'darker' : 'default')}
-              style={{
-                background: 'none',
-                border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                borderRadius: 8,
-                padding: '4px 8px',
-                fontSize: 11,
-                color: 'inherit',
-                cursor: 'pointer',
-                fontWeight: 600
-              }}
-            >
-              Tema: {readingTheme === 'default' ? 'Claro' : readingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
-            </button>
-          </div>
         </div>
+      )}
 
-        {/* Reading scrollable area */}
-        <div 
-          ref={bibleScrollRef}
-          className="screen-content custom-scroll" 
-          style={{ 
-            padding: '24px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px',
-            fontSize: fontSize === 'normal' ? '15px' : fontSize === 'large' ? '17px' : '19px',
-            lineHeight: '165%',
-            overflowY: 'auto',
-            flex: 1
-          }}
-        >
-          {bibleBookData ? (
-            <div>
-              <h2 style={{ 
-                fontFamily: 'var(--font-display)',
-                fontSize: fontSize === 'normal' ? '22px' : fontSize === 'large' ? '25px' : '28px', 
-                fontWeight: 700, 
-                marginBottom: 20, 
-                color: 'inherit',
-                borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                paddingBottom: 8
-              }}>
-                {bibleBookData.name} - Capítulo {currentChapterIndex + 1}
-              </h2>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {bibleBookData.chapters[currentChapterIndex]?.map((verseText: string, idx: number) => {
-                  const verseNum = idx + 1;
-                  const isHighlighted = highlightedVerses && (verseNum >= highlightedVerses[0] && verseNum <= highlightedVerses[1]);
-                  
-                  return (
-                    <p 
-                      key={idx} 
-                      style={{
-                        margin: 0,
-                        padding: '4px 6px',
-                        borderRadius: 6,
-                        backgroundColor: isHighlighted 
-                          ? (readingTheme === 'darker' ? 'rgba(255, 235, 59, 0.15)' : '#FFF9C4') 
-                          : 'transparent',
-                        borderLeft: isHighlighted 
-                          ? `4px solid ${readingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
-                          : 'none',
-                        transition: 'background-color 0.3s ease',
-                        lineHeight: '160%'
-                      }}
-                    >
-                      <span style={{ 
-                        fontSize: '0.8em', 
-                        fontWeight: 700, 
-                        marginRight: 8, 
-                        color: readingTheme === 'darker' ? '#FFD54F' : 'var(--primary)'
-                      }}>
-                        {verseNum}
-                      </span>
-                      {verseText}
-                    </p>
-                  );
-                })}
-              </div>
-
-              {/* Previous / Next Chapter Buttons */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                marginTop: 32,
-                borderTop: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                paddingTop: 20
-              }}>
-                <button
-                  disabled={currentChapterIndex === 0}
-                  onClick={() => {
-                    if (currentChapterIndex > 0) {
-                      setCurrentChapterIndex(prev => prev - 1);
-                      setHighlightedVerses(null);
-                      localStorage.setItem('bible_last_chapter', String(currentChapterIndex - 1));
-                    }
-                  }}
-                  style={{
-                    background: 'none',
-                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                    borderRadius: 10,
-                    padding: '8px 16px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    color: 'inherit',
-                    opacity: currentChapterIndex === 0 ? 0.3 : 1
-                  }}
-                >
-                  ← Capítulo Anterior
-                </button>
-                
-                <button
-                  disabled={currentChapterIndex === bibleBookData.chapters.length - 1}
-                  onClick={() => {
-                    if (currentChapterIndex < bibleBookData.chapters.length - 1) {
-                      setCurrentChapterIndex(prev => prev + 1);
-                      setHighlightedVerses(null);
-                      localStorage.setItem('bible_last_chapter', String(currentChapterIndex + 1));
-                    }
-                  }}
-                  style={{
-                    background: 'none',
-                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                    borderRadius: 10,
-                    padding: '8px 16px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    color: 'inherit',
-                    opacity: currentChapterIndex === bibleBookData.chapters.length - 1 ? 0.3 : 1
-                  }}
-                >
-                  Próximo Capítulo →
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0', color: 'var(--text-second)' }}>
-              Carregando livro...
-            </div>
-          )}
-        </div>
       </div>
-    )}
+    </div>
 
     {/* TOAST NOTIFICATION */}
     {toast && (
