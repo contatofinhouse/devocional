@@ -2885,7 +2885,7 @@ export default function App() {
     {/* BIBLE READER FULLSCREEN OVERLAY */}
     {bibleOpen && (
       <div 
-        className="fade-in"
+        className={`fade-in ${getReaderThemeClass()}`}
         style={{
           position: 'absolute',
           top: 0,
@@ -3054,45 +3054,38 @@ export default function App() {
                 {bibleBookData.name} - Capítulo {currentChapterIndex + 1}
               </h2>
 
-              <div 
-                style={{ 
-                  textAlign: 'justify', 
-                  color: 'inherit',
-                  textIndent: '24px'
-                }}
-              >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {bibleBookData.chapters[currentChapterIndex]?.map((verseText: string, idx: number) => {
                   const verseNum = idx + 1;
                   const isHighlighted = highlightedVerses && (verseNum >= highlightedVerses[0] && verseNum <= highlightedVerses[1]);
                   
                   return (
-                    <span 
+                    <p 
                       key={idx} 
                       style={{
-                        padding: '2px 4px',
+                        margin: 0,
+                        padding: '4px 6px',
                         borderRadius: 6,
                         backgroundColor: isHighlighted 
-                          ? (readingTheme === 'darker' ? 'rgba(255, 235, 59, 0.18)' : '#FFF9C4') 
+                          ? (readingTheme === 'darker' ? 'rgba(255, 235, 59, 0.15)' : '#FFF9C4') 
                           : 'transparent',
-                        borderBottom: isHighlighted 
-                          ? `2px solid ${readingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
+                        borderLeft: isHighlighted 
+                          ? `4px solid ${readingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
                           : 'none',
                         transition: 'background-color 0.3s ease',
-                        display: 'inline',
-                        marginRight: 6
+                        lineHeight: '160%'
                       }}
                     >
                       <span style={{ 
-                        fontSize: '0.75em', 
+                        fontSize: '0.8em', 
                         fontWeight: 700, 
-                        marginRight: 4, 
-                        color: readingTheme === 'darker' ? '#FFD54F' : 'var(--primary)',
-                        verticalAlign: 'super'
+                        marginRight: 8, 
+                        color: readingTheme === 'darker' ? '#FFD54F' : 'var(--primary)'
                       }}>
                         {verseNum}
                       </span>
-                      {verseText}{' '}
-                    </span>
+                      {verseText}
+                    </p>
                   );
                 })}
               </div>
