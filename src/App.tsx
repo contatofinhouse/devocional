@@ -131,6 +131,7 @@ const BIBLE_BOOKS = [
 
 export default function App() {
   const loadedUserIdRef = useRef<string | null>(null);
+  const bibleScrollRef = useRef<HTMLDivElement | null>(null);
   const [showSplash, setShowSplash] = useState(true);
   const [splashClass, setSplashClass] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -222,8 +223,6 @@ export default function App() {
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(0);
   const [bibleBookData, setBibleBookData] = useState<any>(null);
   const [highlightedVerses, setHighlightedVerses] = useState<[number, number] | null>(null);
-  const [bibleFontSize, setBibleFontSize] = useState<number>(16);
-  const [bibleReadingTheme, setBibleReadingTheme] = useState<'default' | 'sepia' | 'darker'>('default');
 
   const normalizeBookName = (name: string): string => {
     return name.toLowerCase()
@@ -268,6 +267,13 @@ export default function App() {
       loadBibleBook(currentBookName);
     }
   }, [bibleOpen, currentBookName]);
+
+  // Scroll Bible reader to top when chapter/book changes
+  useEffect(() => {
+    if (bibleScrollRef.current) {
+      bibleScrollRef.current.scrollTop = 0;
+    }
+  }, [currentChapterIndex, currentBookName, bibleOpen]);
 
   // Load last read Bible states on mount
   useEffect(() => {
@@ -2886,8 +2892,8 @@ export default function App() {
           left: 0,
           right: 0,
           bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
-          backgroundColor: bibleReadingTheme === 'sepia' ? '#FAF4EB' : bibleReadingTheme === 'darker' ? '#12131C' : '#FFFFFF',
-          color: bibleReadingTheme === 'sepia' ? '#433422' : bibleReadingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
+          backgroundColor: readingTheme === 'sepia' ? '#FAF4EB' : readingTheme === 'darker' ? '#12131C' : '#FFFFFF',
+          color: readingTheme === 'sepia' ? '#433422' : readingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
           zIndex: 300,
           display: 'flex',
           flexDirection: 'column',
@@ -2897,7 +2903,7 @@ export default function App() {
         {/* Header config bar */}
         <div style={{ 
           padding: '12px 16px', 
-          borderBottom: `1px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+          borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
@@ -2937,9 +2943,9 @@ export default function App() {
                 localStorage.setItem('bible_last_chapter', '0');
               }}
               style={{
-                backgroundColor: bibleReadingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : bibleReadingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
+                backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
                 color: 'inherit',
-                border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                 borderRadius: 8,
                 padding: '4px 8px',
                 fontSize: 12,
@@ -2966,9 +2972,9 @@ export default function App() {
                   localStorage.setItem('bible_last_chapter', String(idx));
                 }}
                 style={{
-                  backgroundColor: bibleReadingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : bibleReadingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
+                  backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
                   color: 'inherit',
-                  border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                   borderRadius: 8,
                   padding: '4px 8px',
                   fontSize: 12,
@@ -2988,10 +2994,10 @@ export default function App() {
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             {/* Font preference */}
             <button 
-              onClick={() => setBibleFontSize(prev => prev === 14 ? 16 : prev === 16 ? 18 : prev === 18 ? 20 : 14)}
+              onClick={() => setFontSize(fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xlarge' : 'normal')}
               style={{
                 background: 'none',
-                border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                 borderRadius: 8,
                 padding: '4px 8px',
                 fontSize: 11,
@@ -3000,15 +3006,15 @@ export default function App() {
                 fontWeight: 600
               }}
             >
-              Tam: A{bibleFontSize === 14 ? '' : bibleFontSize === 16 ? '+' : bibleFontSize === 18 ? '++' : '+++'}
+              Letra: {fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}
             </button>
 
             {/* Theme preference */}
             <button 
-              onClick={() => setBibleReadingTheme(prev => prev === 'default' ? 'sepia' : prev === 'sepia' ? 'darker' : 'default')}
+              onClick={() => setReadingTheme(readingTheme === 'default' ? 'sepia' : readingTheme === 'sepia' ? 'darker' : 'default')}
               style={{
                 background: 'none',
-                border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                 borderRadius: 8,
                 padding: '4px 8px',
                 fontSize: 11,
@@ -3017,18 +3023,19 @@ export default function App() {
                 fontWeight: 600
               }}
             >
-              {bibleReadingTheme === 'default' ? 'Claro' : bibleReadingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
+              Tema: {readingTheme === 'default' ? 'Claro' : readingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
             </button>
           </div>
         </div>
 
         {/* Reading scrollable area */}
         <div 
+          ref={bibleScrollRef}
           className="screen-content custom-scroll" 
           style={{ 
-            padding: '24px 20px 80px 20px',
-            fontSize: `${bibleFontSize}px`,
-            lineHeight: '175%',
+            padding: '24px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px',
+            fontSize: fontSize === 'normal' ? '15px' : fontSize === 'large' ? '17px' : '19px',
+            lineHeight: '165%',
             overflowY: 'auto',
             flex: 1
           }}
@@ -3036,48 +3043,56 @@ export default function App() {
           {bibleBookData ? (
             <div>
               <h2 style={{ 
-                fontSize: '22px', 
+                fontFamily: 'var(--font-display)',
+                fontSize: fontSize === 'normal' ? '22px' : fontSize === 'large' ? '25px' : '28px', 
                 fontWeight: 700, 
                 marginBottom: 20, 
-                color: bibleReadingTheme === 'sepia' ? '#322517' : 'inherit',
-                borderBottom: `2px solid ${bibleReadingTheme === 'sepia' ? '#FAF4EB' : 'rgba(0,0,0,0.05)'}`,
+                color: 'inherit',
+                borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                 paddingBottom: 8
               }}>
                 {bibleBookData.name} - Capítulo {currentChapterIndex + 1}
               </h2>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div 
+                style={{ 
+                  textAlign: 'justify', 
+                  color: 'inherit',
+                  textIndent: '24px'
+                }}
+              >
                 {bibleBookData.chapters[currentChapterIndex]?.map((verseText: string, idx: number) => {
                   const verseNum = idx + 1;
                   const isHighlighted = highlightedVerses && (verseNum >= highlightedVerses[0] && verseNum <= highlightedVerses[1]);
                   
                   return (
-                    <p 
+                    <span 
                       key={idx} 
                       style={{
-                        margin: 0,
-                        padding: '4px 6px',
+                        padding: '2px 4px',
                         borderRadius: 6,
                         backgroundColor: isHighlighted 
-                          ? (bibleReadingTheme === 'darker' ? '#3B3012' : '#FFF9C4') 
+                          ? (readingTheme === 'darker' ? 'rgba(255, 235, 59, 0.18)' : '#FFF9C4') 
                           : 'transparent',
-                        borderLeft: isHighlighted 
-                          ? `3px solid ${bibleReadingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
+                        borderBottom: isHighlighted 
+                          ? `2px solid ${readingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
                           : 'none',
-                        transition: 'background-color 0.3s ease'
+                        transition: 'background-color 0.3s ease',
+                        display: 'inline',
+                        marginRight: 6
                       }}
                     >
                       <span style={{ 
                         fontSize: '0.75em', 
                         fontWeight: 700, 
-                        marginRight: 6, 
-                        color: bibleReadingTheme === 'darker' ? '#FFD54F' : 'var(--primary)',
+                        marginRight: 4, 
+                        color: readingTheme === 'darker' ? '#FFD54F' : 'var(--primary)',
                         verticalAlign: 'super'
                       }}>
                         {verseNum}
                       </span>
-                      {verseText}
-                    </p>
+                      {verseText}{' '}
+                    </span>
                   );
                 })}
               </div>
@@ -3087,7 +3102,7 @@ export default function App() {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 marginTop: 32,
-                borderTop: `1px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                borderTop: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                 paddingTop: 20
               }}>
                 <button
@@ -3101,7 +3116,7 @@ export default function App() {
                   }}
                   style={{
                     background: 'none',
-                    border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                     borderRadius: 10,
                     padding: '8px 16px',
                     fontSize: 12,
@@ -3125,7 +3140,7 @@ export default function App() {
                   }}
                   style={{
                     background: 'none',
-                    border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                     borderRadius: 10,
                     padding: '8px 16px',
                     fontSize: 12,
