@@ -24,7 +24,8 @@ import {
   Sparkle,
   Share2,
   Bell,
-  Settings
+  Settings,
+  Lock
 } from 'lucide-react';
 
 import type { KidProfile, ParentLog, Devotional } from './data/mockDevotionals';
@@ -1683,12 +1684,16 @@ export default function App() {
                     </div>
                   ))}
 
-                  {/* CARD BÍBLIA SAGRADA */}
+                  {/* CARD BÍBLIA SAGRADA - PREMIUM ONLY */}
                   <div 
                     className="card" 
                     onClick={() => {
-                      setBibleOpen(true);
-                      setHighlightedVerses(null);
+                      if (isPremium) {
+                        setBibleOpen(true);
+                        setHighlightedVerses(null);
+                      } else {
+                        setShowPaywall(true);
+                      }
                     }}
                     style={{ 
                       display: 'flex', 
@@ -1700,7 +1705,8 @@ export default function App() {
                       padding: '16px 20px',
                       borderRadius: 16,
                       marginTop: 8,
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      position: 'relative'
                     }}
                   >
                     <div style={{
@@ -1718,12 +1724,13 @@ export default function App() {
                     <div style={{ flex: 1 }}>
                       <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
                         Bíblia Sagrada <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
+                        {!isPremium && <span style={{ fontSize: 9, color: '#fff', backgroundColor: 'var(--primary)', padding: '2px 8px', borderRadius: 10, fontWeight: 700, marginLeft: 4 }}>PRO</span>}
                       </h3>
                       <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, margin: 0 }}>
-                        Acesse as Escrituras Sagradas de forma completa e 100% off-line.
+                        {isPremium ? 'Acesse as Escrituras Sagradas de forma completa e 100% off-line.' : 'Desbloqueie a Bíblia completa com o plano Premium.'}
                       </p>
                     </div>
-                    <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
+                    {!isPremium ? <Lock size={18} style={{ color: 'var(--primary)' }} /> : <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />}
                   </div>
 
                 </div>
