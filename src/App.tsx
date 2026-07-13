@@ -2531,9 +2531,10 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
                   { icon: '📖', title: 'Trilhas Completas', desc: 'Acesso a todos os temas de todas as trilhas' },
-                  { icon: '🌙', title: '50 Noites de Práticas', desc: 'O plano completo de meditações e reflexões diárias' },
+                  { icon: '🌙', title: '204 Noites de Práticas Devocionais', desc: 'O plano completo de meditações e reflexões diárias' },
                   { icon: '🏆', title: 'Medalhas e Progresso', desc: 'Desbloqueie conquistas e veja o crescimento' },
                   { icon: '📝', title: 'Diário dos Pais Completo', desc: 'Histórico ilimitado de anotações e avaliações' },
+                  { icon: '⛪', title: 'Bíblia Sagrada', desc: 'Edição integral da Bíblia Sagrada, edição premium Almeida' },
                 ].map((b, i) => (
                   <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                     <div style={{ fontSize: 24, width: 40, height: 40, backgroundColor: '#FFF0F2', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
