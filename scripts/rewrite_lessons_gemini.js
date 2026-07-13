@@ -186,8 +186,8 @@ async function runRewrite(isValidation = false) {
         success = true;
         count++;
 
-        // Delay to respect API limits (around 4.5 seconds per request)
-        await sleep(4500);
+        // Run as fast as possible without blocking event loop
+        await sleep(50);
 
       } catch (err) {
         retries--;

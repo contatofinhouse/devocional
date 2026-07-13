@@ -736,11 +736,11 @@ export default function App() {
       const [start, end] = highlightedVerses;
       const versesText = chapterData
         .slice(start - 1, end)
-        .map((verseText, idx) => `[${start + idx}] ${verseText}`)
+        .map((verseText: string, idx: number) => `[${start + idx}] ${verseText}`)
         .join('\n\n');
       shareText = `Bíblia Sagrada\n\n${bibleBookData.name} ${currentChapterIndex + 1}:${start}-${end}\n\n${versesText}\n\n—\nTexto compartilhado via aplicativo Lecti.\nDisponível na Google Play Store:\nlecti.com.br/android`;
     } else {
-      const chapterText = chapterData.map((verseText, idx) => `[${idx + 1}] ${verseText}`).join('\n\n');
+      const chapterText = chapterData.map((verseText: string, idx: number) => `[${idx + 1}] ${verseText}`).join('\n\n');
       shareText = `Bíblia Sagrada\n\n${bibleBookData.name} - Capítulo ${currentChapterIndex + 1}\n\n${chapterText}\n\n—\nTexto compartilhado via aplicativo Lecti.\nDisponível na Google Play Store:\nlecti.com.br/android`;
     }
     
