@@ -715,26 +715,45 @@ export default function App() {
   const handleShareDevotional = async () => {
     if (!currentDevotional) return;
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
-    const shareText = `*lecti*\n\n*Tema:* ${currentDevotional.theme}\n*História:* ${activeStory.biblicalStoryTitle}\n\n*Desafio:* ${activeStory.challenge}\n\n*Mensagem Final:* "${activeStory.finalMessage}"`;
+    const shareText = `lecti • devocional em família\n\nTema: ${currentDevotional.theme}\nHistória: ${activeStory.biblicalStoryTitle}\n\nLeitura e Reflexão:\n${activeStory.biblicalStory}\n\n${activeStory.reflection}\n\nDesafio para hoje:\n${activeStory.challenge}\n\n"${activeStory.finalMessage}"\n\n—\nFiz esta leitura hoje e lembrei de nós. Baixe o app Lecti na Play Store para acompanhar os devocionais comigo:\nlecti.com.br/android`;
     
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `lecti - ${currentDevotional.theme}`,
-          text: shareText
-        });
-      } catch (e) {
-        console.log('Compartilhamento cancelado:', e);
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareText);
-        alert('Copiado! Compartilhe o texto com seu cônjuge via WhatsApp.');
-      } catch (err) {
-        alert('Não foi possível copiar automaticamente.');
-      }
+    try {
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+      window.open(whatsappUrl, '_blank');
+      showToast('Abrindo o WhatsApp...', 'success');
+    } catch (err) {
+      showToast('Não foi possível abrir o WhatsApp.', 'error');
     }
   };
+
+  const handleShareBible = async () => {
+    if (!bibleBookData) return;
+    const chapterData = bibleBookData.chapters[currentChapterIndex];
+    if (!chapterData) return;
+    
+    let shareText = '';
+    if (highlightedVerses) {
+      const [start, end] = highlightedVerses;
+      const versesText = chapterData
+        .slice(start - 1, end)
+        .map((verseText, idx) => `[${start + idx}] ${verseText}`)
+        .join('\n\n');
+      shareText = `Bíblia Sagrada\n\n${bibleBookData.name} ${currentChapterIndex + 1}:${start}-${end}\n\n${versesText}\n\n—\nTexto compartilhado via aplicativo Lecti.\nDisponível na Google Play Store:\nlecti.com.br/android`;
+    } else {
+      const chapterText = chapterData.map((verseText, idx) => `[${idx + 1}] ${verseText}`).join('\n\n');
+      shareText = `Bíblia Sagrada\n\n${bibleBookData.name} - Capítulo ${currentChapterIndex + 1}\n\n${chapterText}\n\n—\nTexto compartilhado via aplicativo Lecti.\nDisponível na Google Play Store:\nlecti.com.br/android`;
+    }
+    
+    try {
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+      window.open(whatsappUrl, '_blank');
+      showToast('Abrindo o WhatsApp...', 'success');
+    } catch (err) {
+      showToast('Não foi possível abrir o WhatsApp.', 'error');
+    }
+  };
+
+
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -3005,33 +3024,97 @@ export default function App() {
             padding: '12px 16px', 
             borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
             display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 8
+            flexDirection: 'column',
+            gap: 12
           }}>
-            <button 
-              onClick={() => {
-                setBibleOpen(false);
-                setHighlightedVerses(null);
-              }}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                color: 'inherit', 
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: 13,
-                fontWeight: 600,
-                padding: '4px 0'
-              }}
-            >
-              <ChevronLeft size={22} />
-              <span>Voltar</span>
-            </button>
+            {/* Top row: Voltar on left, Share/Letra/Tema on right */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%'
+            }}>
+              <button 
+                onClick={() => {
+                  setBibleOpen(false);
+                  setHighlightedVerses(null);
+                }}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: 'inherit', 
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  padding: '4px 0'
+                }}
+              >
+                <ChevronLeft size={22} />
+                <span>Voltar</span>
+              </button>
 
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <button 
+                  onClick={handleShareBible}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title="Compartilhar"
+                >
+                  <Share2 size={18} />
+                </button>
+
+                {/* Font preference */}
+                <button 
+                  onClick={toggleFontSize}
+                  style={{
+                    background: 'none',
+                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    borderRadius: 8,
+                    padding: '4px 8px',
+                    fontSize: 11,
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Letra: {fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}
+                </button>
+
+                {/* Theme preference */}
+                <button 
+                  onClick={toggleReadingTheme}
+                  style={{
+                    background: 'none',
+                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    borderRadius: 8,
+                    padding: '4px 8px',
+                    fontSize: 11,
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Tema: {readingTheme === 'default' ? 'Claro' : readingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom row: Selectors centered */}
+            <div style={{ 
+              display: 'flex', 
+              gap: 8, 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              width: '100%'
+            }}>
               {/* Book Selector */}
               <select
                 value={currentBookName}
@@ -3047,11 +3130,12 @@ export default function App() {
                   color: 'inherit',
                   border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                   borderRadius: 8,
-                  padding: '4px 8px',
+                  padding: '6px 12px',
                   fontSize: 12,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  maxWidth: 120
+                  flex: 1,
+                  maxWidth: 160
                 }}
               >
                 {BIBLE_BOOKS.map((b) => (
@@ -3080,11 +3164,12 @@ export default function App() {
                   color: 'inherit',
                   border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                   borderRadius: 8,
-                  padding: '4px 8px',
+                  padding: '6px 12px',
                   fontSize: 12,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  maxWidth: 160
+                  flex: 1,
+                  maxWidth: 200
                 }}
               >
                 <option value="">Buscar por Tema...</option>
@@ -3094,42 +3179,6 @@ export default function App() {
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              {/* Font preference */}
-              <button 
-                onClick={toggleFontSize}
-                style={{
-                  background: 'none',
-                  border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                  borderRadius: 8,
-                  padding: '4px 8px',
-                  fontSize: 11,
-                  color: 'inherit',
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                Letra: {fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}
-              </button>
-
-              {/* Theme preference */}
-              <button 
-                onClick={toggleReadingTheme}
-                style={{
-                  background: 'none',
-                  border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                  borderRadius: 8,
-                  padding: '4px 8px',
-                  fontSize: 11,
-                  color: 'inherit',
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                Tema: {readingTheme === 'default' ? 'Claro' : readingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
-              </button>
             </div>
           </div>
 

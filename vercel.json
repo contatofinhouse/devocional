@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/android",
+      "destination": "https://play.google.com/store/apps/details?id=com.contatofinhouse.lecti",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!.*\\.).*)",

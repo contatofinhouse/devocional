@@ -125,7 +125,7 @@ async function runRewrite(isValidation = false) {
   const targetLessons = isValidation ? allLessons.slice(0, 5) : allLessons;
   let count = 0;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
   for (const lesson of targetLessons) {
     const id = lesson.id;
@@ -186,8 +186,8 @@ async function runRewrite(isValidation = false) {
         success = true;
         count++;
 
-        // Delay to respect API limits (around 4 seconds per request)
-        await sleep(4000);
+        // Delay to respect API limits (around 4.5 seconds per request)
+        await sleep(4500);
 
       } catch (err) {
         retries--;
