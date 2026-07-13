@@ -4,7 +4,7 @@ import os
 
 sql_input_path = r'c:\Users\rafae\Documents\FINHOUSE\SITES\devocional\store-assets\dev_lessons_rows_2.sql'
 progress_path = r'C:\Users\rafae\.gemini\antigravity-ide\scratch\progress_rewrite.json'
-sql_output_path = r'c:\Users\rafae\Documents\FINHOUSE\SITES\devocional\store-assets\dev_lessons_rows_4.sql'
+output_dir = r'c:\Users\rafae\Documents\FINHOUSE\SITES\devocional\store-assets'
 
 def parse_sql_values(sql):
     values_start = sql.find("VALUES")
@@ -61,7 +61,7 @@ def escape_val(val, is_number=False):
     if is_number:
         return str(val)
     # Escape single quotes
-    escaped = val.replace("'", "''")
+    escaped = str(val).replace("'", "''")
     return f"'{escaped}'"
 
 def compile_all():
@@ -81,45 +81,79 @@ def compile_all():
         progress = {}
     print(f"Loaded {len(progress)} rewritten entries.")
     
-    compiled_tuples = []
-    updated_count = 0
+    parts_count = 6
+    chunk_size = (len(rows) + parts_count - 1) // parts_count
     
-    for idx, row in enumerate(rows):
-        if len(row) != 13:
-            print(f"Warning: Row {idx+1} has invalid column count ({len(row)})")
+    for part_idx in range(parts_count):
+        start_r = part_idx * chunk_size
+        end_r = min((part_idx + 1) * chunk_size, len(rows))
+        chunk_rows = rows[start_r:end_r]
+        
+        if not chunk_rows:
             continue
             
-        lid = row[0]
-        # If this lesson has been rewritten, replace the relevant columns
-        if lid in progress and 'updated' in progress[lid]:
-            updated = progress[lid]['updated']
-            row[6] = updated.get('title', row[6])
-            row[8] = updated.get('biblical_story', row[8])
-            row[9] = updated.get('reflection', row[9])
-            row[10] = updated.get('challenge', row[10])
-            row[11] = updated.get('final_message', row[11])
-            updated_count += 1
-            
-        # Format values for SQL
-        formatted_cols = []
-        for col_idx, col in enumerate(row):
-            is_num = (col_idx == 5) # lesson_number is at index 5
-            formatted_cols.append(escape_val(col, is_number=is_num))
-            
-        compiled_tuples.append(f"({', '.join(formatted_cols)})")
+        compiled_lessons = []
+        compiled_questions = []
+        compiled_prayers = []
         
-    print(f"Updated {updated_count} lessons with rewritten versions.")
-    
-    print("Generating output SQL...")
-    sql_header = 'INSERT INTO "public"."dev_lessons" ("id", "theme_id", "theme_name", "development_mode", "age_group", "lesson_number", "title", "biblical_reference", "biblical_story", "reflection", "challenge", "final_message", "created_at") VALUES\n'
-    
-    sql_body = ",\n".join(compiled_tuples)
-    sql_final = sql_header + sql_body + ";"
-    
-    with open(sql_output_path, 'w', encoding='utf-8') as f:
-        f.write(sql_final)
+        for row in chunk_rows:
+            if len(row) != 13:
+                continue
+                
+            lid = row[0]
+            # Replace lessons fields if rewritten
+            if lid in progress and 'updated' in progress[lid]:
+                updated = progress[lid]['updated']
+                row[6] = updated.get('title', row[6])
+                row[8] = updated.get('biblical_story', row[8])
+                row[9] = updated.get('reflection', row[9])
+                row[10] = updated.get('challenge', row[10])
+                row[11] = updated.get('final_message', row[11])
+                
+                # Dynamic Questions
+                questions = updated.get('questions', [])
+                for q_idx, q_text in enumerate(questions):
+                    q_val = (escape_val(lid), escape_val(q_text), escape_val(q_idx + 1, is_number=True))
+                    compiled_questions.append(f"({', '.join(q_val)})")
+                    
+                # Dynamic Prayers
+                prayers = updated.get('prayers', [])
+                for p_idx, p_data in enumerate(prayers):
+                    p_role = p_data.get('role', 'Individual')
+                    p_text = p_data.get('text', '')
+                    p_val = (escape_val(lid), escape_val(p_role), escape_val(p_text), escape_val(p_idx + 1, is_number=True))
+                    compiled_prayers.append(f"({', '.join(p_val)})")
+            
+            # Format lessons values
+            formatted_cols = []
+            for col_idx, col in enumerate(row):
+                is_num = (col_idx == 5)
+                formatted_cols.append(escape_val(col, is_number=is_num))
+            compiled_lessons.append(f"({', '.join(formatted_cols)})")
+            
+        # Build SQL output for this part
+        sql_output = []
         
-    print(f"Successfully compiled SQL dump into {sql_output_path}")
+        # Prepend Truncate in Part 1
+        if part_idx == 0:
+            sql_output.append('-- Clean tables first\nTRUNCATE TABLE "public"."dev_lessons" CASCADE;\n')
+            
+        # 1. Insert Lessons
+        sql_output.append('INSERT INTO "public"."dev_lessons" ("id", "theme_id", "theme_name", "development_mode", "age_group", "lesson_number", "title", "biblical_reference", "biblical_story", "reflection", "challenge", "final_message", "created_at") VALUES\n' + ",\n".join(compiled_lessons) + ";\n")
+        
+        # 2. Insert Questions (if any)
+        if compiled_questions:
+            sql_output.append('\nINSERT INTO "public"."dev_questions" ("lesson_id", "question_text", "display_order") VALUES\n' + ",\n".join(compiled_questions) + ";\n")
+            
+        # 3. Insert Prayers (if any)
+        if compiled_prayers:
+            sql_output.append('\nINSERT INTO "public"."dev_prayers" ("lesson_id", "role", "text_content", "display_order") VALUES\n' + ",\n".join(compiled_prayers) + ";\n")
+            
+        part_file_path = os.path.join(output_dir, f'dev_lessons_rows_5_part{part_idx + 1}.sql')
+        with open(part_file_path, 'w', encoding='utf-8') as f:
+            f.write("".join(sql_output))
+            
+        print(f"Generated Part {part_idx + 1} SQL dump with {len(compiled_lessons)} lessons, {len(compiled_questions)} questions, and {len(compiled_prayers)} prayers.")
 
 if __name__ == '__main__':
     compile_all()

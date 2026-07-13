@@ -41,9 +41,7 @@ function loadProgress() {
 
 function saveProgress(progress) {
   fs.writeFileSync(progressPath, JSON.stringify(progress, null, 2), 'utf-8');
-}
-
-// Generate the prompt using few-shot examples matching the style guide
+}// Generate the prompt using few-shot examples matching the style guide
 function getPrompt(lesson) {
   const devMode = lesson.development_mode;
   const ageGroup = lesson.age_group;
@@ -60,18 +58,24 @@ function getPrompt(lesson) {
   }
 
   const systemPrompt = `Você é um editor teológico e especialista em literatura bíblica devocional.
-Sua tarefa é reescrever os campos de um devocional preservando estritamente a história bíblica original, mas aplicando o seguinte guia de estilo:
+Sua tarefa é reescrever os campos de um devocional preservando estritamente a história bíblica original, aplicando o seguinte guia de estilo e gerando perguntas e orações exclusivas.
 
 DIRETRIZES DE ESCRITA:
-1. NARRATIVA BÍBLICA (biblical_story): Fiel ao texto original da passagem. Conte como uma história real. NÃO acrescente explicações ou jargões psicológicos modernos. Mantenha entre 120 e 220 palavras. Forneça o contexto correto dos personagens (ex: em vez de apenas "o filho", diga "o filho mais novo da parábola de Jesus" ou "o filho mais novo de um homem").
-2. REFLEXÃO (reflection): Conecte a história diretamente à vida prática do leitor de forma simples, concreta e profunda. Evite frases de efeito baratas ou jargões de autoajuda. Mantenha exatamente 1 parágrafo direto de forte impacto (máximo 150 palavras).
-3. DESAFIO (challenge): Uma ação prática simples e clara que possa ser praticada no mesmo dia.
+1. NARRATIVA BÍBLICA (biblical_story): Fiel ao texto original da passagem. Conte como uma história real. NÃO acrescente explicações ou jargões psicológicos modernos. Mantenha entre 120 e 160 palavras. Forneça o contexto correto dos personagens.
+2. REFLEXÃO (reflection): Conecte a história diretamente à vida prática do leitor de forma simples, concreta e profunda. Evite jargões de autoajuda. Mantenha exatamente 1 parágrafo curto e direto de forte impacto (máximo de 100 palavras).
+3. DESAFIO (challenge): Uma ação prática, simples, direta e acionável no mesmo dia (máximo de 15 palavras).
 4. MENSAGEM FINAL (final_message): Frase curta de forte impacto (máximo 12 palavras).
-5. VOCABULÁRIO PROIBIDO: NÃO use expressões modernas/terapêuticas como: "crise moral", "narrativa de proteção", "vulnerabilidade", "performance", "identidade fragmentada", "versão de si mesmo", "esconderijo emocional".
-6. VOCABULÁRIO PERMITIDO/BÍBLICO: Prefira usar termos tradicionais das Escrituras: pecado, arrependimento, perdão, obediência, fidelidade, coragem, humildade, confiança, esperança, graça, misericórdia.
-7. Retorne APENAS o JSON estruturado limpo.`;
+5. PERGUNTAS DE CONVERSA (questions): Gere exatamente 3 perguntas exclusivas e instigantes para esta lição:
+   - Pergunta 1: Focada em compreensão da história bíblica.
+   - Pergunta 2: Focada em conectar o tema à nossa realidade ou fraquezas diárias.
+   - Pergunta 3: Focada em uma atitude ou ação prática.
+6. ORAÇÃO (prayers):
+   - Se o Modo for "kids": Gere uma oração curta dividida em 3 diálogos curtos para orar em família (um para o "Pai", um para o "Filho", e um para fazerem "Juntos"). Cada parte deve ter no máximo 2 frases curtas, sinceras e conectadas à lição.
+   - Se o Modo for "personal": Gere um único texto curto de oração individual íntima e sincera (com o papel/role definido como "Individual").
+7. VOCABULÁRIO PROIBIDO: NÃO use expressões modernas/terapêuticas como: "crise moral", "narrativa de proteção", "vulnerabilidade", "performance", "identidade fragmentada", "versão de si mesmo", "esconderijo emocional".
+8. Retorne APENAS o JSON estruturado limpo.`;
 
-  const prompt = `Aqui está o devocional original para você reescrever:
+  const prompt = `Aqui está o devocional original para você reescrever e enriquecer:
 Tema: "${lesson.theme_name}"
 Modo: "${devMode}"
 Faixa Etária: "${ageGroup}"
@@ -85,13 +89,41 @@ Devocional original a ser aperfeiçoado:
 - Desafio original: "${lesson.challenge}"
 - Mensagem final original: "${lesson.final_message}"
 
-Retorne o resultado no formato JSON estrito exatamente com a estrutura abaixo:
+Retorne o resultado no formato JSON estrito exatamente com a estrutura abaixo.
+Se o Modo for "kids", a estrutura de "prayers" deve ter 3 falas (Pai, Filho, Juntos):
 {
-  "title": "Título curto e direto (máximo 6 palavras)",
-  "biblical_story": "Relato reescrito fiel à passagem (120 a 220 palavras)",
-  "reflection": "Reflexão reescrita em 1 parágrafo prático (máximo 150 palavras)",
-  "challenge": "Desafio prático acionável em uma frase simples",
-  "final_message": "Frase curta de forte impacto (máximo 12 palavras)"
+  "title": "Título curto (máximo 6 palavras)",
+  "biblical_story": "Relato reescrito fiel à passagem (120 a 160 palavras)",
+  "reflection": "Reflexão reescrita em 1 parágrafo prático (máximo 100 palavras)",
+  "challenge": "Desafio prático acionável (máximo 15 palavras)",
+  "final_message": "Frase de forte impacto (máximo 12 palavras)",
+  "questions": [
+    "Pergunta 1 (compreensão)",
+    "Pergunta 2 (conexão com a realidade diária)",
+    "Pergunta 3 (ação prática)"
+  ],
+  "prayers": [
+    { "role": "Pai", "text": "Frase de oração do pai..." },
+    { "role": "Filho", "text": "Frase de oração do filho..." },
+    { "role": "Juntos", "text": "Frase de oração final juntos..." }
+  ]
+}
+
+Se o Modo for "personal", a estrutura de "prayers" deve ter 1 fala (Individual):
+{
+  "title": "Título curto (máximo 6 palavras)",
+  "biblical_story": "Relato reescrito fiel à passagem (120 a 160 palavras)",
+  "reflection": "Reflexão reescrita em 1 parágrafo prático (máximo 100 palavras)",
+  "challenge": "Desafio prático acionável (máximo 15 palavras)",
+  "final_message": "Frase de forte impacto (máximo 12 palavras)",
+  "questions": [
+    "Pergunta 1 (compreensão)",
+    "Pergunta 2 (conexão com a realidade diária)",
+    "Pergunta 3 (ação prática)"
+  ],
+  "prayers": [
+    { "role": "Individual", "text": "Texto da oração individual íntima e sincera..." }
+  ]
 }`;
 
   return { systemPrompt, prompt };
@@ -156,8 +188,8 @@ async function runRewrite(isValidation = false) {
         const data = JSON.parse(cleanJson.trim());
 
         // Simple validation
-        if (!data.title || !data.biblical_story || !data.reflection) {
-          throw new Error("Campos obrigatórios ausentes no retorno JSON.");
+        if (!data.title || !data.biblical_story || !data.reflection || !data.questions || data.questions.length !== 3 || !data.prayers || data.prayers.length === 0) {
+          throw new Error("Campos obrigatórios, perguntas ou orações ausentes/inválidos no retorno JSON.");
         }
 
         // Generate UPDATE SQL statement
