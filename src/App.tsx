@@ -191,8 +191,24 @@ export default function App() {
   const [completedCalendarNights, setCompletedCalendarNights] = useState<number[]>([]);
   const [currentCalendarNight, setCurrentCalendarNight] = useState<number | null>(null);
   
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
-  const [readingTheme, setReadingTheme] = useState<'default' | 'sepia' | 'darker'>('default');
+  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>(
+    (localStorage.getItem('font_size_preference') as any) || 'large'
+  );
+  const [readingTheme, setReadingTheme] = useState<'default' | 'sepia' | 'darker'>(
+    (localStorage.getItem('reading_theme_preference') as any) || 'default'
+  );
+
+  const toggleReadingTheme = () => {
+    const nextTheme = readingTheme === 'default' ? 'sepia' : readingTheme === 'sepia' ? 'darker' : 'default';
+    setReadingTheme(nextTheme);
+    localStorage.setItem('reading_theme_preference', nextTheme);
+  };
+
+  const toggleFontSize = () => {
+    const nextSize = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xlarge' : 'normal';
+    setFontSize(nextSize);
+    localStorage.setItem('font_size_preference', nextSize);
+  };
 
   const [logs, setLogs] = useState<ParentLog[]>([]);
 
@@ -2646,8 +2662,9 @@ export default function App() {
                   <Share2 size={18} />
                 </button>
 
+                {/* Font preference */}
                 <button 
-                  onClick={() => setFontSize(fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xlarge' : 'normal')}
+                  onClick={toggleFontSize}
                   style={{
                     background: 'none',
                     border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
@@ -2662,8 +2679,9 @@ export default function App() {
                   Letra: {fontSize === 'normal' ? 'A' : fontSize === 'large' ? 'A+' : 'A++'}
                 </button>
 
+                {/* Theme preference */}
                 <button 
-                  onClick={() => setReadingTheme(readingTheme === 'default' ? 'sepia' : readingTheme === 'sepia' ? 'darker' : 'default')}
+                  onClick={toggleReadingTheme}
                   style={{
                     background: 'none',
                     border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
@@ -2992,7 +3010,7 @@ export default function App() {
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               {/* Font preference */}
               <button 
-                onClick={() => setFontSize(fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xlarge' : 'normal')}
+                onClick={toggleFontSize}
                 style={{
                   background: 'none',
                   border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
@@ -3009,7 +3027,7 @@ export default function App() {
 
               {/* Theme preference */}
               <button 
-                onClick={() => setReadingTheme(readingTheme === 'default' ? 'sepia' : readingTheme === 'sepia' ? 'darker' : 'default')}
+                onClick={toggleReadingTheme}
                 style={{
                   background: 'none',
                   border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
