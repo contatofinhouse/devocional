@@ -129,100 +129,6 @@ const BIBLE_BOOKS = [
   { name: 'Apocalipse', testament: 'new' }
 ];
 
-const BIBLE_THEME_MAP: Record<string, Record<number, string[]>> = {
-  "1_corintios": {
-    15: ['Influência dos amigos'],
-  },
-  "1_pedro": {
-    2: ['Respeito'],
-  },
-  "1_reis": {
-    11: ['Influência dos amigos'],
-    19: ['Ansiedade'],
-  },
-  "1_samuel": {
-    1: ['Oração'],
-    2: ['Obediência'],
-    17: ['Medo'],
-    18: ['Medo'],
-    20: ['Coragem'],
-    24: ['Respeito'],
-  },
-  "daniel": {
-    1: ['Temor a Deus', 'Ansiedade', 'Foco e Atenção', 'Confiança', 'Resiliência', 'Responsabilidade', 'Autocontrole', 'Prudência', 'Lealdade', 'Obediência'],
-    3: ['Medo', 'Coragem', 'Perdão', 'Foco e Atenção', 'Resiliência', 'Comunicação', 'Reconciliação', 'Amizades', 'Obediência'],
-    6: ['Integridade', 'Honestidade', 'Coragem'],
-  },
-  "efesios": {
-    6: ['Obediência'],
-  },
-  "filipenses": {
-    2: ['Humildade'],
-    4: ['Ansiedade'],
-  },
-  "genesis": {
-    13: ['Escolhas', 'Foco e Atenção'],
-    39: ['Responsabilidade'],
-    45: ['Perdão'],
-  },
-  "hebreus": {
-    11: ['Fé'],
-  },
-  "jo": {
-    1: ['Resiliência'],
-  },
-  "joao": {
-    13: ['Serviço'],
-  },
-  "josue": {
-    1: ['Medo'],
-    24: ['Escolhas'],
-  },
-  "lucas": {
-    10: ['Foco e Atenção', 'Compaixão'],
-    15: ['Paciência', 'Compaixão', 'Ansiedade', 'Reconciliação', 'Foco e Atenção', 'Honestidade', 'Prudência', 'Escolhas', 'Influência dos amigos', 'Fé'],
-    16: ['Responsabilidade'],
-    17: ['Gratidão'],
-    21: ['Generosidade'],
-  },
-  "marcos": {
-    10: ['Serviço'],
-  },
-  "mateus": {
-    6: ['Ansiedade'],
-    18: ['Perdão'],
-  },
-  "neemias": {
-    4: ['Foco e Atenção'],
-  },
-  "numeros": {
-    13: ['Paciência'],
-  },
-  "proverbios": {
-    3: ['Ansiedade'],
-    4: ['Prudência'],
-    8: ['Prudência'],
-    11: ['Resiliência'],
-    12: ['Honestidade'],
-    13: ['Influência dos amigos'],
-    14: ['Prudência'],
-    18: ['Comunicação'],
-    22: ['Respeito'],
-    25: ['Moderação'],
-  },
-  "romanos": {
-    5: ['Paciência'],
-  },
-  "rute": {
-    1: ['Lealdade'],
-  },
-  "salmos": {
-    95: ['Louvor'],
-  },
-  "tiago": {
-    1: ['Paciência'],
-  },
-};
 
 const ADJECTIVE_OPTIONS = [
   { label: 'Ansiedade (Mateus 6)', book: 'Mateus', chapter: 5 },
@@ -306,17 +212,6 @@ const ADJECTIVE_OPTIONS = [
   { label: 'Temor a Deus (Daniel 1)', book: 'Daniel', chapter: 0 }
 ];
 
-const getWisdomTitle = (bookName: string, chapterIndex: number): string => {
-  const capNum = chapterIndex + 1;
-  const normalizedBook = bookName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_");
-  
-  if (BIBLE_THEME_MAP[normalizedBook] && BIBLE_THEME_MAP[normalizedBook][capNum]) {
-    const list = BIBLE_THEME_MAP[normalizedBook][capNum].join(', ');
-    return `${list} (Cap. ${capNum})`;
-  }
-  
-  return `Capítulo ${capNum}`;
-};
 
 export default function App() {
   const loadedUserIdRef = useRef<string | null>(null);
@@ -3261,7 +3156,7 @@ export default function App() {
                   borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
                   paddingBottom: 8
                 }}>
-                  {bibleBookData.name} - {getWisdomTitle(currentBookName, currentChapterIndex)}
+                  {bibleBookData.name} - Capítulo {currentChapterIndex + 1}
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
