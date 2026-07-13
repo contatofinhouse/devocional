@@ -224,6 +224,88 @@ const BIBLE_THEME_MAP: Record<string, Record<number, string[]>> = {
   },
 };
 
+const ADJECTIVE_OPTIONS = [
+  { label: 'Ansiedade (Mateus 6)', book: 'Mateus', chapter: 5 },
+  { label: 'Ansiedade (Filipenses 4)', book: 'Filipenses', chapter: 3 },
+  { label: 'Ansiedade (1 Reis 19)', book: '1 Reis', chapter: 18 },
+  { label: 'Ansiedade (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Ansiedade (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Ansiedade (Provérbios 3)', book: 'Provérbios', chapter: 2 },
+  { label: 'Autocontrole (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Autocontrole (Provérbios 25)', book: 'Provérbios', chapter: 24 },
+  { label: 'Amizades (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Comunicação (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Comunicação (Provérbios 18)', book: 'Provérbios', chapter: 17 },
+  { label: 'Compaixão (Lucas 10)', book: 'Lucas', chapter: 9 },
+  { label: 'Compaixão (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Confiança (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Coragem (1 Samuel 20)', book: '1 Samuel', chapter: 19 },
+  { label: 'Coragem (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Coragem (Daniel 6)', book: 'Daniel', chapter: 5 },
+  { label: 'Escolhas (Gênesis 13)', book: 'Gênesis', chapter: 12 },
+  { label: 'Escolhas (Josué 24)', book: 'Josué', chapter: 23 },
+  { label: 'Escolhas (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Fé (Hebreus 11)', book: 'Hebreus', chapter: 10 },
+  { label: 'Fé (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Foco e Atenção (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Foco e Atenção (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Foco e Atenção (Gênesis 13)', book: 'Gênesis', chapter: 12 },
+  { label: 'Foco e Atenção (Lucas 10)', book: 'Lucas', chapter: 9 },
+  { label: 'Foco e Atenção (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Foco e Atenção (Neemias 4)', book: 'Neemias', chapter: 3 },
+  { label: 'Generosidade (Lucas 21)', book: 'Lucas', chapter: 20 },
+  { label: 'Gratidão (Lucas 17)', book: 'Lucas', chapter: 16 },
+  { label: 'Honestidade (Daniel 6)', book: 'Daniel', chapter: 5 },
+  { label: 'Honestidade (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Honestidade (Provérbios 12)', book: 'Provérbios', chapter: 11 },
+  { label: 'Humildade (Filipenses 2)', book: 'Filipenses', chapter: 1 },
+  { label: 'Influência dos amigos (1 Coríntios 15)', book: '1 Coríntios', chapter: 14 },
+  { label: 'Influência dos amigos (1 Reis 11)', book: '1 Reis', chapter: 10 },
+  { label: 'Influência dos amigos (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Influência dos amigos (Provérbios 13)', book: 'Provérbios', chapter: 12 },
+  { label: 'Integridade (Daniel 6)', book: 'Daniel', chapter: 5 },
+  { label: 'Lealdade (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Lealdade (Rute 1)', book: 'Rute', chapter: 0 },
+  { label: 'Louvor (Salmos 95)', book: 'Salmos', chapter: 94 },
+  { label: 'Medo (1 Samuel 17)', book: '1 Samuel', chapter: 16 },
+  { label: 'Medo (1 Samuel 18)', book: '1 Samuel', chapter: 17 },
+  { label: 'Medo (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Medo (Josué 1)', book: 'Josué', chapter: 0 },
+  { label: 'Moderação (Provérbios 25)', book: 'Provérbios', chapter: 24 },
+  { label: 'Obediência (1 Samuel 2)', book: '1 Samuel', chapter: 1 },
+  { label: 'Obediência (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Obediência (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Obediência (Efésios 6)', book: 'Efésios', chapter: 5 },
+  { label: 'Oração (1 Samuel 1)', book: '1 Samuel', chapter: 0 },
+  { label: 'Paciência (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Paciência (Números 13)', book: 'Números', chapter: 12 },
+  { label: 'Paciência (Romanos 5)', book: 'Romanos', chapter: 4 },
+  { label: 'Paciência (Tiago 1)', book: 'Tiago', chapter: 0 },
+  { label: 'Perdão (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Perdão (Gênesis 45)', book: 'Gênesis', chapter: 44 },
+  { label: 'Perdão (Mateus 18)', book: 'Mateus', chapter: 17 },
+  { label: 'Prudência (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Prudência (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Prudência (Provérbios 4)', book: 'Provérbios', chapter: 3 },
+  { label: 'Prudência (Provérbios 8)', book: 'Provérbios', chapter: 7 },
+  { label: 'Prudência (Provérbios 14)', book: 'Provérbios', chapter: 13 },
+  { label: 'Reconciliação (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Reconciliação (Lucas 15)', book: 'Lucas', chapter: 14 },
+  { label: 'Resiliência (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Resiliência (Daniel 3)', book: 'Daniel', chapter: 2 },
+  { label: 'Resiliência (Jó 1)', book: 'Jó', chapter: 0 },
+  { label: 'Resiliência (Provérbios 11)', book: 'Provérbios', chapter: 10 },
+  { label: 'Responsabilidade (Daniel 1)', book: 'Daniel', chapter: 0 },
+  { label: 'Responsabilidade (Gênesis 39)', book: 'Gênesis', chapter: 38 },
+  { label: 'Responsabilidade (Lucas 16)', book: 'Lucas', chapter: 15 },
+  { label: 'Respeito (1 Pedro 2)', book: '1 Pedro', chapter: 1 },
+  { label: 'Respeito (1 Samuel 24)', book: '1 Samuel', chapter: 23 },
+  { label: 'Respeito (Provérbios 22)', book: 'Provérbios', chapter: 21 },
+  { label: 'Serviço (João 13)', book: 'João', chapter: 12 },
+  { label: 'Serviço (Marcos 10)', book: 'Marcos', chapter: 9 },
+  { label: 'Temor a Deus (Daniel 1)', book: 'Daniel', chapter: 0 }
+];
+
 const getWisdomTitle = (bookName: string, chapterIndex: number): string => {
   const capNum = chapterIndex + 1;
   const normalizedBook = bookName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_");
@@ -3084,35 +3166,39 @@ export default function App() {
                 ))}
               </select>
 
-              {/* Chapter Selector */}
-              {bibleBookData && (
-                <select
-                  value={currentChapterIndex}
-                  onChange={(e) => {
-                    const idx = parseInt(e.target.value, 10);
+              {/* Adjective Selector (replacing raw chapter selector) */}
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const [bk, cap] = e.target.value.split('|');
+                    setCurrentBookName(bk);
+                    const idx = parseInt(cap, 10);
                     setCurrentChapterIndex(idx);
                     setHighlightedVerses(null);
+                    localStorage.setItem('bible_last_book', bk);
                     localStorage.setItem('bible_last_chapter', String(idx));
-                  }}
-                  style={{
-                    backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
-                    color: 'inherit',
-                    border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
-                    borderRadius: 8,
-                    padding: '4px 8px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    maxWidth: 160
-                  }}
-                >
-                  {bibleBookData.chapters.map((_: any, idx: number) => (
-                    <option key={idx} value={idx} style={{ color: '#000000' }}>
-                      {getWisdomTitle(currentBookName, idx)}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  }
+                }}
+                style={{
+                  backgroundColor: readingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : readingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
+                  color: 'inherit',
+                  border: `1.5px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  borderRadius: 8,
+                  padding: '4px 8px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  maxWidth: 160
+                }}
+              >
+                <option value="">Buscar por Tema...</option>
+                {ADJECTIVE_OPTIONS.map((opt, idx) => (
+                  <option key={idx} value={`${opt.book}|${opt.chapter}`} style={{ color: '#000000' }}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
