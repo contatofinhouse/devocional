@@ -129,45 +129,6 @@ const BIBLE_BOOKS = [
   { name: 'Apocalipse', testament: 'new' }
 ];
 
-const LionIcon = ({ size = 24, ...props }: { size?: number; [key: string]: any }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <defs>
-      <linearGradient id="lionMane" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF9100" />
-        <stop offset="50%" stopColor="#FF3D00" />
-        <stop offset="100%" stopColor="#D500F9" />
-      </linearGradient>
-      <linearGradient id="lionFace" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="#FFE082" />
-        <stop offset="100%" stopColor="#FFB300" />
-      </linearGradient>
-    </defs>
-    {/* Royal mane representing the Lion of Judah */}
-    <path 
-      d="M12 2C6.48 2 2 6.48 2 12c0 2.24.74 4.3 2 5.96V20a2 2 0 002 2h1.16c1.23.65 2.62 1 4.09 1h1.5c1.47 0 2.86-.35 4.09-1H18a2 2 0 002-2v-2.04c1.26-1.66 2-3.72 2-5.96 0-5.52-4.48-10-10-10z" 
-      fill="url(#lionMane)" 
-    />
-    {/* Golden face overlay */}
-    <path 
-      d="M12 4c-3.87 0-7 3.13-7 7 0 1.95.8 3.71 2.09 4.97L7 20h2.5l1-2h3l1 2H17l-.09-4.03C18.2 14.71 19 12.95 19 11c0-3.87-3.13-7-7-7z" 
-      fill="url(#lionFace)" 
-    />
-    {/* Eyes, nose and mouth details */}
-    <path d="M9 10l1.5 1M15 10l-1.5 1" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" />
-    <polygon points="12,12 10.5,13.5 13.5,13.5" fill="#374151" />
-    <path d="M12 13.5v1.5c-.5.3-1 .5-1.5.5s-1-.2-1.5-.5M12 13.5v1.5c.5.3 1 .5 1.5.5s1-.2 1.5-.5" stroke="#374151" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-    {/* Royal crown on top of the head */}
-    <path d="M10 3.5l1-1.5 1 1 1-1 1 1.5h-4z" fill="#FFD54F" stroke="#FF8F00" strokeWidth="0.8" />
-  </svg>
-);
-
 const BIBLE_THEME_MAP: Record<string, Record<number, string[]>> = {
   "1_corintios": {
     15: ['Influência dos amigos'],
@@ -269,10 +230,10 @@ const getWisdomTitle = (bookName: string, chapterIndex: number): string => {
   
   if (BIBLE_THEME_MAP[normalizedBook] && BIBLE_THEME_MAP[normalizedBook][capNum]) {
     const list = BIBLE_THEME_MAP[normalizedBook][capNum].join(', ');
-    return `${bookName} ${capNum} (${list})`;
+    return `${list} (Cap. ${capNum})`;
   }
   
-  return `${bookName} ${capNum}`;
+  return `Capítulo ${capNum}`;
 };
 
 export default function App() {
@@ -1756,14 +1717,14 @@ export default function App() {
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <LionIcon size={24} />
+                      <BookOpen size={22} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                        Sabedorias Bíblicas <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
+                        Bíblia Sagrada <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
                       </h3>
                       <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, margin: 0 }}>
-                        Encontre conselhos, virtudes e direções para o seu dia a dia.
+                        Acesse as Escrituras Sagradas de forma completa e 100% off-line.
                       </p>
                     </div>
                     <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
@@ -2908,7 +2869,7 @@ export default function App() {
                       transition: 'var(--transition-smooth)'
                     }}
                   >
-                    <LionIcon size={16} /> Ver Jornada do Leão ({storyIndex + 1}/{currentDevotional.stories.length})
+                    🔄 Ver outra lição ({storyIndex + 1}/{currentDevotional.stories.length})
                   </button>
                 </div>
               )}
