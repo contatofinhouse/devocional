@@ -8,17 +8,28 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: {
       getItem: (key) => {
-        return Preferences.get({ key }).then(({ value }) => value);
+        return Preferences.get({ key })
+          .then(({ value }) => value)
+          .catch((err) => {
+            console.warn("Preferences.get failed, falling back to localStorage", err);
+            return window.localStorage.getItem(key);
+          });
       },
       setItem: (key, value) => {
-        return Preferences.set({ key, value });
+        return Preferences.set({ key, value }).catch((err) => {
+          console.warn("Preferences.set failed, falling back to localStorage", err);
+          window.localStorage.setItem(key, value);
+        });
       },
       removeItem: (key) => {
-        return Preferences.remove({ key });
+        return Preferences.remove({ key }).catch((err) => {
+          console.warn("Preferences.remove failed, falling back to localStorage", err);
+          window.localStorage.removeItem(key);
+        });
       }
     },
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false
+    detectSessionInUrl: true
   }
 });
