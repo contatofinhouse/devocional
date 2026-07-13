@@ -3,6 +3,7 @@
   "short_name": "lecti",
   "description": "Práticas diárias de reflexão, meditação e conexão familiar.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#FF385C",

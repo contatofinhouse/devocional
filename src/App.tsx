@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, 
   Calendar, 
@@ -60,7 +60,77 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   Sparkle
 };
 
+const BIBLE_BOOKS = [
+  { name: 'Gênesis', testament: 'old' },
+  { name: 'Êxodo', testament: 'old' },
+  { name: 'Levítico', testament: 'old' },
+  { name: 'Números', testament: 'old' },
+  { name: 'Deuteronômio', testament: 'old' },
+  { name: 'Josué', testament: 'old' },
+  { name: 'Juízes', testament: 'old' },
+  { name: 'Rute', testament: 'old' },
+  { name: '1 Samuel', testament: 'old' },
+  { name: '2 Samuel', testament: 'old' },
+  { name: '1 Reis', testament: 'old' },
+  { name: '2 Reis', testament: 'old' },
+  { name: '1 Crônicas', testament: 'old' },
+  { name: '2 Crônicas', testament: 'old' },
+  { name: 'Esdras', testament: 'old' },
+  { name: 'Neemias', testament: 'old' },
+  { name: 'Ester', testament: 'old' },
+  { name: 'Jó', testament: 'old' },
+  { name: 'Salmos', testament: 'old' },
+  { name: 'Provérbios', testament: 'old' },
+  { name: 'Eclesiastes', testament: 'old' },
+  { name: 'Cantares', testament: 'old' },
+  { name: 'Isaías', testament: 'old' },
+  { name: 'Jeremias', testament: 'old' },
+  { name: 'Lamentações', testament: 'old' },
+  { name: 'Ezequiel', testament: 'old' },
+  { name: 'Daniel', testament: 'old' },
+  { name: 'Oséias', testament: 'old' },
+  { name: 'Joel', testament: 'old' },
+  { name: 'Amós', testament: 'old' },
+  { name: 'Obadias', testament: 'old' },
+  { name: 'Jonas', testament: 'old' },
+  { name: 'Miqueias', testament: 'old' },
+  { name: 'Naum', testament: 'old' },
+  { name: 'Habacuque', testament: 'old' },
+  { name: 'Sofonias', testament: 'old' },
+  { name: 'Ageu', testament: 'old' },
+  { name: 'Zacarias', testament: 'old' },
+  { name: 'Malaquias', testament: 'old' },
+  { name: 'Mateus', testament: 'new' },
+  { name: 'Marcos', testament: 'new' },
+  { name: 'Lucas', testament: 'new' },
+  { name: 'João', testament: 'new' },
+  { name: 'Atos', testament: 'new' },
+  { name: 'Romanos', testament: 'new' },
+  { name: '1 Coríntios', testament: 'new' },
+  { name: '2 Coríntios', testament: 'new' },
+  { name: 'Gálatas', testament: 'new' },
+  { name: 'Efésios', testament: 'new' },
+  { name: 'Filipenses', testament: 'new' },
+  { name: 'Colossenses', testament: 'new' },
+  { name: '1 Tessalonicenses', testament: 'new' },
+  { name: '2 Tessalonicenses', testament: 'new' },
+  { name: '1 Timóteo', testament: 'new' },
+  { name: '2 Timóteo', testament: 'new' },
+  { name: 'Tito', testament: 'new' },
+  { name: 'Filemom', testament: 'new' },
+  { name: 'Hebreus', testament: 'new' },
+  { name: 'Tiago', testament: 'new' },
+  { name: '1 Pedro', testament: 'new' },
+  { name: '2 Pedro', testament: 'new' },
+  { name: '1 João', testament: 'new' },
+  { name: '2 João', testament: 'new' },
+  { name: '3 João', testament: 'new' },
+  { name: 'Judas', testament: 'new' },
+  { name: 'Apocalipse', testament: 'new' }
+];
+
 export default function App() {
+  const loadedUserIdRef = useRef<string | null>(null);
   const [showSplash, setShowSplash] = useState(true);
   const [splashClass, setSplashClass] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -79,11 +149,16 @@ export default function App() {
 
   const getAgeFromBirthdate = (birthdateStr: string): number => {
     if (!birthdateStr) return 0;
+    const parts = birthdateStr.split('-');
+    if (parts.length !== 3) return 0;
+    const birthYear = parseInt(parts[0], 10);
+    const birthMonth = parseInt(parts[1], 10) - 1; // 0-indexed
+    const birthDay = parseInt(parts[2], 10);
+
     const today = new Date();
-    const birthDate = new Date(birthdateStr);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    let age = today.getFullYear() - birthYear;
+    const m = today.getMonth() - birthMonth;
+    if (m < 0 || (m === 0 && today.getDate() < birthDay)) {
       age--;
     }
     return age;
@@ -94,6 +169,9 @@ export default function App() {
     date.setFullYear(date.getFullYear() - age);
     return date.toISOString().split('T')[0];
   };
+
+  const [userBirthdate, setUserBirthdate] = useState<string>(getBirthdateFromAge(35));
+  const [kidBirthdate, setKidBirthdate] = useState<string>(getBirthdateFromAge(8));
   
   const [kidProfile, setKidProfile] = useState<KidProfile>({
     name: '',
@@ -138,6 +216,67 @@ export default function App() {
     }
   }, [toast]);
 
+  // Bible Integration States
+  const [bibleOpen, setBibleOpen] = useState(false);
+  const [currentBookName, setCurrentBookName] = useState<string>('Gênesis');
+  const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(0);
+  const [bibleBookData, setBibleBookData] = useState<any>(null);
+  const [highlightedVerses, setHighlightedVerses] = useState<[number, number] | null>(null);
+  const [bibleFontSize, setBibleFontSize] = useState<number>(16);
+  const [bibleReadingTheme, setBibleReadingTheme] = useState<'default' | 'sepia' | 'darker'>('default');
+
+  const normalizeBookName = (name: string): string => {
+    return name.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "_");
+  };
+
+  const loadBibleBook = async (bookName: string) => {
+    try {
+      const normalized = normalizeBookName(bookName);
+      const response = await fetch(`/bible/${normalized}.json`);
+      if (!response.ok) throw new Error("Erro ao carregar livro da Bíblia");
+      const data = await response.json();
+      setBibleBookData(data);
+    } catch (e) {
+      console.error(e);
+      showToast("Não foi possível carregar o livro da Bíblia.", "error");
+    }
+  };
+
+  const handleOpenReference = (refStr: string) => {
+    if (!refStr) return;
+    const match = refStr.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
+    if (match) {
+      const book = match[1].trim();
+      const chapter = parseInt(match[2], 10);
+      const startVerse = parseInt(match[3], 10);
+      const endVerse = match[4] ? parseInt(match[4], 10) : startVerse;
+      
+      setCurrentBookName(book);
+      setCurrentChapterIndex(chapter - 1); // 0-indexed in JSON
+      setHighlightedVerses([startVerse, endVerse]);
+      setBibleOpen(true);
+    } else {
+      setBibleOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    if (bibleOpen && currentBookName) {
+      loadBibleBook(currentBookName);
+    }
+  }, [bibleOpen, currentBookName]);
+
+  // Load last read Bible states on mount
+  useEffect(() => {
+    const lastBook = localStorage.getItem('bible_last_book');
+    const lastChapter = localStorage.getItem('bible_last_chapter');
+    if (lastBook) setCurrentBookName(lastBook);
+    if (lastChapter) setCurrentChapterIndex(parseInt(lastChapter, 10));
+  }, []);
+
   // Load static configurations from localStorage (non-user configurations)
   useEffect(() => {
     const savedReminder = localStorage.getItem('nf_reminder_time');
@@ -155,8 +294,8 @@ export default function App() {
       setReminderEnabled(currentEnabled);
     }
 
-    if (Notification.permission === 'default' && !Capacitor.isNativePlatform()) {
-      Notification.requestPermission();
+    if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'default' && !Capacitor.isNativePlatform()) {
+      window.Notification.requestPermission();
     }
 
     // Schedule native notification on boot
@@ -182,6 +321,7 @@ export default function App() {
         loadUserData(session.user.id);
       } else {
         setUser(null);
+        loadedUserIdRef.current = null;
         setKidProfile({
           name: '',
           age: 8,
@@ -193,6 +333,8 @@ export default function App() {
           favoriteVerses: '',
           availableTime: 15
         });
+        setUserBirthdate(getBirthdateFromAge(35));
+        setKidBirthdate(getBirthdateFromAge(8));
         setLogs([]);
         setStreakCount(0);
         setUnlockedMedals([]);
@@ -205,19 +347,20 @@ export default function App() {
     };
   }, []);
 
-  // Soft fade-out splash screen after auth state is resolved and minimum 2 seconds wait
+  // Soft fade-out splash screen after auth state is resolved
   useEffect(() => {
     if (!authLoading) {
+      const delay = showOnboarding ? 150 : 2500;
       const timer = setTimeout(() => {
         setSplashClass('fade-out-splash');
         const hiddenTimer = setTimeout(() => {
           setShowSplash(false);
         }, 1200); // match transition duration
         return () => clearTimeout(hiddenTimer);
-      }, 3000);
+      }, delay);
       return () => clearTimeout(timer);
     }
-  }, [authLoading]);
+  }, [authLoading, showOnboarding]);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -231,6 +374,11 @@ export default function App() {
   }, []);
 
   const loadUserData = async (userId: string) => {
+    if (loadedUserIdRef.current === userId) {
+      setAuthLoading(false);
+      return;
+    }
+    loadedUserIdRef.current = userId;
     try {
       setAuthLoading(true);
 
@@ -255,12 +403,16 @@ export default function App() {
         });
         setDevelopmentMode(profile.development_mode || 'kids');
         setUserAge(profile.user_age || 35);
+        setUserBirthdate(getBirthdateFromAge(profile.user_age || 35));
+        setKidBirthdate(getBirthdateFromAge(profile.kid_age || 8));
         setIsPremium(profile.is_premium === true);
         setShowOnboarding(false);
       } else {
         setIsPremium(false);
         setShowOnboarding(true);
         setOnboardingStep(1);
+        setUserBirthdate(getBirthdateFromAge(35));
+        setKidBirthdate(getBirthdateFromAge(8));
       }
 
       // Configure RevenueCat on Native Device
@@ -434,8 +586,8 @@ export default function App() {
       const now = new Date();
       const currentFormatted = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       if (currentFormatted === reminderTime) {
-        if (Notification.permission === 'granted') {
-          new Notification('lecti 🌙', {
+        if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted') {
+          new window.Notification('lecti 🌙', {
             body: `Hora do seu momento de desenvolvimento diário com o(a) ${kidProfile.name || 'seu filho(a)'}! Vamos lá?`,
           });
         }
@@ -557,34 +709,13 @@ export default function App() {
     }
   };
 
-  const loadDevotional = async (themeId: string): Promise<Devotional | null> => {
-    let ageGroup = 'adulto';
-    if (developmentMode === 'kids') {
-      if (kidProfile.age <= 8) {
-        ageGroup = 'kids';
-      } else if (kidProfile.age <= 14) {
-        ageGroup = 'teens';
-      } else {
-        ageGroup = 'young_adults';
-      }
-    }
-    const cacheKey = `vf_cache_${themeId}_${developmentMode}_${ageGroup}`;
-
-    // Se estiver offline, tenta carregar do cache local imediatamente
-    if (!navigator.onLine) {
-      const localCached = localStorage.getItem(cacheKey);
-      if (localCached) {
-        try {
-          console.log(`Carregando do cache offline: ${themeId}`);
-          return JSON.parse(localCached);
-        } catch (e) {
-          console.warn('Erro ao ler cache local offline:', e);
-        }
-      }
-    }
-
+  const fetchDevotionalFromNetwork = async (
+    themeId: string,
+    devMode: 'personal' | 'kids',
+    ageGroup: string,
+    cacheKey: string
+  ): Promise<Devotional | null> => {
     try {
-      // 1. Tentar buscar lições do Supabase
       const { data: lessons, error } = await supabase
         .from('dev_lessons')
         .select(`
@@ -599,7 +730,7 @@ export default function App() {
           final_message
         `)
         .eq('theme_id', themeId)
-        .eq('development_mode', developmentMode)
+        .eq('development_mode', devMode)
         .eq('age_group', ageGroup)
         .order('lesson_number', { ascending: true });
 
@@ -637,7 +768,7 @@ export default function App() {
             challenge: lesson.challenge,
             prayer: {
               dialogue: dialogue.length > 0 ? dialogue : [
-                { role: (developmentMode === 'kids' ? 'Pai' : 'Individual') as any, text: 'Querido Deus, ajuda-nos a colocar em prática tudo o que aprendemos hoje. Amém.' }
+                { role: (devMode === 'kids' ? 'Pai' : 'Individual') as any, text: 'Querido Deus, ajuda-nos a colocar em prática tudo o que aprendemos hoje. Amém.' }
               ]
             },
             finalMessage: lesson.final_message
@@ -650,7 +781,6 @@ export default function App() {
           stories: stories
         };
 
-        // Salvar no cache local para uso offline posterior
         try {
           localStorage.setItem(cacheKey, JSON.stringify(result));
         } catch (e) {
@@ -660,19 +790,64 @@ export default function App() {
         return result;
       }
     } catch (err) {
-      console.warn('Erro ao carregar do Supabase, tentando cache local:', err);
-      const localCached = localStorage.getItem(cacheKey);
-      if (localCached) {
-        try {
-          return JSON.parse(localCached);
-        } catch (e) {
-          console.warn('Erro ao ler cache local após falha de rede:', e);
+      console.warn('Erro ao carregar do Supabase:', err);
+    }
+    return null;
+  };
+
+  const loadDevotional = async (themeId: string): Promise<Devotional | null> => {
+    let ageGroup = 'adulto';
+    if (developmentMode === 'kids') {
+      if (kidProfile.age <= 8) {
+        ageGroup = 'kids';
+      } else if (kidProfile.age <= 14) {
+        ageGroup = 'teens';
+      } else {
+        ageGroup = 'young_adults';
+      }
+    }
+    const cacheKey = `vf_cache_${themeId}_${developmentMode}_${ageGroup}`;
+
+    const localCached = localStorage.getItem(cacheKey);
+    if (localCached) {
+      try {
+        console.log(`Carregando do cache local instantâneo: ${themeId}`);
+        if (navigator.onLine) {
+          fetchDevotionalFromNetwork(themeId, developmentMode, ageGroup, cacheKey).catch(err => 
+            console.warn('Erro ao atualizar cache em segundo plano:', err)
+          );
         }
+        return JSON.parse(localCached);
+      } catch (e) {
+        console.warn('Erro ao ler cache local:', e);
       }
     }
 
-    return null;
+    return fetchDevotionalFromNetwork(themeId, developmentMode, ageGroup, cacheKey);
   };
+
+  // Pre-fetch common devotionals silently in the background on load/changes
+  useEffect(() => {
+    if (user && !authLoading) {
+      const firstThemes = ['honestidade', 'perdao', 'fe', 'escolhas', 'respeito', 'gratidao'];
+      firstThemes.forEach(themeId => {
+        let ageGroup = 'adulto';
+        if (developmentMode === 'kids') {
+          if (kidProfile.age <= 8) {
+            ageGroup = 'kids';
+          } else if (kidProfile.age <= 14) {
+            ageGroup = 'teens';
+          } else {
+            ageGroup = 'young_adults';
+          }
+        }
+        const cacheKey = `vf_cache_${themeId}_${developmentMode}_${ageGroup}`;
+        if (!localStorage.getItem(cacheKey) && navigator.onLine) {
+          fetchDevotionalFromNetwork(themeId, developmentMode, ageGroup, cacheKey).catch(() => {});
+        }
+      });
+    }
+  }, [user, authLoading, developmentMode, kidProfile.age]);
 
   // trailThemeIndex: position within trail (0 = free, >0 = premium)
   // nightNumber: calendar night number (1-5 = free, >5 = premium)
@@ -1068,9 +1243,11 @@ export default function App() {
                         <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Data de Nascimento</label>
                         <input 
                           type="date" 
-                          value={getBirthdateFromAge(userAge)} 
-                          onChange={e => setUserAge(getAgeFromBirthdate(e.target.value))} 
-                          onKeyDown={e => e.preventDefault()}
+                          value={userBirthdate} 
+                          onChange={e => {
+                            setUserBirthdate(e.target.value);
+                            setUserAge(getAgeFromBirthdate(e.target.value));
+                          }} 
                           required 
                           style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                         />
@@ -1109,9 +1286,11 @@ export default function App() {
                               <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nascimento do filho(a)</label>
                               <input 
                                 type="date" 
-                                value={getBirthdateFromAge(kidProfile.age)} 
-                                onChange={e => setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)})} 
-                                onKeyDown={e => e.preventDefault()}
+                                value={kidBirthdate} 
+                                onChange={e => {
+                                  setKidBirthdate(e.target.value);
+                                  setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)});
+                                }} 
                                 required={developmentMode === 'kids'}
                                 style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                               />
@@ -1247,7 +1426,7 @@ export default function App() {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-second)' }}>Sua família unida no hábito</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-second)' }}>Sua família unida no hábito da Fé</div>
                 </div>
               </div>
               
@@ -1378,6 +1557,50 @@ export default function App() {
                       </div>
                     </div>
                   ))}
+
+                  {/* CARD BÍBLIA SAGRADA */}
+                  <div 
+                    className="card" 
+                    onClick={() => {
+                      setBibleOpen(true);
+                      setHighlightedVerses(null);
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 16,
+                      backgroundColor: '#F9FAFB',
+                      borderColor: 'var(--border-light)',
+                      cursor: 'pointer',
+                      padding: '16px 20px',
+                      borderRadius: 16,
+                      marginTop: 8,
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(255, 56, 92, 0.1)',
+                      color: 'var(--primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <BookOpen size={22} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                        Bíblia Sagrada <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
+                      </h3>
+                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, margin: 0 }}>
+                        Acesse as Escrituras Sagradas de forma completa e 100% off-line.
+                      </p>
+                    </div>
+                    <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
+                  </div>
+
                 </div>
               )}
 
@@ -1695,9 +1918,11 @@ export default function App() {
                         <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Sua Data de Nascimento</label>
                         <input 
                           type="date" 
-                          value={getBirthdateFromAge(userAge)} 
-                          onChange={e => setUserAge(getAgeFromBirthdate(e.target.value))} 
-                          onKeyDown={e => e.preventDefault()}
+                          value={userBirthdate} 
+                          onChange={e => {
+                            setUserBirthdate(e.target.value);
+                            setUserAge(getAgeFromBirthdate(e.target.value));
+                          }} 
                           style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
                         />
                       </div>
@@ -1732,9 +1957,11 @@ export default function App() {
                             <label style={{ fontSize: 11, color: 'var(--text-second)', display: 'block', marginBottom: 3, fontWeight: 600 }}>Nascimento do filho(a)</label>
                             <input 
                               type="date" 
-                              value={getBirthdateFromAge(kidProfile.age)} 
-                              onChange={e => setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)})} 
-                              onKeyDown={e => e.preventDefault()}
+                              value={kidBirthdate} 
+                              onChange={e => {
+                                setKidBirthdate(e.target.value);
+                                setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)});
+                              }} 
                               style={{ padding: '8px 12px', fontSize: 12, borderRadius: 10 }}
                             />
                           </div>
@@ -2468,9 +2695,25 @@ export default function App() {
                 }}>
                   {currentDevotional.theme.toUpperCase()}
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-second)' }}>
+                <button 
+                  onClick={() => handleOpenReference(activeStory.biblicalReference)}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--primary)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                >
+                  <BookOpen size={14} />
                   {activeStory.biblicalReference}
-                </div>
+                </button>
               </div>
 
               {/* Alternative Story Swapper */}
@@ -2633,38 +2876,321 @@ export default function App() {
       </div>
     </div>
 
+    {/* BIBLE READER FULLSCREEN OVERLAY */}
+    {bibleOpen && (
+      <div 
+        className="fade-in"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
+          backgroundColor: bibleReadingTheme === 'sepia' ? '#FAF4EB' : bibleReadingTheme === 'darker' ? '#12131C' : '#FFFFFF',
+          color: bibleReadingTheme === 'sepia' ? '#433422' : bibleReadingTheme === 'darker' ? '#F3F4F6' : 'var(--text-main)',
+          zIndex: 300,
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'var(--transition-smooth)'
+        }}
+      >
+        {/* Header config bar */}
+        <div style={{ 
+          padding: '12px 16px', 
+          borderBottom: `1px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 8
+        }}>
+          <button 
+            onClick={() => {
+              setBibleOpen(false);
+              setHighlightedVerses(null);
+            }}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: 'inherit', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              fontSize: 13,
+              fontWeight: 600,
+              padding: '4px 0'
+            }}
+          >
+            <ChevronLeft size={22} />
+            <span>Voltar</span>
+          </button>
+
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {/* Book Selector */}
+            <select
+              value={currentBookName}
+              onChange={(e) => {
+                setCurrentBookName(e.target.value);
+                setCurrentChapterIndex(0);
+                setHighlightedVerses(null);
+                localStorage.setItem('bible_last_book', e.target.value);
+                localStorage.setItem('bible_last_chapter', '0');
+              }}
+              style={{
+                backgroundColor: bibleReadingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : bibleReadingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
+                color: 'inherit',
+                border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                borderRadius: 8,
+                padding: '4px 8px',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                maxWidth: 120
+              }}
+            >
+              {BIBLE_BOOKS.map((b) => (
+                <option key={b.name} value={b.name} style={{ color: '#000000' }}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Chapter Selector */}
+            {bibleBookData && (
+              <select
+                value={currentChapterIndex}
+                onChange={(e) => {
+                  const idx = parseInt(e.target.value, 10);
+                  setCurrentChapterIndex(idx);
+                  setHighlightedVerses(null);
+                  localStorage.setItem('bible_last_chapter', String(idx));
+                }}
+                style={{
+                  backgroundColor: bibleReadingTheme === 'sepia' ? 'rgba(67, 52, 34, 0.05)' : bibleReadingTheme === 'darker' ? '#1E2030' : '#F3F4F6',
+                  color: 'inherit',
+                  border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                  borderRadius: 8,
+                  padding: '4px 8px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                {bibleBookData.chapters.map((_: any, idx: number) => (
+                  <option key={idx} value={idx} style={{ color: '#000000' }}>
+                    Cap. {idx + 1}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {/* Font preference */}
+            <button 
+              onClick={() => setBibleFontSize(prev => prev === 14 ? 16 : prev === 16 ? 18 : prev === 18 ? 20 : 14)}
+              style={{
+                background: 'none',
+                border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                borderRadius: 8,
+                padding: '4px 8px',
+                fontSize: 11,
+                color: 'inherit',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              Tam: A{bibleFontSize === 14 ? '' : bibleFontSize === 16 ? '+' : bibleFontSize === 18 ? '++' : '+++'}
+            </button>
+
+            {/* Theme preference */}
+            <button 
+              onClick={() => setBibleReadingTheme(prev => prev === 'default' ? 'sepia' : prev === 'sepia' ? 'darker' : 'default')}
+              style={{
+                background: 'none',
+                border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                borderRadius: 8,
+                padding: '4px 8px',
+                fontSize: 11,
+                color: 'inherit',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              {bibleReadingTheme === 'default' ? 'Claro' : bibleReadingTheme === 'sepia' ? 'Sépia' : 'Escuro'}
+            </button>
+          </div>
+        </div>
+
+        {/* Reading scrollable area */}
+        <div 
+          className="screen-content custom-scroll" 
+          style={{ 
+            padding: '24px 20px 80px 20px',
+            fontSize: `${bibleFontSize}px`,
+            lineHeight: '175%',
+            overflowY: 'auto',
+            flex: 1
+          }}
+        >
+          {bibleBookData ? (
+            <div>
+              <h2 style={{ 
+                fontSize: '22px', 
+                fontWeight: 700, 
+                marginBottom: 20, 
+                color: bibleReadingTheme === 'sepia' ? '#322517' : 'inherit',
+                borderBottom: `2px solid ${bibleReadingTheme === 'sepia' ? '#FAF4EB' : 'rgba(0,0,0,0.05)'}`,
+                paddingBottom: 8
+              }}>
+                {bibleBookData.name} - Capítulo {currentChapterIndex + 1}
+              </h2>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {bibleBookData.chapters[currentChapterIndex]?.map((verseText: string, idx: number) => {
+                  const verseNum = idx + 1;
+                  const isHighlighted = highlightedVerses && (verseNum >= highlightedVerses[0] && verseNum <= highlightedVerses[1]);
+                  
+                  return (
+                    <p 
+                      key={idx} 
+                      style={{
+                        margin: 0,
+                        padding: '4px 6px',
+                        borderRadius: 6,
+                        backgroundColor: isHighlighted 
+                          ? (bibleReadingTheme === 'darker' ? '#3B3012' : '#FFF9C4') 
+                          : 'transparent',
+                        borderLeft: isHighlighted 
+                          ? `3px solid ${bibleReadingTheme === 'darker' ? '#FFB300' : '#FBC02D'}` 
+                          : 'none',
+                        transition: 'background-color 0.3s ease'
+                      }}
+                    >
+                      <span style={{ 
+                        fontSize: '0.75em', 
+                        fontWeight: 700, 
+                        marginRight: 6, 
+                        color: bibleReadingTheme === 'darker' ? '#FFD54F' : 'var(--primary)',
+                        verticalAlign: 'super'
+                      }}>
+                        {verseNum}
+                      </span>
+                      {verseText}
+                    </p>
+                  );
+                })}
+              </div>
+
+              {/* Previous / Next Chapter Buttons */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginTop: 32,
+                borderTop: `1px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                paddingTop: 20
+              }}>
+                <button
+                  disabled={currentChapterIndex === 0}
+                  onClick={() => {
+                    if (currentChapterIndex > 0) {
+                      setCurrentChapterIndex(prev => prev - 1);
+                      setHighlightedVerses(null);
+                      localStorage.setItem('bible_last_chapter', String(currentChapterIndex - 1));
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    borderRadius: 10,
+                    padding: '8px 16px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    color: 'inherit',
+                    opacity: currentChapterIndex === 0 ? 0.3 : 1
+                  }}
+                >
+                  ← Capítulo Anterior
+                </button>
+                
+                <button
+                  disabled={currentChapterIndex === bibleBookData.chapters.length - 1}
+                  onClick={() => {
+                    if (currentChapterIndex < bibleBookData.chapters.length - 1) {
+                      setCurrentChapterIndex(prev => prev + 1);
+                      setHighlightedVerses(null);
+                      localStorage.setItem('bible_last_chapter', String(currentChapterIndex + 1));
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: `1.5px solid ${bibleReadingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
+                    borderRadius: 10,
+                    padding: '8px 16px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    color: 'inherit',
+                    opacity: currentChapterIndex === bibleBookData.chapters.length - 1 ? 0.3 : 1
+                  }}
+                >
+                  Próximo Capítulo →
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0', color: 'var(--text-second)' }}>
+              Carregando livro...
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+
     {/* TOAST NOTIFICATION */}
     {toast && (
       <div
-        className="fade-in"
         style={{
-          position: 'fixed',
-          bottom: 92,
+          position: 'absolute',
+          bottom: 104, // Slightly higher to clear the new bottom nav height
           left: '50%',
           transform: 'translateX(-50%)',
           width: '90%',
           maxWidth: 380,
-          backgroundColor: '#1E2229',
-          color: '#FFFFFF',
-          padding: '14px 20px',
-          borderRadius: 16,
-          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.16)',
-          zIndex: 1000,
           display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          fontWeight: 600,
-          fontSize: 13,
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)'
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          zIndex: 10000
         }}
       >
-        {toast.type === 'success' ? (
-          <Check size={18} style={{ color: '#FF385C', flexShrink: 0 }} />
-        ) : (
-          <ShieldAlert size={18} style={{ color: '#FF5A5F', flexShrink: 0 }} />
-        )}
-        <span style={{ flex: 1, textAlign: 'left' }}>{toast.message}</span>
+        <div
+          className="fade-in"
+          style={{
+            pointerEvents: 'auto',
+            width: '100%',
+            backgroundColor: '#1E2229',
+            color: '#FFFFFF',
+            padding: '14px 20px',
+            borderRadius: 16,
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.16)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            fontWeight: 600,
+            fontSize: 13,
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxSizing: 'border-box'
+          }}
+        >
+          {toast.type === 'success' ? (
+            <Check size={18} style={{ color: '#FF385C', flexShrink: 0 }} />
+          ) : (
+            <ShieldAlert size={18} style={{ color: '#FF5A5F', flexShrink: 0 }} />
+          )}
+          <span style={{ flex: 1, textAlign: 'left' }}>{toast.message}</span>
+        </div>
       </div>
     )}
     </>
