@@ -409,6 +409,35 @@ export default function App() {
     scheduleBedtimeReminder(currentEnabled, currentTime);
   }, []);
 
+  // Listener for Capacitor deep links
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app').then(({ App: CapApp }) => {
+        CapApp.addListener('appUrlOpen', async (data: any) => {
+          // Parse url
+          const url = new URL(data.url);
+          const hash = url.hash;
+          if (hash) {
+            const params = new URLSearchParams(hash.substring(1));
+            const access_token = params.get('access_token');
+            const refresh_token = params.get('refresh_token');
+            if (access_token && refresh_token) {
+              const { error } = await supabase.auth.setSession({
+                access_token,
+                refresh_token
+              });
+              if (error) {
+                console.error('Error setting session from deep link:', error);
+              }
+            }
+          }
+        });
+      }).catch(err => {
+        console.warn('Could not load @capacitor/app plugin', err);
+      });
+    }
+  }, []);
+
   // Supabase Auth and Data synchronization
   useEffect(() => {
     // 1. Get initial session
@@ -608,10 +637,14 @@ export default function App() {
 
   const handleGoogleLogin = async () => {
     try {
+      const redirectTo = Capacitor.isNativePlatform()
+        ? 'com.contatofinhouse.lecti://login'
+        : window.location.origin;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo
         }
       });
       if (error) throw error;
