@@ -40,6 +40,8 @@ import { Capacitor } from '@capacitor/core';
 import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 import { RevenueCatUI } from '@revenuecat/purchases-capacitor-ui';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { StatusBar } from '@capacitor/status-bar';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
@@ -405,6 +407,13 @@ export default function App() {
       window.Notification.requestPermission();
     }
 
+    // Ocultar a Status Bar nativa para ficar totalmente em tela cheia
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.hide().catch(err => {
+        console.warn('Erro ao ocultar barra de status nativa:', err);
+      });
+    }
+
     // Schedule native notification on boot
     scheduleBedtimeReminder(currentEnabled, currentTime);
   }, []);
@@ -637,17 +646,29 @@ export default function App() {
 
   const handleGoogleLogin = async () => {
     try {
-      const redirectTo = Capacitor.isNativePlatform()
-        ? 'com.contatofinhouse.lecti://login'
-        : window.location.origin;
+      if (Capacitor.isNativePlatform()) {
+        await GoogleAuth.initialize();
+        const googleUser = await GoogleAuth.signIn();
+        const idToken = googleUser.authentication.idToken;
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo
+        if (!idToken) {
+          throw new Error('Não foi possível obter o ID Token do Google.');
         }
-      });
-      if (error) throw error;
+
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: idToken,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin
+          }
+        });
+        if (error) throw error;
+      }
     } catch (err) {
       console.error('Erro na autenticação com o Google:', err);
       alert('Ocorreu um erro ao entrar com o Google. Tente novamente.');
