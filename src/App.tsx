@@ -767,10 +767,20 @@ export default function App() {
     });
   }, [activeTab, currentDevotional, storyIndex]);
 
+  const summarizeText = (text: string, maxSentences: number = 2) => {
+    if (!text) return '';
+    const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+    return sentences.slice(0, maxSentences).join('. ') + '.';
+  };
+
   const handleShareDevotional = async () => {
     if (!currentDevotional) return;
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
-    const shareText = `lecti • devocional em família\n\nTema: ${currentDevotional.theme}\nHistória: ${activeStory.biblicalStoryTitle}\n\nLeitura e Reflexão:\n${activeStory.biblicalStory}\n\n${activeStory.reflection}\n\nDesafio para hoje:\n${activeStory.challenge}\n\n"${activeStory.finalMessage}"\n\n—\nFiz esta leitura hoje e lembrei de nós. Baixe o app Lecti na Play Store para acompanhar os devocionais comigo:\nlecti.com.br/android`;
+    
+    const storySummary = summarizeText(activeStory.biblicalStory, 2);
+    const reflectionSummary = summarizeText(activeStory.reflection, 2);
+    
+    const shareText = `🙌 lecti • devocional em família\n\nTema: ${currentDevotional.theme}\nHistória: ${activeStory.biblicalStoryTitle}\n\nResumo da Leitura:\n${storySummary}\n\nReflexão:\n${reflectionSummary}\n\n"${activeStory.finalMessage}"\n\n—\nFiz esta leitura hoje e lembrei de você. Baixe o app Lecti na Play Store para acompanhar os devocionais comigo:\nlecti.com.br/android`;
     
     try {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -2626,22 +2636,31 @@ export default function App() {
                 onClick={async () => {
                   if (Capacitor.isNativePlatform()) {
                     try {
-                      // Present native RevenueCat paywall
-                      const { result } = await RevenueCatUI.presentPaywall();
-                      console.log('Paywall result:', result);
-                      
-                      // After paywall is closed/completed, double check entitlements
-                      const { customerInfo } = await Purchases.getCustomerInfo();
-                      if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
-                        setIsPremium(true);
-                        setShowPaywall(false);
-                        if (user) {
-                          await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
+                      // 1. Busca os planos de vendas do RevenueCat
+                      const offerings = await Purchases.getOfferings();
+                      if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
+                        // 2. Compra o primeiro pacote disponível (configurado no painel)
+                        const packageToBuy = offerings.current.availablePackages[0];
+                        const { customerInfo } = await Purchases.purchasePackage({ aPackage: packageToBuy });
+                        
+                        // 3. Verifica se o acesso premium foi liberado
+                        if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
+                          setIsPremium(true);
+                          setShowPaywall(false);
+                          if (user) {
+                            await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
+                          }
+                          alert('Acesso Premium ativado! Obrigado pelo seu apoio.');
                         }
-                        alert('Acesso Premium ativado! Obrigado pelo seu apoio.');
+                      } else {
+                        alert('Nenhum plano de vendas ativo foi encontrado.');
                       }
-                    } catch (e) {
-                      alert('Erro ao exibir paywall: ' + (e as any).message);
+                    } catch (e: any) {
+                      if (e.userCancelled) {
+                        console.log('Usuário cancelou a compra');
+                      } else {
+                        alert('Erro ao realizar a compra: ' + e.message);
+                      }
                     }
                   } else {
                     // Fallback para Web/PWA ou simulação em desenvolvimento
