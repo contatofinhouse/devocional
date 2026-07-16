@@ -10,6 +10,10 @@ const config: CapacitorConfig = {
       serverClientId: '812385850733-83dl5cbbb9kqee7dul3f4hgrjd4bnpmm.apps.googleusercontent.com', // Substitua pelo seu ID de Cliente Web do Google Cloud Console
       forceCodeForRefreshToken: true,
     },
+    LocalNotifications: {
+      smallIcon: "ic_livro_aberto",
+      iconColor: "#FF385C",
+    },
   },
 };
 

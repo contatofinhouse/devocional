@@ -415,4 +415,39 @@ button.btn-secondary:hover {
   to { transform: rotate(360deg); }
 }
 
+/* Se o app estiver rodando dentro de um container nativo (Capacitor) */
+.app-header, header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
+}
+
+/* Fallback de moldura de segurança caso o dispositivo não suporte safe-area variables */
+@supports not (padding-top: env(safe-area-inset-top)) {
+  .app-header, header {
+    padding-top: 24px !important;
+  }
+}
+
+@keyframes magical-sparkle {
+  0% {
+    transform: rotate(0deg) scale(0.9);
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.3);
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1)) brightness(1.4);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) scale(0.9);
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+    opacity: 0.8;
+  }
+}
+
+.animate-magical-sparkle {
+  animation: magical-sparkle 1.8s infinite ease-in-out;
+}
+
+
 

@@ -218,12 +218,60 @@ const ADJECTIVE_OPTIONS = [
 
 export default function App() {
   const loadedUserIdRef = useRef<string | null>(null);
+  const isRevenueCatConfigured = useRef(false);
   const bibleScrollRef = useRef<HTMLDivElement | null>(null);
+  
+  const addToSyncQueue = (action: string, payload: any) => {
+    try {
+      const queueJson = localStorage.getItem('devocional_offline_queue');
+      const queue = queueJson ? JSON.parse(queueJson) : [];
+      queue.push({ id: `q-${Date.now()}-${Math.random()}`, action, payload, timestamp: new Date().toISOString() });
+      localStorage.setItem('devocional_offline_queue', JSON.stringify(queue));
+      console.log('Adicionado à fila de sincronização offline:', action, payload);
+    } catch (e) {
+      console.error('Erro ao salvar na fila offline:', e);
+    }
+  };
+
+  const processSyncQueue = async () => {
+    if (!navigator.onLine) return;
+    try {
+      const queueJson = localStorage.getItem('devocional_offline_queue');
+      if (!queueJson) return;
+      const queue = JSON.parse(queueJson);
+      if (queue.length === 0) return;
+      
+      console.log('🔄 Sincronizando itens da fila offline com o Supabase...', queue.length);
+      const remainingQueue = [];
+      
+      for (const item of queue) {
+        try {
+          if (item.action === 'progress') {
+            await supabase.from('dev_progress').upsert(item.payload);
+          } else if (item.action === 'log') {
+            await supabase.from('dev_logs').insert(item.payload);
+          }
+        } catch (err) {
+          console.error('Erro ao sincronizar item da fila:', item, err);
+          remainingQueue.push(item);
+        }
+      }
+      
+      localStorage.setItem('devocional_offline_queue', JSON.stringify(remainingQueue));
+      if (remainingQueue.length === 0) {
+        showToast('Sincronização offline concluída!', 'success');
+      }
+    } catch (e) {
+      console.error('Erro ao processar fila offline:', e);
+    }
+  };
+
   const [showSplash, setShowSplash] = useState(true);
   const [splashClass, setSplashClass] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -508,7 +556,10 @@ export default function App() {
   }, [authLoading, showOnboarding]);
 
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
+    const handleOnline = () => {
+      setIsOffline(false);
+      processSyncQueue();
+    };
     const handleOffline = () => setIsOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -516,7 +567,7 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [user]);
 
   const loadUserData = async (userId: string) => {
     if (loadedUserIdRef.current === userId) {
@@ -524,17 +575,17 @@ export default function App() {
       return;
     }
     loadedUserIdRef.current = userId;
-    try {
-      setAuthLoading(true);
+    
+    // Local-First: Load immediately from localStorage cache
+    const cacheProfile = localStorage.getItem(`cached_profile_${userId}`);
+    const cacheProgress = localStorage.getItem(`cached_progress_${userId}`);
+    const cacheLogs = localStorage.getItem(`cached_logs_${userId}`);
 
-      // Load Profile
-      const { data: profile } = await supabase
-        .from('dev_profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profile) {
+    let localProfileObj: any = null;
+    if (cacheProfile) {
+      try {
+        const profile = JSON.parse(cacheProfile);
+        localProfileObj = profile;
         setKidProfile({
           name: profile.kid_name || '',
           age: profile.kid_age || 8,
@@ -552,7 +603,66 @@ export default function App() {
         setKidBirthdate(getBirthdateFromAge(profile.kid_age || 8));
         setIsPremium(profile.is_premium === true);
         setShowOnboarding(false);
-      } else {
+      } catch (e) {
+        console.warn("Error parsing cached profile:", e);
+      }
+    }
+
+    if (cacheProgress) {
+      try {
+        const progress = JSON.parse(cacheProgress);
+        setStreakCount(progress.streak_count || 0);
+        setUnlockedMedals(progress.unlocked_medals || []);
+      } catch (e) {
+        console.warn("Error parsing cached progress:", e);
+      }
+    }
+
+    if (cacheLogs) {
+      try {
+        setLogs(JSON.parse(cacheLogs));
+      } catch (e) {
+        console.warn("Error parsing cached logs:", e);
+      }
+    }
+
+    // Instantly hide the loading screen if we have some cached data
+    if (cacheProfile) {
+      setAuthLoading(false);
+    }
+
+    try {
+      if (!cacheProfile) {
+        setAuthLoading(true);
+      }
+
+      // Load Profile from network
+      const { data: profile } = await supabase
+        .from('dev_profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profile) {
+        localStorage.setItem(`cached_profile_${userId}`, JSON.stringify(profile));
+        setKidProfile({
+          name: profile.kid_name || '',
+          age: profile.kid_age || 8,
+          interests: profile.interests || '',
+          hobbies: profile.hobbies || '',
+          personality: '',
+          difficulties: profile.difficulties || '',
+          objectives: '',
+          favoriteVerses: '',
+          availableTime: profile.available_time || 15
+        });
+        setDevelopmentMode(profile.development_mode || 'kids');
+        setUserAge(profile.user_age || 35);
+        setUserBirthdate(getBirthdateFromAge(profile.user_age || 35));
+        setKidBirthdate(getBirthdateFromAge(profile.kid_age || 8));
+        setIsPremium(profile.is_premium === true);
+        setShowOnboarding(false);
+      } else if (!cacheProfile) {
         setIsPremium(false);
         setShowOnboarding(true);
         setOnboardingStep(1);
@@ -563,33 +673,46 @@ export default function App() {
       // Configure RevenueCat on Native Device
       if (Capacitor.isNativePlatform()) {
         try {
-          await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
           const rcApiKey = import.meta.env.VITE_REVENUECAT_API_KEY || "test_nSahrsbeWqCJKgFtryNASRNEjTO";
-          await Purchases.configure({ apiKey: rcApiKey });
-          await Purchases.logIn({ appUserID: userId });
+          const isAndroid = Capacitor.getPlatform() === 'android';
+          const isIOS = Capacitor.getPlatform() === 'ios';
           
-          // Setup customer info update listener
-          await Purchases.addCustomerInfoUpdateListener((info) => {
-            if (info.entitlements.active['lecti Premium'] !== undefined) {
+          const isValidKey = rcApiKey && 
+            !rcApiKey.startsWith("test_") && 
+            ((isAndroid && rcApiKey.startsWith("goog_")) || (isIOS && rcApiKey.startsWith("appl_")));
+
+          if (isValidKey) {
+            await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+            await Purchases.configure({ apiKey: rcApiKey });
+            await Purchases.logIn({ appUserID: userId });
+            isRevenueCatConfigured.current = true;
+            
+            // Setup customer info update listener
+            await Purchases.addCustomerInfoUpdateListener((info) => {
+              if (info.entitlements.active['lecti Premium'] !== undefined) {
+                setIsPremium(true);
+                supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
+              } else {
+                setIsPremium(false);
+                supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId).then();
+              }
+            });
+
+            const { customerInfo } = await Purchases.getCustomerInfo();
+            if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
               setIsPremium(true);
-              supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
+              if (profile && !profile.is_premium) {
+                await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
+              }
             } else {
               setIsPremium(false);
-              supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId).then();
-            }
-          });
-
-          const { customerInfo } = await Purchases.getCustomerInfo();
-          if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
-            setIsPremium(true);
-            if (profile && !profile.is_premium) {
-              await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId);
+              if (profile && profile.is_premium) {
+                await supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId).then();
+              }
             }
           } else {
-            setIsPremium(false);
-            if (profile && profile.is_premium) {
-              await supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId);
-            }
+            console.warn('RevenueCat SDK configuration skipped: Test/invalid API key format.');
+            setIsPremium((profile || localProfileObj)?.is_premium === true);
           }
         } catch (e) {
           console.warn('Erro ao carregar compras do RevenueCat:', e);
@@ -604,6 +727,7 @@ export default function App() {
         .maybeSingle();
 
       if (progress) {
+        localStorage.setItem(`cached_progress_${userId}`, JSON.stringify(progress));
         setStreakCount(progress.streak_count || 0);
         setUnlockedMedals(progress.unlocked_medals || []);
       }
@@ -633,6 +757,7 @@ export default function App() {
             tags: log.tags || []
           };
         });
+        localStorage.setItem(`cached_logs_${userId}`, JSON.stringify(mappedLogs));
         setLogs(mappedLogs);
       } else {
         setLogs([]);
@@ -646,6 +771,7 @@ export default function App() {
 
   const handleGoogleLogin = async () => {
     try {
+      setGoogleLoading(true);
       if (Capacitor.isNativePlatform()) {
         await GoogleAuth.initialize();
         const googleUser = await GoogleAuth.signIn();
@@ -672,6 +798,8 @@ export default function App() {
     } catch (err) {
       console.error('Erro na autenticação com o Google:', err);
       alert('Ocorreu um erro ao entrar com o Google. Tente novamente.');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -777,10 +905,9 @@ export default function App() {
     if (!currentDevotional) return;
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
     
-    const storySummary = summarizeText(activeStory.biblicalStory, 2);
-    const reflectionSummary = summarizeText(activeStory.reflection, 2);
+    const storySummary = activeStory.shareSummary || summarizeText(activeStory.biblicalStory, 3);
     
-    const shareText = `🙌 lecti • devocional em família\n\nTema: ${currentDevotional.theme}\nHistória: ${activeStory.biblicalStoryTitle}\n\nResumo da Leitura:\n${storySummary}\n\nReflexão:\n${reflectionSummary}\n\n"${activeStory.finalMessage}"\n\n—\nFiz esta leitura hoje e lembrei de você. Baixe o app Lecti na Play Store para acompanhar os devocionais comigo:\nlecti.com.br/android`;
+    const shareText = `📖 Lecti • Fé, Caráter e Sabedoria\nTema: ${currentDevotional.theme} / ${activeStory.biblicalStoryTitle} (${activeStory.biblicalReference})\n\n${storySummary}\n\n"${activeStory.finalMessage}"\n\n—\nFiz esta leitura hoje e lembrei de você. Acompanhe os devocionais comigo. Baixe o app:\nlecti.com.br/android`;
     
     try {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -917,7 +1044,8 @@ export default function App() {
           biblical_story,
           reflection,
           challenge,
-          final_message
+          final_message,
+          share_summary
         `)
         .eq('theme_id', themeId)
         .eq('development_mode', devMode)
@@ -961,7 +1089,8 @@ export default function App() {
                 { role: (devMode === 'kids' ? 'Pai' : 'Individual') as any, text: 'Querido Deus, ajuda-nos a colocar em prática tudo o que aprendemos hoje. Amém.' }
               ]
             },
-            finalMessage: lesson.final_message
+            finalMessage: lesson.final_message,
+            shareSummary: lesson.share_summary
           };
         });
 
@@ -1128,21 +1257,6 @@ export default function App() {
       setUnlockedMedals(updatedMedals);
     }
 
-    if (user) {
-      try {
-        await supabase
-          .from('dev_progress')
-          .upsert({
-            user_id: user.id,
-            streak_count: newStreak,
-            unlocked_medals: updatedMedals,
-            last_devotional_at: new Date().toISOString()
-          });
-      } catch (err) {
-        console.error('Erro ao registrar progresso no Supabase:', err);
-      }
-    }
-
     const activeStory = currentDevotional.stories[storyIndex] || currentDevotional.stories[0];
     const logText = `Conversamos sobre o tema ${currentDevotional.theme}. Lemos "${activeStory.biblicalStoryTitle}" e o diálogo foi produtivo.`;
     const logTags = ['Conversa Fluida'];
@@ -1165,24 +1279,60 @@ export default function App() {
     };
 
     // Add to local state history
-    setLogs(prev => [tempLog, ...prev]);
+    const nextLogs = [tempLog, ...logs];
+    setLogs(nextLogs);
 
-    // Insert log to database
     if (user) {
-      try {
-        await supabase
-          .from('dev_logs')
-          .insert({
-            user_id: user.id,
-            date: logDate.toISOString().split('T')[0],
-            devotional_id: currentDevotional.id,
-            devotional_title: tempLog.devotionalTitle,
-            how_it_went: tempLog.howItWent,
-            rating: logRating,
-            tags: logTags
-          });
-      } catch (err) {
-        console.error('Erro ao salvar log no Supabase:', err);
+      // Update local storage caches immediately
+      localStorage.setItem(`cached_progress_${user.id}`, JSON.stringify({
+        user_id: user.id,
+        streak_count: newStreak,
+        unlocked_medals: updatedMedals,
+        last_devotional_at: logDate.toISOString()
+      }));
+      localStorage.setItem(`cached_logs_${user.id}`, JSON.stringify(nextLogs));
+
+      const progressPayload = {
+        user_id: user.id,
+        streak_count: newStreak,
+        unlocked_medals: updatedMedals,
+        last_devotional_at: logDate.toISOString()
+      };
+
+      const logPayload = {
+        user_id: user.id,
+        date: logDate.toISOString().split('T')[0],
+        devotional_id: currentDevotional.id,
+        devotional_title: tempLog.devotionalTitle,
+        how_it_went: tempLog.howItWent,
+        rating: logRating,
+        tags: logTags
+      };
+
+      if (!navigator.onLine) {
+        addToSyncQueue('progress', progressPayload);
+        addToSyncQueue('log', logPayload);
+      } else {
+        // Try to sync with Supabase, fallback to queue on failure
+        (async () => {
+          try {
+            const { error } = await supabase.from('dev_progress').upsert(progressPayload);
+            if (error) throw error;
+          } catch (err) {
+            console.error('Falhou ao salvar progresso na rede, enfileirando...', err);
+            addToSyncQueue('progress', progressPayload);
+          }
+        })();
+
+        (async () => {
+          try {
+            const { error } = await supabase.from('dev_logs').insert(logPayload);
+            if (error) throw error;
+          } catch (err) {
+            console.error('Falhou ao salvar log na rede, enfileirando...', err);
+            addToSyncQueue('log', logPayload);
+          }
+        })();
       }
     }
 
@@ -1220,30 +1370,80 @@ export default function App() {
       tags: newLogTags
     };
 
-    setLogs(prev => [tempLog, ...prev]);
+    const nextLogs = [tempLog, ...logs];
+    setLogs(nextLogs);
 
     if (user) {
-      try {
-        const { error } = await supabase
-          .from('dev_logs')
-          .insert({
-            user_id: user.id,
-            date: logDate.toISOString().split('T')[0],
-            devotional_id: currentDevotional?.id || 'personalizado',
-            devotional_title: tempLog.devotionalTitle,
-            how_it_went: tempLog.howItWent,
-            rating: newLogRating,
-            tags: newLogTags
-          });
-        if (error) throw error;
-      } catch (err) {
-        console.error('Erro ao salvar log no Supabase:', err);
+      // Update cache instantly
+      localStorage.setItem(`cached_logs_${user.id}`, JSON.stringify(nextLogs));
+
+      const logPayload = {
+        user_id: user.id,
+        date: logDate.toISOString().split('T')[0],
+        devotional_id: currentDevotional?.id || 'personalizado',
+        devotional_title: tempLog.devotionalTitle,
+        how_it_went: tempLog.howItWent,
+        rating: newLogRating,
+        tags: newLogTags
+      };
+
+      if (!navigator.onLine) {
+        addToSyncQueue('log', logPayload);
+      } else {
+        (async () => {
+          try {
+            const { error } = await supabase.from('dev_logs').insert(logPayload);
+            if (error) throw error;
+          } catch (err) {
+            console.error('Falhou ao salvar log na rede, enfileirando...', err);
+            addToSyncQueue('log', logPayload);
+          }
+        })();
       }
     }
 
     setNewLogHowItWent('');
     setNewLogTags([]);
     setNewLogRating(5);
+  };
+
+  const handleUnlockPremium = async () => {
+    if (Capacitor.isNativePlatform()) {
+      if (!isRevenueCatConfigured.current) {
+        alert('RevenueCat não está configurado. Insira uma chave de API válida (ex: goog_...) no arquivo .env para testar compras reais no dispositivo.');
+        return;
+      }
+      try {
+        const offerings = await Purchases.getOfferings();
+        if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
+          const packageToBuy = offerings.current.availablePackages[0];
+          const { customerInfo } = await Purchases.purchasePackage({ aPackage: packageToBuy });
+          if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
+            setIsPremium(true);
+            setShowPaywall(false);
+            if (user) {
+              await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
+            }
+            alert('Acesso Premium ativado! Obrigado pelo seu apoio.');
+          }
+        } else {
+          alert('Nenhum plano de vendas ativo foi encontrado.');
+        }
+      } catch (e: any) {
+        if (e.userCancelled) {
+          console.log('Usuário cancelou a compra');
+        } else {
+          alert('Erro ao realizar a compra: ' + e.message);
+        }
+      }
+    } else {
+      alert('Para testar na Web: Acesso Premium simulado ativado!');
+      setIsPremium(true);
+      setShowPaywall(false);
+      if (user) {
+        await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
+      }
+    }
   };
 
   const handleToggleReminderSetting = (checked: boolean) => {
@@ -1315,6 +1515,7 @@ export default function App() {
                 </p>
                 <button 
                   onClick={handleGoogleLogin} 
+                  disabled={googleLoading}
                   style={{ 
                     padding: '14px 20px', 
                     borderRadius: 12, 
@@ -1326,24 +1527,32 @@ export default function App() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: 10,
-                    cursor: 'pointer',
+                    cursor: googleLoading ? 'not-allowed' : 'pointer',
+                    opacity: googleLoading ? 0.8 : 1,
                     fontWeight: 600,
-                    width: '100%'
+                    width: '100%',
+                    transition: 'opacity 0.2s ease'
                   }}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#FFFFFF"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#FFFFFF"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.87-2.6-3.3-4.53-6.16-4.53z" fill="#FFFFFF"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#FFFFFF"/>
-                  </svg>
+                  {googleLoading ? (
+                    <span className="animate-magical-sparkle" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transformOrigin: 'center' }}>
+                      <Sparkles size={20} style={{ color: '#FFFFFF' }} />
+                    </span>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#FFFFFF"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#FFFFFF"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.87-2.6-3.3-4.53-6.16-4.53z" fill="#FFFFFF"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#FFFFFF"/>
+                    </svg>
+                  )}
                   Entrar com Google
                 </button>
               </div>
             </div>
           ) : showOnboarding ? (
             // ONBOARDING FORM
-            <div className="screen-content custom-scroll" style={{ padding: '16px 20px 40px 20px' }}>
+            <div className="screen-content custom-scroll" style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 40px 20px' }}>
               {onboardingStep === 1 ? (
                 // PASSO 1: Escolha do Modo
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 10 }}>
@@ -1576,7 +1785,7 @@ export default function App() {
           <>
             {/* STREAK & MEDALS PANEL */}
             <div style={{ 
-              padding: '14px 20px', 
+              padding: 'calc(env(safe-area-inset-top, 0px) + 14px) 20px 14px 20px', 
               borderBottom: '1px solid var(--border-light)', 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -2569,7 +2778,7 @@ export default function App() {
             <div style={{
               backgroundColor: '#FFFFFF',
               borderRadius: '28px 28px 0 0',
-              padding: '28px 24px 40px 24px',
+              padding: '28px 24px calc(env(safe-area-inset-bottom, 0px) + 24px) 24px',
               width: '100%',
               maxWidth: 540,
               display: 'flex',
@@ -2620,7 +2829,19 @@ export default function App() {
               </div>
 
               {/* Price + CTA */}
-              <div style={{ borderRadius: 18, background: 'linear-gradient(135deg, #FF385C, #c0165a)', padding: '18px 20px', textAlign: 'center' }}>
+              <div 
+                onClick={handleUnlockPremium}
+                style={{ 
+                  borderRadius: 18, 
+                  background: 'linear-gradient(135deg, #FF385C, #c0165a)', 
+                  padding: '18px 20px', 
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  transition: 'opacity 0.2s ease'
+                }}
+                className="btn-interactive-card"
+              >
                 <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>ACESSO VITALÍCIO</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>R$</span>
@@ -2633,45 +2854,7 @@ export default function App() {
               <button
                 className="btn-primary"
                 style={{ backgroundColor: '#FF385C', border: 'none', fontSize: 15, padding: 16 }}
-                onClick={async () => {
-                  if (Capacitor.isNativePlatform()) {
-                    try {
-                      // 1. Busca os planos de vendas do RevenueCat
-                      const offerings = await Purchases.getOfferings();
-                      if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
-                        // 2. Compra o primeiro pacote disponível (configurado no painel)
-                        const packageToBuy = offerings.current.availablePackages[0];
-                        const { customerInfo } = await Purchases.purchasePackage({ aPackage: packageToBuy });
-                        
-                        // 3. Verifica se o acesso premium foi liberado
-                        if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
-                          setIsPremium(true);
-                          setShowPaywall(false);
-                          if (user) {
-                            await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
-                          }
-                          alert('Acesso Premium ativado! Obrigado pelo seu apoio.');
-                        }
-                      } else {
-                        alert('Nenhum plano de vendas ativo foi encontrado.');
-                      }
-                    } catch (e: any) {
-                      if (e.userCancelled) {
-                        console.log('Usuário cancelou a compra');
-                      } else {
-                        alert('Erro ao realizar a compra: ' + e.message);
-                      }
-                    }
-                  } else {
-                    // Fallback para Web/PWA ou simulação em desenvolvimento
-                    alert('Para testar na Web: Acesso Premium simulado ativado!');
-                    setIsPremium(true);
-                    setShowPaywall(false);
-                    if (user) {
-                      await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', user.id);
-                    }
-                  }
-                }}
+                onClick={handleUnlockPremium}
               >
                 🔓 Desbloquear Acesso Premium
               </button>
@@ -2807,7 +2990,7 @@ export default function App() {
             >
             {/* Header config bar */}
             <div style={{ 
-              padding: '12px 16px', 
+              padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px', 
               borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -3102,7 +3285,7 @@ export default function App() {
         >
           {/* Header config bar */}
           <div style={{ 
-            padding: '12px 16px', 
+            padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px', 
             borderBottom: `1px solid ${readingTheme === 'sepia' ? '#EFE4D2' : 'var(--border-light)'}`,
             display: 'flex', 
             flexDirection: 'column',

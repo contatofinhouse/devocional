@@ -9,6 +9,7 @@ export interface DevotionalStory {
     dialogue: { role: 'Pai' | 'Filho' | 'Juntos' | 'Individual'; text: string }[];
   };
   finalMessage: string;
+  shareSummary?: string;
 }
 
 export interface Devotional {
