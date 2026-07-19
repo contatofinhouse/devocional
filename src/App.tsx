@@ -497,11 +497,40 @@ export default function App() {
 
   // Supabase Auth and Data synchronization
   useEffect(() => {
+    const handleOfflineSessionFallback = () => {
+      const lastUserId = localStorage.getItem('last_user_id');
+      if (lastUserId) {
+        const fallbackUser = {
+          id: lastUserId,
+          email: localStorage.getItem('last_user_email') || ''
+        };
+        setUser(fallbackUser);
+        loadUserData(lastUserId);
+      } else {
+        setAuthLoading(false);
+      }
+    };
+
     // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
+        localStorage.setItem('last_user_id', session.user.id);
+        if (session.user.email) {
+          localStorage.setItem('last_user_email', session.user.email);
+        }
         setUser(session.user);
         loadUserData(session.user.id);
+      } else {
+        if (!navigator.onLine) {
+          handleOfflineSessionFallback();
+        } else {
+          setAuthLoading(false);
+        }
+      }
+    }).catch((err) => {
+      console.error('Erro ao buscar sessão inicial do Supabase:', err);
+      if (!navigator.onLine) {
+        handleOfflineSessionFallback();
       } else {
         setAuthLoading(false);
       }
@@ -510,28 +539,45 @@ export default function App() {
     // 2. Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
+        localStorage.setItem('last_user_id', session.user.id);
+        if (session.user.email) {
+          localStorage.setItem('last_user_email', session.user.email);
+        }
         setUser(session.user);
         loadUserData(session.user.id);
       } else {
-        setUser(null);
-        loadedUserIdRef.current = null;
-        setKidProfile({
-          name: '',
-          age: 8,
-          interests: '',
-          hobbies: '',
-          personality: '',
-          difficulties: '',
-          objectives: '',
-          favoriteVerses: '',
-          availableTime: 15
-        });
-        setUserBirthdate(getBirthdateFromAge(35));
-        setKidBirthdate(getBirthdateFromAge(8));
-        setLogs([]);
-        setStreakCount(0);
-        setUnlockedMedals([]);
-        setAuthLoading(false);
+        // Apenas limpa a sessão se estiver online, pois falhas de rede no offline podem reportar session nula incorretamente
+        if (navigator.onLine) {
+          setUser(null);
+          loadedUserIdRef.current = null;
+          setKidProfile({
+            name: '',
+            age: 8,
+            interests: '',
+            hobbies: '',
+            personality: '',
+            difficulties: '',
+            objectives: '',
+            favoriteVerses: '',
+            availableTime: 15
+          });
+          setUserBirthdate(getBirthdateFromAge(35));
+          setKidBirthdate(getBirthdateFromAge(8));
+          setLogs([]);
+          setStreakCount(0);
+          setUnlockedMedals([]);
+          setAuthLoading(false);
+        } else {
+          // Se estiver offline, garante que mantemos o fallback do último usuário ativo
+          const lastUserId = localStorage.getItem('last_user_id');
+          if (lastUserId) {
+            setUser({
+              id: lastUserId,
+              email: localStorage.getItem('last_user_email') || ''
+            });
+            loadUserData(lastUserId);
+          }
+        }
       }
     });
 
@@ -629,6 +675,12 @@ export default function App() {
     // Instantly hide the loading screen if we have some cached data
     if (cacheProfile) {
       setAuthLoading(false);
+    }
+
+    // Se estiver offline, termina por aqui após preencher os estados com o cache local
+    if (!navigator.onLine) {
+      setAuthLoading(false);
+      return;
     }
 
     try {
@@ -805,6 +857,8 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('last_user_id');
+      localStorage.removeItem('last_user_email');
       await supabase.auth.signOut();
     } catch (err) {
       console.error('Erro ao deslogar:', err);
@@ -1676,7 +1730,6 @@ export default function App() {
                                 type="text" 
                                 value={kidProfile.name} 
                                 onChange={e => setKidProfile({...kidProfile, name: e.target.value})} 
-                                required={developmentMode === 'kids'}
                                 placeholder="Ex: Lucas"
                                 style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                               />
@@ -1690,7 +1743,6 @@ export default function App() {
                                   setKidBirthdate(e.target.value);
                                   setKidProfile({...kidProfile, age: getAgeFromBirthdate(e.target.value)});
                                 }} 
-                                required={developmentMode === 'kids'}
                                 style={{ padding: '8px 12px', fontSize: 13, borderRadius: 10 }}
                               />
                             </div>
@@ -2206,17 +2258,25 @@ export default function App() {
 
                   {/* Account panel */}
                   {user && (
-                    <div className="card" style={{ padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#FF385C', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 12 }}>
+                    <div className="card" style={{ padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF', gap: 10, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: '1 1 auto' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#FF385C', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 12, flexShrink: 0 }}>
                           {user.email?.[0].toUpperCase() || 'U'}
                         </div>
-                        <div>
-                          <span style={{ fontSize: 12, fontWeight: 600, display: 'block', color: 'var(--text-main)' }}>{user.email}</span>
+                        <div style={{ minWidth: 0, flexShrink: 1 }}>
+                          <span style={{ 
+                            fontSize: 12, 
+                            fontWeight: 600, 
+                            display: 'block', 
+                            color: 'var(--text-main)',
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap'
+                          }}>{user.email}</span>
                           <span style={{ fontSize: 10, color: 'var(--text-second)' }}>Conta Google</span>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                         {isPremium && Capacitor.isNativePlatform() && (
                           <button 
                             onClick={async () => {
@@ -2918,6 +2978,8 @@ export default function App() {
                   onClick={async () => {
                     if (user) {
                       try {
+                        localStorage.removeItem('last_user_id');
+                        localStorage.removeItem('last_user_email');
                         // Delete dev_profiles
                         await supabase.from('dev_profiles').delete().eq('id', user.id);
                         // Sign out user
