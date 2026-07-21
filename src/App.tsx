@@ -42,6 +42,8 @@ import { RevenueCatUI } from '@revenuecat/purchases-capacitor-ui';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { StatusBar } from '@capacitor/status-bar';
+import { addToSyncQueue, processSyncQueue as processSyncQueueLib } from './utils/offlineQueue';
+import { getFriendlyErrorMessage } from './utils/errorHelper';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
@@ -219,51 +221,11 @@ const ADJECTIVE_OPTIONS = [
 export default function App() {
   const loadedUserIdRef = useRef<string | null>(null);
   const isRevenueCatConfigured = useRef(false);
+  const isPurchasingRef = useRef(false);
   const bibleScrollRef = useRef<HTMLDivElement | null>(null);
   
-  const addToSyncQueue = (action: string, payload: any) => {
-    try {
-      const queueJson = localStorage.getItem('devocional_offline_queue');
-      const queue = queueJson ? JSON.parse(queueJson) : [];
-      queue.push({ id: `q-${Date.now()}-${Math.random()}`, action, payload, timestamp: new Date().toISOString() });
-      localStorage.setItem('devocional_offline_queue', JSON.stringify(queue));
-      console.log('Adicionado à fila de sincronização offline:', action, payload);
-    } catch (e) {
-      console.error('Erro ao salvar na fila offline:', e);
-    }
-  };
-
   const processSyncQueue = async () => {
-    if (!navigator.onLine) return;
-    try {
-      const queueJson = localStorage.getItem('devocional_offline_queue');
-      if (!queueJson) return;
-      const queue = JSON.parse(queueJson);
-      if (queue.length === 0) return;
-      
-      console.log('🔄 Sincronizando itens da fila offline com o Supabase...', queue.length);
-      const remainingQueue = [];
-      
-      for (const item of queue) {
-        try {
-          if (item.action === 'progress') {
-            await supabase.from('dev_progress').upsert(item.payload);
-          } else if (item.action === 'log') {
-            await supabase.from('dev_logs').insert(item.payload);
-          }
-        } catch (err) {
-          console.error('Erro ao sincronizar item da fila:', item, err);
-          remainingQueue.push(item);
-        }
-      }
-      
-      localStorage.setItem('devocional_offline_queue', JSON.stringify(remainingQueue));
-      if (remainingQueue.length === 0) {
-        showToast('Sincronização offline concluída!', 'success');
-      }
-    } catch (e) {
-      console.error('Erro ao processar fila offline:', e);
-    }
+    await processSyncQueueLib(supabase, () => showToast('Sincronização offline concluída!', 'success'));
   };
 
   const [showSplash, setShowSplash] = useState(true);
@@ -273,6 +235,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
@@ -550,6 +513,7 @@ export default function App() {
         if (navigator.onLine) {
           setUser(null);
           loadedUserIdRef.current = null;
+          setIsPremium(false);
           setKidProfile({
             name: '',
             age: 8,
@@ -627,11 +591,9 @@ export default function App() {
     const cacheProgress = localStorage.getItem(`cached_progress_${userId}`);
     const cacheLogs = localStorage.getItem(`cached_logs_${userId}`);
 
-    let localProfileObj: any = null;
     if (cacheProfile) {
       try {
         const profile = JSON.parse(cacheProfile);
-        localProfileObj = profile;
         setKidProfile({
           name: profile.kid_name || '',
           age: profile.kid_age || 8,
@@ -652,6 +614,9 @@ export default function App() {
       } catch (e) {
         console.warn("Error parsing cached profile:", e);
       }
+    } else {
+      // Se não há cache específico para ESTE ID, reseta para não herdar de outro usuário
+      setIsPremium(false);
     }
 
     if (cacheProgress) {
@@ -714,7 +679,8 @@ export default function App() {
         setKidBirthdate(getBirthdateFromAge(profile.kid_age || 8));
         setIsPremium(profile.is_premium === true);
         setShowOnboarding(false);
-      } else if (!cacheProfile) {
+      } else {
+        // Novo Usuário (sem perfil registrado no Supabase ainda): forçar isPremium = false
         setIsPremium(false);
         setShowOnboarding(true);
         setOnboardingStep(1);
@@ -739,32 +705,26 @@ export default function App() {
             await Purchases.logIn({ appUserID: userId });
             isRevenueCatConfigured.current = true;
             
-            // Setup customer info update listener
+            // PROTEÇÃO: O listener do RevenueCat SÓ atualiza isPremium durante compras ativas.
+            // Isso impede que novos emails herdem Premium do cache do dispositivo na inicialização.
             await Purchases.addCustomerInfoUpdateListener((info) => {
-              if (info.entitlements.active['lecti Premium'] !== undefined) {
-                setIsPremium(true);
-                supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
-              } else {
-                setIsPremium(false);
-                supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId).then();
+              if (isPurchasingRef.current) {
+                if (info.entitlements.active['lecti Premium'] !== undefined) {
+                  setIsPremium(true);
+                  supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
+                }
               }
             });
 
+            // CORREÇÃO: Apenas log informativo na inicialização.
+            // O isPremium já foi definido pelo Supabase (profile.is_premium).
+            // NÃO sobrescrevemos aqui para evitar herança de compras do dispositivo.
             const { customerInfo } = await Purchases.getCustomerInfo();
-            if (customerInfo.entitlements.active['lecti Premium'] !== undefined) {
-              setIsPremium(true);
-              if (profile && !profile.is_premium) {
-                await supabase.from('dev_profiles').update({ is_premium: true }).eq('id', userId).then();
-              }
-            } else {
-              setIsPremium(false);
-              if (profile && profile.is_premium) {
-                await supabase.from('dev_profiles').update({ is_premium: false }).eq('id', userId).then();
-              }
-            }
+            console.log('[RC Init] Entitlements ativas no dispositivo:', 
+              Object.keys(customerInfo.entitlements.active));
           } else {
             console.warn('RevenueCat SDK configuration skipped: Test/invalid API key format.');
-            setIsPremium((profile || localProfileObj)?.is_premium === true);
+            setIsPremium(profile?.is_premium === true);
           }
         } catch (e) {
           console.warn('Erro ao carregar compras do RevenueCat:', e);
@@ -826,6 +786,21 @@ export default function App() {
       setGoogleLoading(true);
       if (Capacitor.isNativePlatform()) {
         await GoogleAuth.initialize();
+        // Desloga da sessão nativa anterior para forçar a janela de escolha de conta do Android
+        try {
+          await GoogleAuth.signOut();
+        } catch (e) {
+          // Ignora caso já esteja deslogado
+        }
+        // CORREÇÃO: Reseta a sessão do RevenueCat para não herdar compras do dispositivo
+        try {
+          if (isRevenueCatConfigured.current) {
+            await Purchases.logOut();
+            isRevenueCatConfigured.current = false;
+          }
+        } catch (e) {
+          console.warn('RC logout before new login:', e);
+        }
         const googleUser = await GoogleAuth.signIn();
         const idToken = googleUser.authentication.idToken;
 
@@ -849,7 +824,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Erro na autenticação com o Google:', err);
-      alert('Ocorreu um erro ao entrar com o Google. Tente novamente.');
+      showToast(getFriendlyErrorMessage(err).message, 'error');
     } finally {
       setGoogleLoading(false);
     }
@@ -857,8 +832,31 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem('last_user_id');
-      localStorage.removeItem('last_user_email');
+      loadedUserIdRef.current = null;
+      setIsPremium(false);
+      
+      // Limpa chaves do localStorage para não reter dados de usuários antigos
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('cached_') || key.startsWith('last_user_')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await GoogleAuth.signOut();
+        } catch (e) {
+          console.warn('Erro ao deslogar da conta nativa do Google:', e);
+        }
+        try {
+          if (isRevenueCatConfigured.current) {
+            await Purchases.logOut();
+          }
+        } catch (e) {
+          console.warn('Erro ao deslogar do RevenueCat:', e);
+        }
+      }
+
       await supabase.auth.signOut();
     } catch (err) {
       console.error('Erro ao deslogar:', err);
@@ -1045,7 +1043,7 @@ export default function App() {
       setShowOnboarding(false);
     } catch (err) {
       console.error('Erro ao salvar perfil no Supabase:', err);
-      showToast('Erro ao salvar perfil. Verifique sua conexão e tente novamente.', 'error');
+      showToast(getFriendlyErrorMessage(err).message, 'error');
     }
   };
 
@@ -1164,6 +1162,7 @@ export default function App() {
       }
     } catch (err) {
       console.warn('Erro ao carregar do Supabase:', err);
+      showToast(getFriendlyErrorMessage(err).message, 'error');
     }
     return null;
   };
@@ -1461,13 +1460,18 @@ export default function App() {
     setNewLogRating(5);
   };
 
+
+
   const handleUnlockPremium = async () => {
+    if (isPurchasing) return;
     if (Capacitor.isNativePlatform()) {
       if (!isRevenueCatConfigured.current) {
         alert('RevenueCat não está configurado. Insira uma chave de API válida (ex: goog_...) no arquivo .env para testar compras reais no dispositivo.');
         return;
       }
       try {
+        setIsPurchasing(true);
+        isPurchasingRef.current = true;
         const offerings = await Purchases.getOfferings();
         if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
           const packageToBuy = offerings.current.availablePackages[0];
@@ -1489,6 +1493,9 @@ export default function App() {
         } else {
           alert('Erro ao realizar a compra: ' + e.message);
         }
+      } finally {
+        setIsPurchasing(false);
+        isPurchasingRef.current = false;
       }
     } else {
       alert('Para testar na Web: Acesso Premium simulado ativado!');
@@ -2896,7 +2903,8 @@ export default function App() {
                   background: 'linear-gradient(135deg, #FF385C, #c0165a)', 
                   padding: '18px 20px', 
                   textAlign: 'center',
-                  cursor: 'pointer',
+                  cursor: isPurchasing ? 'not-allowed' : 'pointer',
+                  opacity: isPurchasing ? 0.7 : 1,
                   userSelect: 'none',
                   transition: 'opacity 0.2s ease'
                 }}
@@ -2913,10 +2921,20 @@ export default function App() {
 
               <button
                 className="btn-primary"
-                style={{ backgroundColor: '#FF385C', border: 'none', fontSize: 15, padding: 16 }}
+                style={{ backgroundColor: '#FF385C', border: 'none', fontSize: 15, padding: 16, opacity: isPurchasing ? 0.85 : 1, cursor: isPurchasing ? 'wait' : 'pointer', minHeight: 52 }}
                 onClick={handleUnlockPremium}
+                disabled={isPurchasing}
               >
-                🔓 Desbloquear Acesso Premium
+                {isPurchasing ? (
+                  <span className="gemini-dots-loader">
+                    <span className="gemini-dot"></span>
+                    <span className="gemini-dot"></span>
+                    <span className="gemini-dot"></span>
+                    <span className="gemini-dot"></span>
+                  </span>
+                ) : (
+                  '🔓 Desbloquear Acesso Premium'
+                )}
               </button>
 
               <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
