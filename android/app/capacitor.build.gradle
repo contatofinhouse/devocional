@@ -16,6 +16,7 @@ dependencies {
     implementation project(':codetrix-studio-capacitor-google-auth')
     implementation project(':revenuecat-purchases-capacitor')
     implementation project(':revenuecat-purchases-capacitor-ui')
+    implementation project(':sentry-capacitor')
 
 }
 

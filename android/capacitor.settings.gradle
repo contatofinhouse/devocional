@@ -22,3 +22,6 @@ project(':revenuecat-purchases-capacitor').projectDir = new File('../node_module
 
 include ':revenuecat-purchases-capacitor-ui'
 project(':revenuecat-purchases-capacitor-ui').projectDir = new File('../node_modules/@revenuecat/purchases-capacitor-ui/android')
+
+include ':sentry-capacitor'
+project(':sentry-capacitor').projectDir = new File('../node_modules/@sentry/capacitor/android')

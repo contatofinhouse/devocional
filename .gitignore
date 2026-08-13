@@ -30,3 +30,9 @@ dist-ssr
 
 # Android Google Services
 android/app/google-services.json
+
+# Test outputs & Backups
+playwright-report/
+test-results/
+backups/
+

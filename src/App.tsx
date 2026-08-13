@@ -24,8 +24,7 @@ import {
   Sparkle,
   Share2,
   Bell,
-  Settings,
-  Lock
+  Settings
 } from 'lucide-react';
 
 import type { KidProfile, ParentLog, Devotional } from './data/mockDevotionals';
@@ -959,7 +958,7 @@ export default function App() {
     
     const storySummary = activeStory.shareSummary || summarizeText(activeStory.biblicalStory, 3);
     
-    const shareText = `📖 Lecti • Fé, Caráter e Sabedoria\nTema: ${currentDevotional.theme} / ${activeStory.biblicalStoryTitle} (${activeStory.biblicalReference})\n\n${storySummary}\n\n"${activeStory.finalMessage}"\n\n—\nFiz esta leitura hoje e lembrei de você. Acompanhe os devocionais comigo. Baixe o app:\nlecti.com.br/android`;
+    const shareText = `🌱 Lecti • Devocional Diário & Bíblia Grátis\nTema: ${currentDevotional.theme} / ${activeStory.biblicalStoryTitle} (${activeStory.biblicalReference})\n\n${storySummary}\n\n💡 "${activeStory.finalMessage}"\n\n—\nFiz esta reflexão hoje e lembrei de você! 💛\nAcompanhe os devocionais e leia a Bíblia completa grátis no app:\n👉 lecti.com.br/android`;
     
     try {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -982,10 +981,10 @@ export default function App() {
         .slice(start - 1, end)
         .map((verseText: string, idx: number) => `[${start + idx}] ${verseText}`)
         .join('\n\n');
-      shareText = `Bíblia Sagrada\n\n${bibleBookData.name} ${currentChapterIndex + 1}:${start}-${end}\n\n${versesText}\n\n—\nTexto compartilhado via aplicativo Lecti.\nDisponível na Google Play Store:\nlecti.com.br/android`;
+      shareText = `✨ Bíblia Sagrada 100% Grátis & Off-line • Lecti\n📖 ${bibleBookData.name} ${currentChapterIndex + 1}:${start}-${end}\n\n${versesText}\n\n—\n🕊️ Leia a Bíblia completa gratuitamente e tenha devocionais diários com sua família:\n👉 lecti.com.br/android`;
     } else {
       const chapterText = chapterData.map((verseText: string, idx: number) => `[${idx + 1}] ${verseText}`).join('\n\n');
-      shareText = `Bíblia Sagrada\n\n${bibleBookData.name} - Capítulo ${currentChapterIndex + 1}\n\n${chapterText}\n\n—\nTexto compartilhado via aplicativo Lecti.\nDisponível na Google Play Store:\nlecti.com.br/android`;
+      shareText = `✨ Bíblia Sagrada 100% Grátis & Off-line • Lecti\n📖 ${bibleBookData.name} - Capítulo ${currentChapterIndex + 1}\n\n${chapterText}\n\n—\n🕊️ Leia a Bíblia completa gratuitamente e tenha devocionais diários com sua família:\n👉 lecti.com.br/android`;
     }
     
     try {
@@ -1925,6 +1924,49 @@ export default function App() {
                     </p>
                   </div>
 
+                  {/* CARD BÍBLIA SAGRADA - 100% GRÁTIS */}
+                  <div 
+                    className="card" 
+                    onClick={() => {
+                      setBibleOpen(true);
+                      setHighlightedVerses(null);
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 16,
+                      backgroundColor: '#F9FAFB',
+                      borderColor: 'var(--border-light)',
+                      cursor: 'pointer',
+                      padding: '16px 20px',
+                      borderRadius: 16,
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      position: 'relative'
+                    }}
+                  >
+                    <div style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(255, 56, 92, 0.1)',
+                      color: 'var(--primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <BookOpen size={22} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                        Bíblia Sagrada <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
+                      </h3>
+                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, margin: 0 }}>
+                        Acesse as Escrituras Sagradas de forma completa e 100% off-line.
+                      </p>
+                    </div>
+                    <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
+                  </div>
+
                   {TRAILS.map((trail) => (
                     <div 
                       key={trail.id} 
@@ -2015,55 +2057,6 @@ export default function App() {
                       </div>
                     </div>
                   ))}
-
-                  {/* CARD BÍBLIA SAGRADA - PREMIUM ONLY */}
-                  <div 
-                    className="card" 
-                    onClick={() => {
-                      if (isPremium) {
-                        setBibleOpen(true);
-                        setHighlightedVerses(null);
-                      } else {
-                        setShowPaywall(true);
-                      }
-                    }}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 16,
-                      backgroundColor: '#F9FAFB',
-                      borderColor: 'var(--border-light)',
-                      cursor: 'pointer',
-                      padding: '16px 20px',
-                      borderRadius: 16,
-                      marginTop: 8,
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                      position: 'relative'
-                    }}
-                  >
-                    <div style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: '50%',
-                      backgroundColor: 'rgba(255, 56, 92, 0.1)',
-                      color: 'var(--primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <BookOpen size={22} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                        Bíblia Sagrada <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
-                        {!isPremium && <span style={{ fontSize: 9, color: '#fff', backgroundColor: 'var(--primary)', padding: '2px 8px', borderRadius: 10, fontWeight: 700, marginLeft: 4 }}>PRO</span>}
-                      </h3>
-                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, margin: 0 }}>
-                        {isPremium ? 'Acesse as Escrituras Sagradas de forma completa e 100% off-line.' : 'Desbloqueie a Bíblia completa com o plano Premium.'}
-                      </p>
-                    </div>
-                    {!isPremium ? <Lock size={18} style={{ color: 'var(--primary)' }} /> : <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />}
-                  </div>
 
                 </div>
               )}
@@ -2879,9 +2872,9 @@ export default function App() {
                 {[
                   { icon: '📖', title: 'Trilhas Completas', desc: 'Acesso a todos os temas de todas as trilhas' },
                   { icon: '🌙', title: '204 Noites de Práticas Devocionais', desc: 'O plano completo de meditações e reflexões diárias' },
+                  { icon: '🌱', title: 'Modos Kids e Jovens', desc: 'Conteúdo e reflexões adaptados para cada fase' },
                   { icon: '🏆', title: 'Medalhas e Progresso', desc: 'Desbloqueie conquistas e veja o crescimento' },
                   { icon: '📝', title: 'Diário dos Pais Completo', desc: 'Histórico ilimitado de anotações e avaliações' },
-                  { icon: '⛪', title: 'Bíblia Sagrada', desc: 'Edição integral da Bíblia Sagrada' },
                 ].map((b, i) => (
                   <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                     <div style={{ fontSize: 24, width: 40, height: 40, backgroundColor: '#FFF0F2', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -2913,7 +2906,7 @@ export default function App() {
                 <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>ACESSO VITALÍCIO</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>R$</span>
-                  <span style={{ color: '#FFFFFF', fontSize: 38, fontWeight: 800, lineHeight: 1 }}>29</span>
+                  <span style={{ color: '#FFFFFF', fontSize: 38, fontWeight: 800, lineHeight: 1 }}>16</span>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>,90</span>
                 </div>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 }}>pagamento único, para sempre</div>

@@ -449,5 +449,48 @@ button.btn-secondary:hover {
   animation: magical-sparkle 1.8s infinite ease-in-out;
 }
 
+/* Gemini 4-dots white spinner animation */
+.gemini-dots-loader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+.gemini-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  animation: geminiDisperse 1.4s infinite ease-in-out;
+}
+
+.gemini-dot:nth-child(1) { animation-delay: 0s; }
+.gemini-dot:nth-child(2) { animation-delay: 0.15s; }
+.gemini-dot:nth-child(3) { animation-delay: 0.3s; }
+.gemini-dot:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes geminiDisperse {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  25% {
+    transform: translate(-7px, -7px) scale(1.1);
+  }
+  50% {
+    transform: translate(7px, -7px) scale(0.9);
+  }
+  75% {
+    transform: translate(7px, 7px) scale(1.1);
+  }
+}
+
 
 

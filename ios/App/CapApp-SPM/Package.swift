@@ -17,7 +17,8 @@ let package = Package(
         .package(name: "CapacitorPreferences", path: "..\..\..\node_modules\@capacitor\preferences"),
         .package(name: "CapacitorStatusBar", path: "..\..\..\node_modules\@capacitor\status-bar"),
         .package(name: "RevenuecatPurchasesCapacitor", path: "..\..\..\node_modules\@revenuecat\purchases-capacitor"),
-        .package(name: "RevenuecatPurchasesCapacitorUi", path: "..\..\..\node_modules\@revenuecat\purchases-capacitor-ui")
+        .package(name: "RevenuecatPurchasesCapacitorUi", path: "..\..\..\node_modules\@revenuecat\purchases-capacitor-ui"),
+        .package(name: "SentryCapacitor", path: "..\..\..\node_modules\@sentry\capacitor")
     ],
     targets: [
         .target(
@@ -30,7 +31,8 @@ let package = Package(
                 .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),
                 .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar"),
                 .product(name: "RevenuecatPurchasesCapacitor", package: "RevenuecatPurchasesCapacitor"),
-                .product(name: "RevenuecatPurchasesCapacitorUi", package: "RevenuecatPurchasesCapacitorUi")
+                .product(name: "RevenuecatPurchasesCapacitorUi", package: "RevenuecatPurchasesCapacitorUi"),
+                .product(name: "SentryCapacitor", package: "SentryCapacitor")
             ]
         )
     ]
