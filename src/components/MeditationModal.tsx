@@ -29,83 +29,18 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
   const [selectedFeeling, setSelectedFeeling] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ambientAudioRef = useRef<HTMLAudioElement | null>(null);
   const stepListRef = useRef<HTMLDivElement | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const ambientGainRef = useRef<GainNode | null>(null);
-  const ambientOscsRef = useRef<OscillatorNode[]>([]);
 
-  // 1. Web Audio API Ambient Pad Generator (432Hz Peaceful Harmonic Chord)
-  const startAmbientPad = () => {
-    try {
-      if (!audioCtxRef.current) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        audioCtxRef.current = new AudioContextClass();
-      }
-
-      if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
-      }
-
-      // Stop existing if any
-      stopAmbientPad();
-
-      const ctx = audioCtxRef.current;
-      const masterGain = ctx.createGain();
-      masterGain.gain.setValueAtTime(0, ctx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 3); // Soft ambient volume
-      masterGain.connect(ctx.destination);
-      ambientGainRef.current = masterGain;
-
-      // Soft harmonic frequencies (Frequencies around 432Hz harmonic scale: A432, E216, C#272)
-      const freqs = [108, 216, 272.5, 432, 648];
-      const oscs: OscillatorNode[] = [];
-
-      freqs.forEach((f, idx) => {
-        const osc = ctx.createOscillator();
-        const oscGain = ctx.createGain();
-        osc.type = idx === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(f, ctx.currentTime);
-
-        // Subtle slow frequency modulation (shimmering warmth)
-        const lfo = ctx.createOscillator();
-        lfo.frequency.setValueAtTime(0.15 + idx * 0.05, ctx.currentTime);
-        const lfoGain = ctx.createGain();
-        lfoGain.gain.setValueAtTime(1.5, ctx.currentTime);
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc.frequency);
-        lfo.start();
-
-        oscGain.gain.setValueAtTime(1 / freqs.length, ctx.currentTime);
-        osc.connect(oscGain);
-        oscGain.connect(masterGain);
-        osc.start();
-        oscs.push(osc);
-      });
-
-      ambientOscsRef.current = oscs;
-    } catch (e) {
-      console.warn('Web Audio ambient pad unavailable:', e);
-    }
-  };
-
-  const stopAmbientPad = () => {
-    try {
-      if (ambientGainRef.current && audioCtxRef.current) {
-        ambientGainRef.current.gain.linearRampToValueAtTime(0.0001, audioCtxRef.current.currentTime + 1);
-      }
-      setTimeout(() => {
-        ambientOscsRef.current.forEach(o => {
-          try { o.stop(); o.disconnect(); } catch (e) {}
-        });
-        ambientOscsRef.current = [];
-      }, 1000);
-    } catch (e) {}
-  };
-
-  // Initialize main voice audio
+  // Initialize main voice audio & ambient background track
   useEffect(() => {
     const audio = new Audio(meditation.audioUrl);
     audioRef.current = audio;
+
+    const ambient = new Audio('/audio/ambient_432hz.wav');
+    ambient.loop = true;
+    ambient.volume = 0.35;
+    ambientAudioRef.current = ambient;
 
     audio.onloadedmetadata = () => {
       if (audio.duration && !isNaN(audio.duration)) {
@@ -126,17 +61,15 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
 
     audio.onended = () => {
       setIsPlaying(false);
-      stopAmbientPad();
+      if (ambientAudioRef.current) ambientAudioRef.current.pause();
       setViewState('completed');
     };
 
     return () => {
       audio.pause();
       audio.src = '';
-      stopAmbientPad();
-      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-        try { audioCtxRef.current.close(); } catch (e) {}
-      }
+      ambient.pause();
+      ambient.src = '';
     };
   }, [meditation]);
 
@@ -155,7 +88,9 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
     if (audioRef.current) {
       audioRef.current.play().then(() => {
         setIsPlaying(true);
-        if (ambientSound) startAmbientPad();
+        if (ambientSound && ambientAudioRef.current) {
+          ambientAudioRef.current.play().catch(e => console.warn('Ambient play error:', e));
+        }
       }).catch(err => {
         console.warn('Playback error:', err);
       });
@@ -167,11 +102,13 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
-      stopAmbientPad();
+      if (ambientAudioRef.current) ambientAudioRef.current.pause();
     } else {
       audioRef.current.play().then(() => {
         setIsPlaying(true);
-        if (ambientSound) startAmbientPad();
+        if (ambientSound && ambientAudioRef.current) {
+          ambientAudioRef.current.play().catch(e => console.warn('Ambient play error:', e));
+        }
       });
     }
   };
@@ -195,11 +132,14 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
   };
 
   const toggleAmbientSound = () => {
+    if (!ambientAudioRef.current) return;
     if (ambientSound) {
-      stopAmbientPad();
+      ambientAudioRef.current.pause();
       setAmbientSound(false);
     } else {
-      startAmbientPad();
+      if (isPlaying) {
+        ambientAudioRef.current.play().catch(e => console.warn('Ambient play error:', e));
+      }
       setAmbientSound(true);
     }
   };
