@@ -7,6 +7,13 @@ export interface MeditationStep {
   text: string;
 }
 
+export interface ScientificMethodology {
+  title: string;
+  origin: string;
+  benefits: string[];
+  stages: { stage: string; desc: string }[];
+}
+
 export interface MeditationSession {
   id: string;
   title: string;
@@ -16,6 +23,7 @@ export interface MeditationSession {
   audioUrl: string;
   affirmation: string;
   reflectionPrompt: string;
+  scientificMethodology: ScientificMethodology;
   steps: MeditationStep[];
 }
 
@@ -23,59 +31,87 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
   {
   "id": "mindfulness_mindset_1",
   "title": "Presença, Clareza & Foco",
-  "subtitle": "Reprogramação de Mindset com Mindfulness MBSR",
-  "methodology": "Mindfulness Tradicional (MBSR / RAIN)",
-  "durationSeconds": 172,
+  "subtitle": "Reprogramação de Mindset com Metodologia MBSR & RAIN",
+  "methodology": "Mindfulness MBSR",
+  "durationSeconds": 142,
   "audioUrl": "/audio/meditacao_mindset.mp3",
-  "affirmation": "Minha mente está serena, meu discernimento está afiado e meu foco está alinhado no presente.",
-  "reflectionPrompt": "Como você se sente após esta pausa para reprogramar seu foco?",
+  "affirmation": "Minha mente está serena, meu discernimento está afiado e meu foco está ancorado no presente.",
+  "reflectionPrompt": "Como sua mente se sente após esta sessão de ancoragem?",
+  "scientificMethodology": {
+    "title": "Base Científica: MBSR & Neuroplasticidade",
+    "origin": "Desenvolvido pelo Dr. Jon Kabat-Zinn na UMass Medical School e validado em Harvard & Stanford.",
+    "benefits": [
+      "Redução mensurável do cortisol e desativação da amígdala cerebral (centro do estresse).",
+      "Desativação da Rede em Modo Padrão (DMN), eliminando ruído mental e pensamentos ruminantes.",
+      "Protocolo RAIN: Reconhecer, Permitir, Investigar com gentileza e Nutrir o autocuidado.",
+      "Estímulo à neuroplasticidade para ancoragem de clareza, autogoverno e foco intencional."
+    ],
+    "stages": [
+      {
+        "stage": "1. Ancoragem Respiratória",
+        "desc": "Coerência cardíaca com ritmo 4-4-6 para estabilizar o sistema nervoso autônomo."
+      },
+      {
+        "stage": "2. Escaneamento Corporal",
+        "desc": "Liberação da tensão física somatizada no maxilar, ombros e testa."
+      },
+      {
+        "stage": "3. Observador Imparcial (RAIN)",
+        "desc": "Observação de pensamentos intrusivos como nuvens passageiras, sem julgamento."
+      },
+      {
+        "stage": "4. Reprogramação Cognitiva",
+        "desc": "Ancoragem neural de convicções de serenidade, autogoverno e firmeza de propósito."
+      }
+    ]
+  },
   "steps": [
     {
       "id": 1,
-      "phase": "Acolhimento & Postura",
+      "phase": "1. Acolhimento e Postura",
       "focus": "breathing",
       "startSeconds": 0.0,
-      "endSeconds": 25.3,
-      "text": "Bem-vindo a este momento de pausa e renovação. Encontre uma posição confortável, sentado com as costas eretas, porém relaxadas. Feche suavemente os olhos ou suavize o seu olhar para um ponto à frente. Permita-se pousar completamente no momento presente."
+      "endSeconds": 21.6,
+      "text": "Bem-vindo a este momento de pausa e renovação mental. Encontre uma posição confortável, sentado com a coluna ereta, porém relaxada. Feche suavemente os olhos ou mantenha o olhar suave em um ponto à frente. Permita-se pousar por inteiro no momento presente."
     },
     {
       "id": 2,
-      "phase": "Ancoragem na Respiração",
+      "phase": "2. Ancoragem na Respiração",
       "focus": "breathing",
-      "startSeconds": 25.3,
-      "endSeconds": 56.3,
-      "text": "Traga agora toda a sua atenção para a respiração. Inspire profundamente pelo nariz, expandindo o abdômen... Segure o ar por um instante... E solte o ar devagar pela boca, soltando os ombros e liberando todo o peso do dia. Sinta o ar entrando com calma e saindo com alívio."
+      "startSeconds": 21.6,
+      "endSeconds": 46.4,
+      "text": "Traga agora toda a sua atenção para a respiração. Inspire profundamente pelo nariz, expandindo o abdômen... Segure o ar por um instante... E solte o ar devagar pela boca, soltando os ombros e liberando todo o peso acumulado. Sinta o ar entrando com calma, e saindo com alívio."
     },
     {
       "id": 3,
-      "phase": "Presença & Desaceleração",
+      "phase": "3. Desaceleração & Escaneamento",
       "focus": "awareness",
-      "startSeconds": 56.3,
-      "endSeconds": 82.7,
-      "text": "Observe as sensações do seu corpo. Sinta o apoio firme sob você. Solte qualquer tensão no maxilar, suavize a testa e os olhos. Não há nada para resolver neste exato segundo. Este momento é um espaço seguro de quietude e clareza."
+      "startSeconds": 46.4,
+      "endSeconds": 69.4,
+      "text": "Observe as sensações do seu corpo agora. Sinta o apoio firme sob você. Solte qualquer tensão no maxilar, suavize a testa e ao redor dos olhos. Não há nada para resolver neste exato segundo. Este momento é um espaço seguro de quietude e clareza."
     },
     {
       "id": 4,
-      "phase": "Observação Sem Julgamento (Mindfulness)",
+      "phase": "4. Observação Sem Julgamento (RAIN)",
       "focus": "awareness",
-      "startSeconds": 82.7,
-      "endSeconds": 109.7,
-      "text": "Se pensamentos, tarefas ou preocupações surgirem na mente, não tente lutar contra eles. Apenas reconheça a presença deles com gentileza, como quem observa nuvens passando pelo céu. Deixe-os ir embora no ritmo da sua respiração, retornando sempre ao centro do seu ser."
+      "startSeconds": 69.4,
+      "endSeconds": 91.0,
+      "text": "Se pensamentos, tarefas ou preocupações surgirem na mente, não tente lutar contra eles. Apenas reconheça a presença deles com gentileza, como quem observa nuvens passando pelo céu. Deixe-os passar no ritmo da sua respiração, retornando sempre ao centro do seu ser."
     },
     {
       "id": 5,
-      "phase": "Reprogramação de Mindset",
+      "phase": "5. Reprogramação de Mindset",
       "focus": "mindset",
-      "startSeconds": 109.7,
-      "endSeconds": 139.6,
+      "startSeconds": 91.0,
+      "endSeconds": 115.4,
       "text": "Agora, interiorize estas convicções com firmeza e serenidade: Eu escolho a calma no lugar da pressa. Minha mente tem clareza e discernimento. Eu tenho autogoverno sobre minhas reações e foco absoluto no que é essencial. Eu estou em paz no meu presente e seguro no meu caminho."
     },
     {
       "id": 6,
-      "phase": "Integração & Retorno",
+      "phase": "6. Integração & Retorno",
       "focus": "integration",
-      "startSeconds": 139.6,
-      "endSeconds": 171.7,
+      "startSeconds": 115.4,
+      "endSeconds": 141.6,
       "text": "Faça mais uma respiração profunda e consciente. Sinta uma onda de energia limpa e renovadora percorrendo todo o seu corpo. Comece a movimentar suavemente as mãos e os pés. E quando se sentir pronto, abra os olhos, levando esta mente serena, forte e focada para todas as suas escolhas de hoje."
     }
   ]

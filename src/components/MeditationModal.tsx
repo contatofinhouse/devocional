@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Play, Pause, RotateCcw, RotateCw, 
   Sparkles, CheckCircle2, 
-  Volume2, VolumeX, ArrowRight
+  Volume2, VolumeX, ArrowRight,
+  Brain, Activity, ShieldCheck, Waves
 } from 'lucide-react';
 import type { MeditationSession } from '../data/mockMeditations';
 
@@ -18,17 +19,90 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
   onComplete
 }) => {
   const [viewState, setViewState] = useState<'prep' | 'playing' | 'completed'>('prep');
+  const [prepTab, setPrepTab] = useState<'guide' | 'science'>('guide');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(meditation.durationSeconds || 172);
+  const [duration, setDuration] = useState(meditation.durationSeconds || 142);
   const [isMuted, setIsMuted] = useState(false);
+  const [ambientSound, setAmbientSound] = useState(true);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [selectedFeeling, setSelectedFeeling] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stepListRef = useRef<HTMLDivElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const ambientGainRef = useRef<GainNode | null>(null);
+  const ambientOscsRef = useRef<OscillatorNode[]>([]);
 
-  // Initialize audio
+  // 1. Web Audio API Ambient Pad Generator (432Hz Peaceful Harmonic Chord)
+  const startAmbientPad = () => {
+    try {
+      if (!audioCtxRef.current) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        audioCtxRef.current = new AudioContextClass();
+      }
+
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+
+      // Stop existing if any
+      stopAmbientPad();
+
+      const ctx = audioCtxRef.current;
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0, ctx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 3); // Soft ambient volume
+      masterGain.connect(ctx.destination);
+      ambientGainRef.current = masterGain;
+
+      // Soft harmonic frequencies (Frequencies around 432Hz harmonic scale: A432, E216, C#272)
+      const freqs = [108, 216, 272.5, 432, 648];
+      const oscs: OscillatorNode[] = [];
+
+      freqs.forEach((f, idx) => {
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = idx === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(f, ctx.currentTime);
+
+        // Subtle slow frequency modulation (shimmering warmth)
+        const lfo = ctx.createOscillator();
+        lfo.frequency.setValueAtTime(0.15 + idx * 0.05, ctx.currentTime);
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.setValueAtTime(1.5, ctx.currentTime);
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        lfo.start();
+
+        oscGain.gain.setValueAtTime(1 / freqs.length, ctx.currentTime);
+        osc.connect(oscGain);
+        oscGain.connect(masterGain);
+        osc.start();
+        oscs.push(osc);
+      });
+
+      ambientOscsRef.current = oscs;
+    } catch (e) {
+      console.warn('Web Audio ambient pad unavailable:', e);
+    }
+  };
+
+  const stopAmbientPad = () => {
+    try {
+      if (ambientGainRef.current && audioCtxRef.current) {
+        ambientGainRef.current.gain.linearRampToValueAtTime(0.0001, audioCtxRef.current.currentTime + 1);
+      }
+      setTimeout(() => {
+        ambientOscsRef.current.forEach(o => {
+          try { o.stop(); o.disconnect(); } catch (e) {}
+        });
+        ambientOscsRef.current = [];
+      }, 1000);
+    } catch (e) {}
+  };
+
+  // Initialize main voice audio
   useEffect(() => {
     const audio = new Audio(meditation.audioUrl);
     audioRef.current = audio;
@@ -42,7 +116,6 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
     audio.ontimeupdate = () => {
       setCurrentTime(audio.currentTime);
 
-      // Find current step
       const stepIdx = meditation.steps.findIndex(
         s => audio.currentTime >= s.startSeconds && audio.currentTime <= s.endSeconds
       );
@@ -53,12 +126,17 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
 
     audio.onended = () => {
       setIsPlaying(false);
+      stopAmbientPad();
       setViewState('completed');
     };
 
     return () => {
       audio.pause();
       audio.src = '';
+      stopAmbientPad();
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+        try { audioCtxRef.current.close(); } catch (e) {}
+      }
     };
   }, [meditation]);
 
@@ -77,6 +155,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
     if (audioRef.current) {
       audioRef.current.play().then(() => {
         setIsPlaying(true);
+        if (ambientSound) startAmbientPad();
       }).catch(err => {
         console.warn('Playback error:', err);
       });
@@ -88,9 +167,11 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
+      stopAmbientPad();
     } else {
       audioRef.current.play().then(() => {
         setIsPlaying(true);
+        if (ambientSound) startAmbientPad();
       });
     }
   };
@@ -113,6 +194,16 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
     setIsMuted(!isMuted);
   };
 
+  const toggleAmbientSound = () => {
+    if (ambientSound) {
+      stopAmbientPad();
+      setAmbientSound(false);
+    } else {
+      startAmbientPad();
+      setAmbientSound(true);
+    }
+  };
+
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
@@ -121,6 +212,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
   const currentStep = meditation.steps[activeStepIndex] || meditation.steps[0];
+  const sci = meditation.scientificMethodology;
 
   return (
     <div
@@ -128,7 +220,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        backgroundColor: '#FAFBFC', // Clean light background matching the app
+        backgroundColor: '#FAFBFC',
         color: '#1E2229',
         display: 'flex',
         flexDirection: 'column',
@@ -145,7 +237,10 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
           alignItems: 'center',
           justifyContent: 'space-between',
           borderBottom: '1px solid #EBECEF',
-          backgroundColor: '#FFFFFF'
+          backgroundColor: '#FFFFFF',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -193,104 +288,226 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         </button>
       </div>
 
-      {/* 1. Tela de Preparação (Onboarding) */}
+      {/* 1. Tela de Preparação (Onboarding com Seção Científica) */}
       {viewState === 'prep' && (
         <div 
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '30px 24px',
-            textAlign: 'center',
-            maxWidth: '480px',
+            padding: '24px 20px',
+            maxWidth: '520px',
             margin: '0 auto',
             width: '100%',
             boxSizing: 'border-box'
           }}
         >
+          {/* Navegação entre Dicas de Preparação e Método Científico */}
           <div 
             style={{
-              width: '84px',
-              height: '84px',
-              borderRadius: '50%',
-              backgroundColor: '#F5F3FF',
-              border: '1.5px solid rgba(139, 92, 246, 0.25)',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '20px',
-              boxShadow: '0 4px 16px rgba(124, 58, 237, 0.1)'
+              backgroundColor: '#EBECEF',
+              borderRadius: '12px',
+              padding: '4px',
+              marginBottom: '20px'
             }}
           >
-            <img 
-              src="/mascot_meditating.png" 
-              alt="Meditação" 
-              style={{ width: '54px', height: '54px', objectFit: 'contain' }}
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
+            <button
+              onClick={() => setPrepTab('guide')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: prepTab === 'guide' ? '#FFFFFF' : 'transparent',
+                color: prepTab === 'guide' ? '#1E2229' : '#5C6470',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: prepTab === 'guide' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.2s ease'
               }}
-            />
+            >
+              🌿 Como Praticar
+            </button>
+            <button
+              onClick={() => setPrepTab('science')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: prepTab === 'science' ? '#FFFFFF' : 'transparent',
+                color: prepTab === 'science' ? '#7C3AED' : '#5C6470',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: prepTab === 'science' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Brain size={14} />
+              Ciência & Método MBSR
+            </button>
           </div>
 
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1E2229', margin: '0 0 8px 0', fontFamily: 'var(--font-display, inherit)' }}>
-            Prepare sua Mente
-          </h2>
+          {/* TAB A: GUIA DE PRÁTICA */}
+          {prepTab === 'guide' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div 
+                style={{
+                  width: '76px',
+                  height: '76px',
+                  borderRadius: '50%',
+                  backgroundColor: '#F5F3FF',
+                  border: '1.5px solid rgba(139, 92, 246, 0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  boxShadow: '0 4px 16px rgba(124, 58, 237, 0.1)'
+                }}
+              >
+                <img 
+                  src="/mascot_meditating.png" 
+                  alt="Meditação" 
+                  style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                />
+              </div>
 
-          <p style={{ fontSize: '13px', color: '#5C6470', lineHeight: 1.5, margin: '0 0 24px 0' }}>
-            Uma prática guiada de <strong>3 minutos</strong> para desacelerar o ritmo respiratório, acalmar pensamentos e renovar a clareza para o seu dia.
-          </p>
+              <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1E2229', margin: '0 0 6px 0' }}>
+                Prepare sua Mente
+              </h2>
 
-          <div 
-            style={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #EBECEF',
-              borderRadius: '16px',
-              padding: '16px',
-              textAlign: 'left',
-              width: '100%',
-              marginBottom: '28px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '18px' }}>🎧</span>
-              <span style={{ fontSize: '13px', color: '#1E2229' }}>Conecte seus <strong>fones de ouvido</strong> se possível.</span>
+              <p style={{ fontSize: '13px', color: '#5C6470', lineHeight: 1.5, margin: '0 0 20px 0' }}>
+                Uma prática guiada de <strong>3 minutos</strong> para desacelerar o ritmo respiratório, acalmar pensamentos e ancorar um mindset de clareza e autogoverno.
+              </p>
+
+              <div 
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #EBECEF',
+                  borderRadius: '16px',
+                  padding: '14px 16px',
+                  textAlign: 'left',
+                  width: '100%',
+                  marginBottom: '20px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '16px' }}>🎧</span>
+                  <span style={{ fontSize: '12.5px', color: '#1E2229' }}>Conecte seus <strong>fones de ouvido</strong> para som imersivo.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '16px' }}>🪑</span>
+                  <span style={{ fontSize: '12.5px', color: '#1E2229' }}>Sente-se com a <strong>coluna ereta e relaxada</strong>.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '16px' }}>🌊</span>
+                  <span style={{ fontSize: '12.5px', color: '#1E2229' }}>Acompanhe a <strong>locução e a trilha ambiente harmônica</strong>.</span>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '18px' }}>🪑</span>
-              <span style={{ fontSize: '13px', color: '#1E2229' }}>Sente-se com a <strong>coluna ereta e relaxada</strong>.</span>
+          )}
+
+          {/* TAB B: SEÇÃO CIENTÍFICA & AUTORIDADE */}
+          {prepTab === 'science' && sci && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div 
+                style={{
+                  backgroundColor: '#F5F3FF',
+                  border: '1px solid rgba(139, 92, 246, 0.2)',
+                  borderRadius: '16px',
+                  padding: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <ShieldCheck size={18} color="#7C3AED" />
+                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#1E2229', margin: 0 }}>
+                    {sci.title}
+                  </h3>
+                </div>
+                <p style={{ fontSize: '12px', color: '#5C6470', margin: 0, lineHeight: 1.45 }}>
+                  {sci.origin}
+                </p>
+              </div>
+
+              <div 
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #EBECEF',
+                  borderRadius: '16px',
+                  padding: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                  <Activity size={16} color="#7C3AED" />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#1E2229', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    As 4 Etapas de Maior Consciência
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {sci.stages.map((stg, i) => (
+                    <div key={i} style={{ borderLeft: '2px solid #7C3AED', paddingLeft: '10px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1E2229' }}>{stg.stage}</div>
+                      <div style={{ fontSize: '11px', color: '#5C6470', lineHeight: 1.4 }}>{stg.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div 
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #EBECEF',
+                  borderRadius: '16px',
+                  padding: '14px 16px'
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Benefícios Comprovados por Neuroimagem
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.5px', color: '#5C6470', lineHeight: 1.5 }}>
+                  {sci.benefits.map((b, idx) => (
+                    <li key={idx} style={{ marginBottom: '4px' }}>{b}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '18px' }}>🌿</span>
-              <span style={{ fontSize: '13px', color: '#1E2229' }}>Apenas acompanhe a voz e o ritmo da respiração.</span>
-            </div>
+          )}
+
+          <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+            <button
+              onClick={handleStartSession}
+              style={{
+                backgroundColor: '#7C3AED',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '14px',
+                padding: '15px 32px',
+                fontSize: '15px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Play size={16} fill="#FFFFFF" />
+              Iniciar Meditação
+            </button>
           </div>
-
-          <button
-            onClick={handleStartSession}
-            style={{
-              backgroundColor: '#7C3AED',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '14px',
-              padding: '15px 32px',
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Play size={16} fill="#FFFFFF" />
-            Iniciar Meditação
-          </button>
         </div>
       )}
 
@@ -302,7 +519,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '16px 20px',
+            padding: '14px 20px',
             maxWidth: '540px',
             margin: '0 auto',
             width: '100%',
@@ -316,14 +533,14 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '14px 0'
+              padding: '10px 0'
             }}
           >
             <div 
               style={{
                 position: 'relative',
-                width: '100px',
-                height: '100px',
+                width: '94px',
+                height: '94px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -335,17 +552,17 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                   position: 'absolute',
                   inset: '-10px',
                   borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0) 70%)',
+                  background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0) 70%)',
                   animation: isPlaying ? 'pulseHalo 4s ease-in-out infinite' : 'none'
                 }}
               />
               <div 
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '74px',
+                  height: '74px',
                   borderRadius: '50%',
                   backgroundColor: '#F5F3FF',
-                  border: '2px solid rgba(139, 92, 246, 0.3)',
+                  border: '2px solid rgba(139, 92, 246, 0.35)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -358,8 +575,8 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               </div>
             </div>
 
-            <div style={{ marginTop: '10px', fontSize: '11px', color: '#7C3AED', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Fase {currentStep.id} de {meditation.steps.length} • {currentStep.phase}
+            <div style={{ marginTop: '8px', fontSize: '11px', color: '#7C3AED', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {currentStep.phase}
             </div>
           </div>
 
@@ -370,8 +587,8 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               flex: 1,
               overflowY: 'auto',
               maxHeight: '260px',
-              padding: '8px 2px',
-              marginBottom: '16px',
+              padding: '6px 2px',
+              marginBottom: '14px',
               display: 'flex',
               flexDirection: 'column',
               gap: '10px'
@@ -388,16 +605,16 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                     backgroundColor: isActive ? '#FFFFFF' : '#F8F9FB',
                     border: isActive ? '1.5px solid #7C3AED' : '1px solid #EBECEF',
                     borderRadius: '14px',
-                    padding: '14px 16px',
+                    padding: '12px 16px',
                     transition: 'all 0.25s ease',
                     cursor: 'pointer',
-                    boxShadow: isActive ? '0 4px 16px rgba(124, 58, 237, 0.08)' : 'none'
+                    boxShadow: isActive ? '0 4px 14px rgba(124, 58, 237, 0.08)' : 'none'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span 
                       style={{ 
-                        fontSize: '11px', 
+                        fontSize: '10.5px', 
                         fontWeight: 700, 
                         color: isActive ? '#7C3AED' : '#8C94A0',
                         textTransform: 'uppercase',
@@ -412,7 +629,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                   </div>
                   <p 
                     style={{ 
-                      fontSize: isActive ? '14px' : '12.5px', 
+                      fontSize: isActive ? '13.5px' : '12.5px', 
                       lineHeight: 1.5, 
                       margin: 0,
                       color: isActive ? '#1E2229' : '#5C6470',
@@ -432,12 +649,12 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               backgroundColor: '#FFFFFF',
               border: '1px solid #EBECEF',
               borderRadius: '18px',
-              padding: '14px 18px',
+              padding: '12px 18px',
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)'
             }}
           >
             {/* Scrubber */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
               <span style={{ fontSize: '11px', color: '#5C6470', width: '30px', fontWeight: 600 }}>
                 {formatTime(currentTime)}
               </span>
@@ -473,10 +690,11 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               </span>
             </div>
 
-            {/* Controles Principais */}
+            {/* Controles Principais + Toggle de Som Ambiente */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <button
                 onClick={toggleMute}
+                title="Mutar/Desmutar Voz"
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -545,7 +763,27 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                 </button>
               </div>
 
-              <div style={{ width: '30px' }} />
+              {/* Botão de Som de Fundo Calmante */}
+              <button
+                onClick={toggleAmbientSound}
+                title={ambientSound ? "Desativar Trilha Ambiente" : "Ativar Trilha Ambiente"}
+                style={{
+                  background: ambientSound ? 'rgba(139, 92, 246, 0.12)' : 'transparent',
+                  border: ambientSound ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid #EBECEF',
+                  borderRadius: '10px',
+                  padding: '5px 8px',
+                  color: ambientSound ? '#7C3AED' : '#8C94A0',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11px',
+                  fontWeight: 600
+                }}
+              >
+                <Waves size={14} />
+                <span>{ambientSound ? 'Trilha ON' : 'Trilha OFF'}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -560,7 +798,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: '30px 24px',
+            padding: '24px 20px',
             textAlign: 'center',
             maxWidth: '480px',
             margin: '0 auto',
@@ -570,8 +808,8 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         >
           <div 
             style={{
-              width: '64px',
-              height: '64px',
+              width: '60px',
+              height: '60px',
               borderRadius: '50%',
               backgroundColor: '#ECFDF5',
               border: '1.5px solid #10B981',
@@ -579,19 +817,19 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '16px',
+              marginBottom: '14px',
               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.15)'
             }}
           >
-            <CheckCircle2 size={32} />
+            <CheckCircle2 size={30} />
           </div>
 
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1E2229', margin: '0 0 6px 0', fontFamily: 'var(--font-display, inherit)' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1E2229', margin: '0 0 4px 0' }}>
             Mente Serena & Foco Renovado
           </h2>
 
-          <p style={{ fontSize: '13px', color: '#5C6470', margin: '0 0 20px 0' }}>
-            Parabéns por dedicar este momento à sua presença e clareza mental.
+          <p style={{ fontSize: '12.5px', color: '#5C6470', margin: '0 0 18px 0' }}>
+            Você concluiu o protocolo de ancoragem respiratória e reprogramação cognitiva.
           </p>
 
           {/* Cartão de Afirmação */}
@@ -600,8 +838,8 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               backgroundColor: '#F5F3FF',
               border: '1px solid rgba(139, 92, 246, 0.2)',
               borderRadius: '16px',
-              padding: '16px',
-              marginBottom: '24px',
+              padding: '14px',
+              marginBottom: '20px',
               width: '100%',
               boxSizing: 'border-box'
             }}
@@ -615,8 +853,8 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
           </div>
 
           {/* Check-in de Sensação */}
-          <div style={{ width: '100%', marginBottom: '28px' }}>
-            <div style={{ fontSize: '13px', color: '#1E2229', marginBottom: '10px', fontWeight: 600 }}>
+          <div style={{ width: '100%', marginBottom: '24px' }}>
+            <div style={{ fontSize: '12.5px', color: '#1E2229', marginBottom: '10px', fontWeight: 600 }}>
               {meditation.reflectionPrompt}
             </div>
 
