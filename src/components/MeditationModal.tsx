@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Play, Pause, RotateCcw, RotateCw, 
-  Sparkles, CheckCircle2, 
+  CheckCircle2, 
   Volume2, VolumeX, ArrowRight,
   Brain, Activity, ShieldCheck, Waves
 } from 'lucide-react';
@@ -197,7 +197,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               color: '#7C3AED'
             }}
           >
-            <Sparkles size={16} />
+            <span style={{ fontSize: '18px', lineHeight: 1 }}>🧘</span>
           </div>
           <div>
             <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#7C3AED', fontWeight: 700 }}>

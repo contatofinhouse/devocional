@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ChevronRight, Play } from 'lucide-react';
+import { ChevronRight, Play } from 'lucide-react';
 import type { MeditationSession } from '../data/mockMeditations';
 
 interface MeditationCardProps {
@@ -43,7 +43,7 @@ export const MeditationCard: React.FC<MeditationCardProps> = ({ meditation, onSt
           flexShrink: 0,
           boxShadow: '0 2px 8px rgba(124, 58, 237, 0.08)'
         }}>
-          <Sparkles size={22} />
+          <span style={{ fontSize: '22px', lineHeight: 1 }}>🧘</span>
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
