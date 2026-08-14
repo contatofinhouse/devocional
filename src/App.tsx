@@ -43,6 +43,9 @@ import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { StatusBar } from '@capacitor/status-bar';
 import { addToSyncQueue, processSyncQueue as processSyncQueueLib } from './utils/offlineQueue';
 import { getFriendlyErrorMessage } from './utils/errorHelper';
+import { GUIDED_MEDITATIONS, type MeditationSession } from './data/mockMeditations';
+import { MeditationCard } from './components/MeditationCard';
+import { MeditationModal } from './components/MeditationModal';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
@@ -244,6 +247,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'journey' | 'calendar' | 'crisis' | 'parent'>('journey');
   const [currentDevotional, setCurrentDevotional] = useState<Devotional | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
+  const [activeMeditation, setActiveMeditation] = useState<MeditationSession | null>(null);
 
   const getAgeFromBirthdate = (birthdateStr: string): number => {
     if (!birthdateStr) return 0;
@@ -1967,6 +1971,12 @@ export default function App() {
                     <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
                   </div>
 
+                  {/* CARD MEDITAÇÃO GUIADA - MINDFULNESS MBSR */}
+                  <MeditationCard 
+                    meditation={GUIDED_MEDITATIONS[0]} 
+                    onStart={(med) => setActiveMeditation(med)} 
+                  />
+
                   {TRAILS.map((trail) => (
                     <div 
                       key={trail.id} 
@@ -3649,6 +3659,18 @@ export default function App() {
 
       </div>
     </div>
+
+    {/* MODAL DE MEDITAÇÃO GUIADA MINDFULNESS */}
+    {activeMeditation && (
+      <MeditationModal
+        meditation={activeMeditation}
+        onClose={() => setActiveMeditation(null)}
+        onComplete={(feeling) => {
+          showToast(`Sessão concluída! Sensação: ${feeling}.`, 'success');
+          setActiveMeditation(null);
+        }}
+      />
+    )}
 
     {/* TOAST NOTIFICATION */}
     {toast && (
