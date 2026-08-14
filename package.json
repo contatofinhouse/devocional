@@ -28,7 +28,7 @@
     "@revenuecat/purchases-capacitor": "^13.2.1",
     "@revenuecat/purchases-capacitor-ui": "^13.2.1",
     "@sentry/capacitor": "^4.2.0",
-    "@sentry/react": "^10.66.0",
+    "@sentry/react": "10.60.0",
     "@supabase/supabase-js": "^2.108.2",
     "lucide-react": "^1.21.0",
     "pg": "^8.22.0",
