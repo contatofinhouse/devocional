@@ -33,8 +33,8 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
   "title": "Presença, Clareza & Foco",
   "subtitle": "Reprogramação de Mindset com Metodologia MBSR & RAIN",
   "methodology": "Mindfulness MBSR",
-  "durationSeconds": 157,
-  "audioUrl": "/audio/meditacao_mindset.mp3",
+  "durationSeconds": 147,
+  "audioUrl": "/audio/meditacao_mindset.wav",
   "affirmation": "Minha mente está serena, meu discernimento está afiado e meu foco está ancorado no presente.",
   "reflectionPrompt": "Como sua mente se sente após esta sessão de ancoragem?",
   "scientificMethodology": {
@@ -71,55 +71,55 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       "phase": "1. Acolhimento e Postura",
       "focus": "breathing",
       "startSeconds": 0.0,
-      "endSeconds": 18.8,
+      "endSeconds": 19.42,
       "text": "Encontre uma posição confortável, com a coluna ereta e relaxada. Feche suavemente os olhos e permita-se estar presente."
     },
     {
       "id": 2,
       "phase": "2. Ancoragem Respiratória (Ciclo 1)",
       "focus": "breathing",
-      "startSeconds": 18.8,
-      "endSeconds": 47.0,
+      "startSeconds": 19.42,
+      "endSeconds": 44.25,
       "text": "Inspire profundamente pelo nariz... Segure... E solte o ar devagar pela boca, soltando os ombros e relaxando."
     },
     {
       "id": 3,
       "phase": "3. Respiração de Alívio (Ciclo 2)",
       "focus": "breathing",
-      "startSeconds": 47.0,
-      "endSeconds": 67.2,
+      "startSeconds": 44.25,
+      "endSeconds": 63.56,
       "text": "Puxe o ar com calma e profundidade... e solte devagar, sentindo o alívio e a descompressão em todo o corpo."
     },
     {
       "id": 4,
       "phase": "4. Desaceleração & Escaneamento",
       "focus": "awareness",
-      "startSeconds": 67.2,
-      "endSeconds": 91.2,
+      "startSeconds": 63.56,
+      "endSeconds": 86.38,
       "text": "Solte a tensão do maxilar, relaxe a testa e os ombros. Sinta seu corpo pousar em quietude e paz."
     },
     {
       "id": 5,
       "phase": "5. Observador Sem Julgamento (RAIN)",
       "focus": "awareness",
-      "startSeconds": 91.2,
-      "endSeconds": 116.4,
+      "startSeconds": 86.38,
+      "endSeconds": 109.05,
       "text": "Apenas observe seus pensamentos como nuvens passando no céu, sem julgamento, retornando à respiração."
     },
     {
       "id": 6,
       "phase": "6. Reprogramação de Mindset",
       "focus": "mindset",
-      "startSeconds": 116.4,
-      "endSeconds": 137.6,
+      "startSeconds": 109.05,
+      "endSeconds": 130.61,
       "text": "Eu escolho a serenidade. Minha mente é clara, focada e consciente. Tenho autogoverno e clareza no meu caminho."
     },
     {
       "id": 7,
       "phase": "7. Integração & Retorno",
       "focus": "integration",
-      "startSeconds": 137.6,
-      "endSeconds": 157.1,
+      "startSeconds": 130.61,
+      "endSeconds": 147.26,
       "text": "Respire fundo, movimente suavemente as mãos e abra os olhos, levando esta clareza para o seu dia."
     }
   ]
