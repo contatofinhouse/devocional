@@ -39,7 +39,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
 
     const ambient = new Audio('/audio/ambient_432hz.wav');
     ambient.loop = true;
-    ambient.volume = 0.35;
+    ambient.volume = 0.08; // Delicate, soft background layer
     ambientAudioRef.current = ambient;
 
     audio.onloadedmetadata = () => {

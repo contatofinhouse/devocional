@@ -33,7 +33,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
   "title": "Presença, Clareza & Foco",
   "subtitle": "Reprogramação de Mindset com Metodologia MBSR & RAIN",
   "methodology": "Mindfulness MBSR",
-  "durationSeconds": 142,
+  "durationSeconds": 99,
   "audioUrl": "/audio/meditacao_mindset.mp3",
   "affirmation": "Minha mente está serena, meu discernimento está afiado e meu foco está ancorado no presente.",
   "reflectionPrompt": "Como sua mente se sente após esta sessão de ancoragem?",
@@ -71,48 +71,48 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       "phase": "1. Acolhimento e Postura",
       "focus": "breathing",
       "startSeconds": 0.0,
-      "endSeconds": 21.6,
-      "text": "Bem-vindo a este momento de pausa e renovação mental. Encontre uma posição confortável, sentado com a coluna ereta, porém relaxada. Feche suavemente os olhos ou mantenha o olhar suave em um ponto à frente. Permita-se pousar por inteiro no momento presente."
+      "endSeconds": 14.8,
+      "text": "Bem-vindo a este momento de pausa e renovação mental. Encontre uma posição confortável, com a coluna ereta e relaxada. Feche suavemente os olhos. Permita-se estar presente, aqui e agora."
     },
     {
       "id": 2,
       "phase": "2. Ancoragem na Respiração",
       "focus": "breathing",
-      "startSeconds": 21.6,
-      "endSeconds": 46.4,
-      "text": "Traga agora toda a sua atenção para a respiração. Inspire profundamente pelo nariz, expandindo o abdômen... Segure o ar por um instante... E solte o ar devagar pela boca, soltando os ombros e liberando todo o peso acumulado. Sinta o ar entrando com calma, e saindo com alívio."
+      "startSeconds": 14.8,
+      "endSeconds": 36.1,
+      "text": "Traga a sua atenção para a respiração. Inspire profundamente pelo nariz, expandindo o abdômen... Segure o ar por um breve instante... E solte o ar devagar pela boca, relaxando os ombros e liberando todo o cansaço acumulado. Sinta a calma entrando a cada respiração."
     },
     {
       "id": 3,
       "phase": "3. Desaceleração & Escaneamento",
       "focus": "awareness",
-      "startSeconds": 46.4,
-      "endSeconds": 69.4,
-      "text": "Observe as sensações do seu corpo agora. Sinta o apoio firme sob você. Solte qualquer tensão no maxilar, suavize a testa e ao redor dos olhos. Não há nada para resolver neste exato segundo. Este momento é um espaço seguro de quietude e clareza."
+      "startSeconds": 36.1,
+      "endSeconds": 53.5,
+      "text": "Observe o seu corpo neste momento. Solte a tensão do maxilar, relaxe a testa e os olhos. Não há nada para resolver neste segundo. Este é o seu espaço de quietude, clareza e paz interior."
     },
     {
       "id": 4,
       "phase": "4. Observação Sem Julgamento (RAIN)",
       "focus": "awareness",
-      "startSeconds": 69.4,
-      "endSeconds": 91.0,
-      "text": "Se pensamentos, tarefas ou preocupações surgirem na mente, não tente lutar contra eles. Apenas reconheça a presença deles com gentileza, como quem observa nuvens passando pelo céu. Deixe-os passar no ritmo da sua respiração, retornando sempre ao centro do seu ser."
+      "startSeconds": 53.5,
+      "endSeconds": 68.7,
+      "text": "Se pensamentos ou preocupações surgirem, não lute contra eles. Apenas observe cada pensamento como uma nuvem passando no céu, e gentilmente traga o foco de volta para a sua respiração."
     },
     {
       "id": 5,
       "phase": "5. Reprogramação de Mindset",
       "focus": "mindset",
-      "startSeconds": 91.0,
-      "endSeconds": 115.4,
-      "text": "Agora, interiorize estas convicções com firmeza e serenidade: Eu escolho a calma no lugar da pressa. Minha mente tem clareza e discernimento. Eu tenho autogoverno sobre minhas reações e foco absoluto no que é essencial. Eu estou em paz no meu presente e seguro no meu caminho."
+      "startSeconds": 68.7,
+      "endSeconds": 84.4,
+      "text": "Agora, sinta esta verdade em sua mente: Eu escolho a serenidade. Minha mente é clara, focada e consciente. Eu tenho autogoverno sobre minhas escolhas e estou em paz no meu caminho."
     },
     {
       "id": 6,
       "phase": "6. Integração & Retorno",
       "focus": "integration",
-      "startSeconds": 115.4,
-      "endSeconds": 141.6,
-      "text": "Faça mais uma respiração profunda e consciente. Sinta uma onda de energia limpa e renovadora percorrendo todo o seu corpo. Comece a movimentar suavemente as mãos e os pés. E quando se sentir pronto, abra os olhos, levando esta mente serena, forte e focada para todas as suas escolhas de hoje."
+      "startSeconds": 84.4,
+      "endSeconds": 99.2,
+      "text": "Faça mais uma respiração profunda. Movimente suavemente as mãos e os pés. Quando se sentir pronto, abra os olhos, levando esta clareza e tranquilidade para todo o seu dia."
     }
   ]
 }
