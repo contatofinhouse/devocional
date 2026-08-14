@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Play, Headphones } from 'lucide-react';
+import { Sparkles, ChevronRight, Play } from 'lucide-react';
 import type { MeditationSession } from '../data/mockMeditations';
 
 interface MeditationCardProps {
@@ -12,115 +12,102 @@ export const MeditationCard: React.FC<MeditationCardProps> = ({ meditation, onSt
 
   return (
     <div 
-      className="meditation-banner-card"
+      className="card"
       onClick={() => onStart(meditation)}
       style={{
-        background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)',
-        borderRadius: '20px',
-        padding: '22px 20px',
-        color: '#FFFFFF',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: '0 12px 30px -8px rgba(49, 46, 129, 0.45)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        backgroundColor: '#F5F3FF', // Soft mindfulness lavender matching the app's palette
+        borderColor: 'rgba(139, 92, 246, 0.15)',
+        borderRadius: 16,
+        padding: '16px 20px',
         cursor: 'pointer',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        marginBottom: '28px',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        overflow: 'hidden',
+        position: 'relative',
+        marginBottom: 16
       }}
     >
-      {/* Background glow effects */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: '-40px',
-          right: '-40px',
-          width: '140px',
-          height: '140px',
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+        <div style={{
+          width: 48,
+          height: 48,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(167, 139, 250, 0.35) 0%, rgba(167, 139, 250, 0) 70%)',
-          pointerEvents: 'none'
-        }} 
-      />
+          backgroundColor: '#FFFFFF',
+          border: '1.5px solid rgba(139, 92, 246, 0.25)',
+          color: '#7C3AED',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(124, 58, 237, 0.08)'
+        }}>
+          <Sparkles size={22} />
+        </div>
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <span 
-            style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(8px)',
-              padding: '4px 10px',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: 700,
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              color: '#DDD6FE'
-            }}
-          >
-            <Sparkles size={12} />
-            Mindfulness MBSR
-          </span>
-          <span 
-            style={{
-              background: 'rgba(99, 102, 241, 0.35)',
-              padding: '4px 10px',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: 600,
-              color: '#C7D2FE'
-            }}
-          >
-            {durationMin} min • Áudio Neural
-          </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, margin: 0 }}>
+              {meditation.title}
+            </h3>
+            <span 
+              style={{ 
+                fontSize: 10, 
+                color: '#7C3AED', 
+                backgroundColor: 'rgba(139, 92, 246, 0.12)', 
+                padding: '2px 8px', 
+                borderRadius: 10, 
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.3px'
+              }}
+            >
+              MBSR
+            </span>
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--text-second)', margin: 0, lineHeight: 1.4 }}>
+            {meditation.subtitle}
+          </p>
         </div>
 
         <div 
           style={{
-            width: '42px',
-            height: '42px',
+            width: 36,
+            height: 36,
             borderRadius: '50%',
-            background: '#FFFFFF',
-            color: '#312E81',
+            backgroundColor: '#7C3AED',
+            color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            flexShrink: 0
+            flexShrink: 0,
+            boxShadow: '0 3px 10px rgba(124, 58, 237, 0.2)'
           }}
         >
-          <Play size={18} fill="#312E81" style={{ marginLeft: '2px' }} />
+          <Play size={16} fill="#FFFFFF" style={{ marginLeft: 2 }} />
         </div>
-      </div>
-
-      <div style={{ maxWidth: '85%' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
-          {meditation.title}
-        </h3>
-        <p style={{ fontSize: '13px', margin: 0, color: '#E0E7FF', lineHeight: 1.4, opacity: 0.9 }}>
-          {meditation.subtitle}
-        </p>
       </div>
 
       <div 
         style={{
-          marginTop: '16px',
-          paddingTop: '12px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.12)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: '12px',
-          color: '#C7D2FE'
+          paddingTop: 10,
+          borderTop: '1px solid rgba(139, 92, 246, 0.1)',
+          fontSize: 11,
+          color: 'var(--text-second)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Headphones size={14} />
-          <span>Fones recomendados para imersão</span>
-        </div>
-        <span style={{ fontWeight: 700, color: '#FFFFFF' }}>Iniciar Sessão →</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span>⏱️ {durationMin} min</span>
+          <span>•</span>
+          <span>Áudio Neural Guiado</span>
+        </span>
+        <span style={{ fontWeight: 600, color: '#7C3AED', display: 'flex', alignItems: 'center', gap: 2 }}>
+          Iniciar Sessão <ChevronRight size={14} />
+        </span>
       </div>
     </div>
   );

@@ -1971,12 +1971,6 @@ export default function App() {
                     <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
                   </div>
 
-                  {/* CARD MEDITAÇÃO GUIADA - MINDFULNESS MBSR */}
-                  <MeditationCard 
-                    meditation={GUIDED_MEDITATIONS[0]} 
-                    onStart={(med) => setActiveMeditation(med)} 
-                  />
-
                   {TRAILS.map((trail) => (
                     <div 
                       key={trail.id} 
@@ -2067,6 +2061,19 @@ export default function App() {
                       </div>
                     </div>
                   ))}
+
+                  {/* SEÇÃO / TRILHA DE MEDITAÇÃO GUIADA (ABAIXO DE TODAS AS DEMAIS) */}
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ marginBottom: 10 }}>
+                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700 }}>Mindfulness & Serenidade</h3>
+                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2 }}>Práticas guiadas de respiração e reprogramação de foco mental.</p>
+                    </div>
+
+                    <MeditationCard 
+                      meditation={GUIDED_MEDITATIONS[0]} 
+                      onStart={(med) => setActiveMeditation(med)} 
+                    />
+                  </div>
 
                 </div>
               )}

@@ -128,45 +128,47 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        background: 'linear-gradient(180deg, #0B0A1A 0%, #17153B 60%, #2E236C 100%)',
-        color: '#FFFFFF',
+        backgroundColor: '#FAFBFC', // Clean light background matching the app
+        color: '#1E2229',
         display: 'flex',
         flexDirection: 'column',
         overflowY: 'auto',
-        fontFamily: 'inherit',
-        animation: 'fadeIn 0.3s ease'
+        fontFamily: 'var(--font-sans, "Outfit", sans-serif)',
+        animation: 'fadeIn 0.25s ease'
       }}
     >
       {/* Header bar */}
       <div 
         style={{
-          padding: 'calc(env(safe-area-inset-top) + 16px) 20px 12px 20px',
+          padding: 'calc(env(safe-area-inset-top) + 14px) 20px 14px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+          borderBottom: '1px solid #EBECEF',
+          backgroundColor: '#FFFFFF'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div 
             style={{
-              width: '28px',
-              height: '28px',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
-              background: 'rgba(167, 139, 250, 0.2)',
+              backgroundColor: '#F5F3FF',
+              border: '1px solid rgba(139, 92, 246, 0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#A78BFA'
+              color: '#7C3AED'
             }}
           >
             <Sparkles size={16} />
           </div>
           <div>
-            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#A78BFA', fontWeight: 700 }}>
+            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#7C3AED', fontWeight: 700 }}>
               {meditation.methodology}
             </div>
-            <div style={{ fontSize: '15px', fontWeight: 700 }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#1E2229' }}>
               {meditation.title}
             </div>
           </div>
@@ -175,19 +177,19 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         <button
           onClick={onClose}
           style={{
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: '#F1F3F5',
             border: 'none',
             borderRadius: '50%',
-            width: '36px',
-            height: '36px',
-            color: '#FFFFFF',
+            width: '34px',
+            height: '34px',
+            color: '#5C6470',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer'
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
       </div>
 
@@ -202,7 +204,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
             alignItems: 'center',
             padding: '30px 24px',
             textAlign: 'center',
-            maxWidth: '500px',
+            maxWidth: '480px',
             margin: '0 auto',
             width: '100%',
             boxSizing: 'border-box'
@@ -210,81 +212,83 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         >
           <div 
             style={{
-              width: '100px',
-              height: '100px',
+              width: '84px',
+              height: '84px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(167, 139, 250, 0.3) 0%, rgba(99, 102, 241, 0.1) 70%)',
-              border: '2px solid rgba(167, 139, 250, 0.4)',
+              backgroundColor: '#F5F3FF',
+              border: '1.5px solid rgba(139, 92, 246, 0.25)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '24px',
-              boxShadow: '0 0 30px rgba(167, 139, 250, 0.3)'
+              marginBottom: '20px',
+              boxShadow: '0 4px 16px rgba(124, 58, 237, 0.1)'
             }}
           >
             <img 
               src="/mascot_meditating.png" 
               alt="Meditação" 
-              style={{ width: '64px', height: '64px', objectFit: 'contain' }}
+              style={{ width: '54px', height: '54px', objectFit: 'contain' }}
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
               }}
             />
           </div>
 
-          <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 10px 0' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1E2229', margin: '0 0 8px 0', fontFamily: 'var(--font-display, inherit)' }}>
             Prepare sua Mente
           </h2>
 
-          <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: 1.6, margin: '0 0 28px 0' }}>
-            Esta sessão de 3 minutos utiliza <strong>Mindfulness MBSR</strong> para desacelerar o ritmo mental, acalmar a respiração e reprogramar seu foco para o momento presente.
+          <p style={{ fontSize: '13px', color: '#5C6470', lineHeight: 1.5, margin: '0 0 24px 0' }}>
+            Uma prática guiada de <strong>3 minutos</strong> para desacelerar o ritmo respiratório, acalmar pensamentos e renovar a clareza para o seu dia.
           </p>
 
           <div 
             style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #EBECEF',
               borderRadius: '16px',
               padding: '16px',
               textAlign: 'left',
               width: '100%',
-              marginBottom: '32px'
+              marginBottom: '28px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <span style={{ fontSize: '18px' }}>🎧</span>
-              <span style={{ fontSize: '13px', color: '#E2E8F0' }}>Se puder, conecte seus <strong>fones de ouvido</strong>.</span>
+              <span style={{ fontSize: '13px', color: '#1E2229' }}>Conecte seus <strong>fones de ouvido</strong> se possível.</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <span style={{ fontSize: '18px' }}>🪑</span>
-              <span style={{ fontSize: '13px', color: '#E2E8F0' }}>Sente-se de forma confortável, com a <strong>coluna ereta</strong>.</span>
+              <span style={{ fontSize: '13px', color: '#1E2229' }}>Sente-se com a <strong>coluna ereta e relaxada</strong>.</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '18px' }}>🌿</span>
-              <span style={{ fontSize: '13px', color: '#E2E8F0' }}>Deixe o áudio e o texto guiarem sua respiração.</span>
+              <span style={{ fontSize: '13px', color: '#1E2229' }}>Apenas acompanhe a voz e o ritmo da respiração.</span>
             </div>
           </div>
 
           <button
             onClick={handleStartSession}
             style={{
-              background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+              backgroundColor: '#7C3AED',
               color: '#FFFFFF',
               border: 'none',
-              borderRadius: '16px',
-              padding: '16px 36px',
-              fontSize: '16px',
+              borderRadius: '14px',
+              padding: '15px 32px',
+              fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)',
+              boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              transition: 'all 0.2s ease'
             }}
           >
-            <Play size={18} fill="#FFFFFF" />
+            <Play size={16} fill="#FFFFFF" />
             Iniciar Meditação
           </button>
         </div>
@@ -298,8 +302,8 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '20px',
-            maxWidth: '600px',
+            padding: '16px 20px',
+            maxWidth: '540px',
             margin: '0 auto',
             width: '100%',
             boxSizing: 'border-box'
@@ -312,14 +316,14 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '20px 0'
+              padding: '14px 0'
             }}
           >
             <div 
               style={{
                 position: 'relative',
-                width: '110px',
-                height: '110px',
+                width: '100px',
+                height: '100px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -331,46 +335,46 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                   position: 'absolute',
                   inset: '-10px',
                   borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, rgba(99, 102, 241, 0) 70%)',
+                  background: 'radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0) 70%)',
                   animation: isPlaying ? 'pulseHalo 4s ease-in-out infinite' : 'none'
                 }}
               />
               <div 
                 style={{
-                  width: '90px',
-                  height: '90px',
+                  width: '80px',
+                  height: '80px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #4338CA 0%, #6D28D9 100%)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  backgroundColor: '#F5F3FF',
+                  border: '2px solid rgba(139, 92, 246, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 0 25px rgba(139, 92, 246, 0.5)'
+                  boxShadow: '0 4px 16px rgba(124, 58, 237, 0.12)'
                 }}
               >
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#DDD6FE', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#7C3AED', letterSpacing: '0.4px' }}>
                   {isPlaying ? 'RESPIRAR' : 'PAUSADO'}
                 </span>
               </div>
             </div>
 
-            <div style={{ marginTop: '12px', fontSize: '12px', color: '#A78BFA', fontWeight: 600 }}>
+            <div style={{ marginTop: '10px', fontSize: '11px', color: '#7C3AED', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Fase {currentStep.id} de {meditation.steps.length} • {currentStep.phase}
             </div>
           </div>
 
-          {/* Lista de Textos Guiados com Destaque no Passo Atual */}
+          {/* Lista de Textos Guiados com Destaque Suave no Passo Atual */}
           <div 
             ref={stepListRef}
             style={{
               flex: 1,
               overflowY: 'auto',
               maxHeight: '260px',
-              padding: '10px 4px',
+              padding: '8px 2px',
               marginBottom: '16px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px'
+              gap: '10px'
             }}
           >
             {meditation.steps.map((step, idx) => {
@@ -381,14 +385,13 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                   id={`med-step-${idx}`}
                   onClick={() => handleSeek(step.startSeconds)}
                   style={{
-                    background: isActive ? 'rgba(139, 92, 246, 0.22)' : 'rgba(255, 255, 255, 0.03)',
-                    border: isActive ? '1px solid rgba(167, 139, 250, 0.5)' : '1px solid rgba(255, 255, 255, 0.05)',
+                    backgroundColor: isActive ? '#FFFFFF' : '#F8F9FB',
+                    border: isActive ? '1.5px solid #7C3AED' : '1px solid #EBECEF',
                     borderRadius: '14px',
                     padding: '14px 16px',
-                    transition: 'all 0.3s ease',
+                    transition: 'all 0.25s ease',
                     cursor: 'pointer',
-                    transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                    boxShadow: isActive ? '0 4px 20px rgba(139, 92, 246, 0.25)' : 'none'
+                    boxShadow: isActive ? '0 4px 16px rgba(124, 58, 237, 0.08)' : 'none'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -396,23 +399,23 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                       style={{ 
                         fontSize: '11px', 
                         fontWeight: 700, 
-                        color: isActive ? '#C4B5FD' : '#64748B',
+                        color: isActive ? '#7C3AED' : '#8C94A0',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
+                        letterSpacing: '0.4px'
                       }}
                     >
                       {step.phase}
                     </span>
-                    <span style={{ fontSize: '10px', color: '#64748B' }}>
+                    <span style={{ fontSize: '10px', color: '#8C94A0' }}>
                       {formatTime(step.startSeconds)}
                     </span>
                   </div>
                   <p 
                     style={{ 
-                      fontSize: isActive ? '15px' : '13px', 
+                      fontSize: isActive ? '14px' : '12.5px', 
                       lineHeight: 1.5, 
                       margin: 0,
-                      color: isActive ? '#FFFFFF' : '#94A3B8',
+                      color: isActive ? '#1E2229' : '#5C6470',
                       fontWeight: isActive ? 600 : 400
                     }}
                   >
@@ -426,24 +429,24 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
           {/* Barra de Progresso & Controles de Áudio */}
           <div 
             style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              padding: '16px 20px'
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #EBECEF',
+              borderRadius: '18px',
+              padding: '14px 18px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)'
             }}
           >
             {/* Scrubber */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '11px', color: '#94A3B8', width: '32px' }}>
+              <span style={{ fontSize: '11px', color: '#5C6470', width: '30px', fontWeight: 600 }}>
                 {formatTime(currentTime)}
               </span>
               
               <div 
                 style={{
                   flex: 1,
-                  height: '6px',
-                  background: 'rgba(255, 255, 255, 0.15)',
+                  height: '5px',
+                  backgroundColor: '#EBECEF',
                   borderRadius: '3px',
                   position: 'relative',
                   cursor: 'pointer'
@@ -458,14 +461,14 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                   style={{
                     height: '100%',
                     width: `${progressPercent}%`,
-                    background: 'linear-gradient(90deg, #818CF8, #C084FC)',
+                    backgroundColor: '#7C3AED',
                     borderRadius: '3px',
                     transition: 'width 0.1s linear'
                   }}
                 />
               </div>
 
-              <span style={{ fontSize: '11px', color: '#94A3B8', width: '32px', textAlign: 'right' }}>
+              <span style={{ fontSize: '11px', color: '#5C6470', width: '30px', textAlign: 'right', fontWeight: 600 }}>
                 {formatTime(duration)}
               </span>
             </div>
@@ -477,7 +480,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: isMuted ? '#EF4444' : '#94A3B8',
+                  color: isMuted ? '#EF4444' : '#5C6470',
                   cursor: 'pointer',
                   padding: '6px'
                 }}
@@ -485,13 +488,13 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                 {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
               </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <button
                   onClick={() => handleSkip(-10)}
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#E2E8F0',
+                    color: '#1E2229',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
@@ -500,27 +503,27 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                     fontWeight: 700
                   }}
                 >
-                  <RotateCcw size={20} />
+                  <RotateCcw size={18} />
                   <span>10s</span>
                 </button>
 
                 <button
                   onClick={togglePlayPause}
                   style={{
-                    width: '52px',
-                    height: '52px',
+                    width: '46px',
+                    height: '46px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #6366F1 0%, #A855F7 100%)',
+                    backgroundColor: '#7C3AED',
                     color: '#FFFFFF',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 6px 20px rgba(147, 51, 234, 0.4)'
+                    boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)'
                   }}
                 >
-                  {isPlaying ? <Pause size={22} fill="#FFFFFF" /> : <Play size={22} fill="#FFFFFF" style={{ marginLeft: '3px' }} />}
+                  {isPlaying ? <Pause size={20} fill="#FFFFFF" /> : <Play size={20} fill="#FFFFFF" style={{ marginLeft: '2px' }} />}
                 </button>
 
                 <button
@@ -528,7 +531,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#E2E8F0',
+                    color: '#1E2229',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
@@ -537,7 +540,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                     fontWeight: 700
                   }}
                 >
-                  <RotateCw size={20} />
+                  <RotateCw size={18} />
                   <span>10s</span>
                 </button>
               </div>
@@ -559,7 +562,7 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
             alignItems: 'center',
             padding: '30px 24px',
             textAlign: 'center',
-            maxWidth: '500px',
+            maxWidth: '480px',
             margin: '0 auto',
             width: '100%',
             boxSizing: 'border-box'
@@ -567,57 +570,57 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
         >
           <div 
             style={{
-              width: '72px',
-              height: '72px',
+              width: '64px',
+              height: '64px',
               borderRadius: '50%',
-              background: 'rgba(52, 211, 153, 0.15)',
-              border: '2px solid #34D399',
-              color: '#34D399',
+              backgroundColor: '#ECFDF5',
+              border: '1.5px solid #10B981',
+              color: '#10B981',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '20px',
-              boxShadow: '0 0 25px rgba(52, 211, 153, 0.3)'
+              marginBottom: '16px',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.15)'
             }}
           >
-            <CheckCircle2 size={36} />
+            <CheckCircle2 size={32} />
           </div>
 
-          <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 8px 0' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1E2229', margin: '0 0 6px 0', fontFamily: 'var(--font-display, inherit)' }}>
             Mente Serena & Foco Renovado
           </h2>
 
-          <p style={{ fontSize: '13px', color: '#94A3B8', margin: '0 0 24px 0' }}>
-            Você dedicou este momento para cuidar da sua presença e clareza mental.
+          <p style={{ fontSize: '13px', color: '#5C6470', margin: '0 0 20px 0' }}>
+            Parabéns por dedicar este momento à sua presença e clareza mental.
           </p>
 
           {/* Cartão de Afirmação */}
           <div 
             style={{
-              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)',
-              border: '1px solid rgba(167, 139, 250, 0.3)',
+              backgroundColor: '#F5F3FF',
+              border: '1px solid rgba(139, 92, 246, 0.2)',
               borderRadius: '16px',
-              padding: '18px',
-              marginBottom: '28px',
+              padding: '16px',
+              marginBottom: '24px',
               width: '100%',
               boxSizing: 'border-box'
             }}
           >
-            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#A78BFA', fontWeight: 700, marginBottom: '6px' }}>
+            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#7C3AED', fontWeight: 700, marginBottom: '4px' }}>
               Afirmação de Ancoragem
             </div>
-            <div style={{ fontSize: '14px', fontStyle: 'italic', color: '#F1F5F9', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#1E2229', lineHeight: 1.5 }}>
               "{meditation.affirmation}"
             </div>
           </div>
 
           {/* Check-in de Sensação */}
-          <div style={{ width: '100%', marginBottom: '32px' }}>
-            <div style={{ fontSize: '13px', color: '#CBD5E1', marginBottom: '12px', fontWeight: 600 }}>
+          <div style={{ width: '100%', marginBottom: '28px' }}>
+            <div style={{ fontSize: '13px', color: '#1E2229', marginBottom: '10px', fontWeight: 600 }}>
               {meditation.reflectionPrompt}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {[
                 { id: 'calmo', label: '🌿 Calmo', desc: 'Em paz' },
                 { id: 'focado', label: '⚡ Focado', desc: 'Clareza' },
@@ -629,21 +632,22 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
                     key={item.id}
                     onClick={() => setSelectedFeeling(item.id)}
                     style={{
-                      background: isSel ? 'rgba(139, 92, 246, 0.35)' : 'rgba(255, 255, 255, 0.05)',
-                      border: isSel ? '1.5px solid #A855F7' : '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '14px',
-                      padding: '12px 6px',
-                      color: '#FFFFFF',
+                      backgroundColor: isSel ? '#F5F3FF' : '#FFFFFF',
+                      border: isSel ? '1.5px solid #7C3AED' : '1px solid #EBECEF',
+                      borderRadius: '12px',
+                      padding: '10px 4px',
+                      color: isSel ? '#7C3AED' : '#1E2229',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '4px',
-                      transition: 'all 0.2s ease'
+                      gap: '2px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: isSel ? '0 2px 8px rgba(124, 58, 237, 0.1)' : 'none'
                     }}
                   >
-                    <span style={{ fontSize: '14px', fontWeight: 700 }}>{item.label}</span>
-                    <span style={{ fontSize: '10px', color: '#94A3B8' }}>{item.desc}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700 }}>{item.label}</span>
+                    <span style={{ fontSize: '10px', color: '#5C6470' }}>{item.desc}</span>
                   </button>
                 );
               })}
@@ -656,12 +660,12 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               onClose();
             }}
             style={{
-              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              backgroundColor: '#10B981',
               color: '#FFFFFF',
               border: 'none',
-              borderRadius: '16px',
-              padding: '16px 32px',
-              fontSize: '16px',
+              borderRadius: '14px',
+              padding: '14px 28px',
+              fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',
               width: '100%',
@@ -669,21 +673,21 @@ export const MeditationModal: React.FC<MeditationModalProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)'
+              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.25)'
             }}
           >
             <span>Concluir & Levar para o Dia</span>
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </button>
         </div>
       )}
 
-      {/* Global CSS for pulsing animation */}
+      {/* Global CSS for subtle breathing halo animation */}
       <style>{`
         @keyframes pulseHalo {
-          0% { transform: scale(0.95); opacity: 0.4; }
-          50% { transform: scale(1.15); opacity: 0.8; }
-          100% { transform: scale(0.95); opacity: 0.4; }
+          0% { transform: scale(0.95); opacity: 0.3; }
+          50% { transform: scale(1.2); opacity: 0.7; }
+          100% { transform: scale(0.95); opacity: 0.3; }
         }
         @keyframes fadeIn {
           from { opacity: 0; }
