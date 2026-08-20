@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, 
-  Calendar, 
   Heart, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronDown,
+  Compass,
   Check, 
   ShieldAlert, 
   Sparkles, 
   Share2, 
-  Bell, 
-  Settings
+  Bell
 } from 'lucide-react';
 
 import type { KidProfile, ParentLog, Devotional } from './data/mockDevotionals';
@@ -212,7 +212,8 @@ export default function App() {
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [developmentMode, setDevelopmentMode] = useState<'personal' | 'kids'>('kids');
   const [userAge, setUserAge] = useState<number>(35);
-  const [activeTab, setActiveTab] = useState<'journey' | 'calendar' | 'crisis' | 'parent'>('journey');
+  const [activeTab, setActiveTab] = useState<'journey' | 'meditation' | 'crisis' | 'bible' | 'parent' | 'calendar'>('journey');
+  const [previousTab, setPreviousTab] = useState<'journey' | 'meditation' | 'crisis' | 'bible'>('journey');
   const [currentDevotional, setCurrentDevotional] = useState<Devotional | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
   const [activeMeditation, setActiveMeditation] = useState<MeditationSession | null>(null);
@@ -1813,78 +1814,122 @@ export default function App() {
           ) : (
           // MAIN DASHBOARD
           <>
-            {/* STREAK & MEDALS PANEL */}
+            {/* TOP HEADER / APP BAR */}
             <div style={{ 
-              padding: 'calc(env(safe-area-inset-top, 0px) + 14px) 20px 14px 20px', 
+              padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 20px 12px 20px', 
               borderBottom: '1px solid var(--border-light)', 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
               backgroundColor: '#FFFFFF'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: '#FFF0F2',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 18
-                }}>
-                  🙌
+              {/* Lado Esquerdo: Logo Lecti + Streak */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ 
+                    fontFamily: 'var(--font-display)', 
+                    fontSize: 21, 
+                    fontWeight: 900, 
+                    color: 'var(--text-main)', 
+                    letterSpacing: '-0.04em',
+                    lineHeight: 1
+                  }}>
+                    lecti
+                  </span>
+                  <span style={{ fontSize: 13, transform: 'translateY(-1px)' }}>🌿</span>
                 </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-main)' }}>{streakCount} Noites de celebração</span>
-                    {isOffline && (
-                      <span style={{
-                        fontSize: 9,
-                        fontWeight: 600,
-                        backgroundColor: '#F3F4F6',
-                        color: 'var(--text-second)',
-                        padding: '2px 6px',
-                        borderRadius: 6,
-                        border: '1px solid var(--border-light)',
+                
+                <div style={{ 
+                  height: 16, 
+                  width: 1, 
+                  backgroundColor: 'var(--border-light)', 
+                  margin: '0 2px' 
+                }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)' }}>
+                    {streakCount} {streakCount === 1 ? 'noite' : 'noites'}
+                  </span>
+                  {unlockedMedals.length > 0 && (
+                    <div 
+                      title={`Medalhas: ${unlockedMedals.length}`}
+                      style={{ 
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 3
-                      }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#9CA3AF' }} /> Offline
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-second)' }}>Sua família unida no hábito da Fé</div>
+                        gap: 2,
+                        backgroundColor: '#FFFBEB',
+                        border: '1px solid #FDE68A',
+                        padding: '1px 6px',
+                        borderRadius: 8,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#B45309'
+                      }}
+                    >
+                      ⭐ {unlockedMedals.length}
+                    </div>
+                  )}
+                  {isOffline && (
+                    <span style={{
+                      fontSize: 9,
+                      fontWeight: 600,
+                      backgroundColor: '#F3F4F6',
+                      color: 'var(--text-second)',
+                      padding: '2px 5px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border-light)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 3
+                    }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#9CA3AF' }} /> Offline
+                    </span>
+                  )}
                 </div>
               </div>
               
-              <div style={{ display: 'flex', gap: 4 }}>
-                {unlockedMedals.slice(0, 4).map((m, idx) => (
-                  <div 
-                    key={idx} 
-                    title={`Valores: ${m}`}
-                    style={{ 
-                      width: 26, 
-                      height: 26, 
-                      borderRadius: '50%', 
-                      background: '#F3F4F6',
-                      border: '1px solid var(--border-light)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 12
-                    }}
-                  >
-                    ⭐
-                  </div>
-                ))}
-              </div>
+              {/* Lado Direito: Botão Minha Conta (🙌 ▾) - Toggle Abre/Fecha */}
+              <button
+                onClick={() => {
+                  if (activeTab === 'parent') {
+                    setActiveTab(previousTab || 'journey');
+                  } else {
+                    if (activeTab !== 'calendar') {
+                      setPreviousTab(activeTab as 'journey' | 'meditation' | 'crisis' | 'bible');
+                    }
+                    setActiveTab('parent');
+                    setCurrentDevotional(null);
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  backgroundColor: activeTab === 'parent' ? '#FFE4E6' : '#FFF0F2',
+                  border: `1.5px solid ${activeTab === 'parent' ? 'var(--primary)' : '#FECDD3'}`,
+                  borderRadius: 20,
+                  padding: '5px 10px 5px 8px',
+                  cursor: 'pointer',
+                  transition: 'var(--transition-smooth)'
+                }}
+                title={activeTab === 'parent' ? "Fechar Minha Conta" : "Minha Conta"}
+              >
+                <span style={{ fontSize: 15, lineHeight: 1 }}>🙌</span>
+                <ChevronDown 
+                  size={14} 
+                  style={{ 
+                    color: 'var(--text-second)', 
+                    strokeWidth: 2.5,
+                    transform: activeTab === 'parent' ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease'
+                  }} 
+                />
+              </button>
             </div>
 
             <div className="screen-content custom-scroll" style={{ backgroundColor: '#FFFFFF' }}>
               
-              {/* TAB 1: JOURNEY */}
+              {/* TAB 1: TRILHAS DEVOCIONAIS */}
               {activeTab === 'journey' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div style={{ marginTop: 4 }}>
@@ -1894,49 +1939,6 @@ export default function App() {
                         ? 'Escolha um tema e comecem a ler juntos.' 
                         : 'Escolha um tema para refletir e praticar.'}
                     </p>
-                  </div>
-
-                  {/* CARD BÍBLIA SAGRADA - 100% GRÁTIS */}
-                  <div 
-                    className="card" 
-                    onClick={() => {
-                      setBibleOpen(true);
-                      setHighlightedVerses(null);
-                    }}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 16,
-                      backgroundColor: '#F9FAFB',
-                      borderColor: 'var(--border-light)',
-                      cursor: 'pointer',
-                      padding: '16px 20px',
-                      borderRadius: 16,
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                      position: 'relative'
-                    }}
-                  >
-                    <div style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: '50%',
-                      backgroundColor: 'rgba(255, 56, 92, 0.1)',
-                      color: 'var(--primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <BookOpen size={22} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                        Bíblia Sagrada <span style={{ fontSize: 10, color: 'var(--primary)', backgroundColor: 'rgba(255,56,92,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>Almeida</span>
-                      </h3>
-                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2, margin: 0 }}>
-                        Acesse as Escrituras Sagradas de forma completa e 100% off-line.
-                      </p>
-                    </div>
-                    <ChevronRight size={20} style={{ color: 'var(--text-second)' }} />
                   </div>
 
                   {TRAILS.map((trail) => (
@@ -1983,11 +1985,40 @@ export default function App() {
                     </div>
                   ))}
 
-                  {/* SEÇÃO / TRILHA DE MEDITAÇÃO GUIADA (ABAIXO DE TODAS AS DEMAIS) */}
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ marginBottom: 10 }}>
-                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700 }}>🧘 Mindfulness & Serenidade</h3>
-                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2 }}>Práticas guiadas de respiração e reprogramação de foco mental.</p>
+                </div>
+              )}
+
+              {/* TAB 2: MEDITAÇÃO GUIADA (MINDFULNESS & SERENIDADE) */}
+              {activeTab === 'meditation' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div style={{ marginTop: 4 }}>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      🧘 Meditação & Mindfulness
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-second)', marginTop: 2 }}>
+                      Práticas guiadas de respiração, presença e renovação da mente.
+                    </p>
+                  </div>
+
+                  {/* BOX 1: MEDITAÇÕES POR TEMA */}
+                  <div 
+                    className="card" 
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: 12,
+                      backgroundColor: '#F8FAFC',
+                      borderColor: 'rgba(0,0,0,0.04)',
+                      padding: '16px'
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: 15, color: 'var(--text-main)', fontWeight: 700 }}>
+                        🎯 Meditações por Tema
+                      </h3>
+                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2 }}>
+                        Sessões pontuais para momentos de foco, alívio de estresse, sono e gratidão.
+                      </p>
                     </div>
 
                     <div 
@@ -1995,7 +2026,7 @@ export default function App() {
                       {...dragScrollHandlers}
                       style={{ cursor: 'grab' }}
                     >
-                      {GUIDED_MEDITATIONS.map((med) => (
+                      {GUIDED_MEDITATIONS.filter(m => m.category === 'thematic').map((med) => (
                         <MeditationCard 
                           key={med.id}
                           meditation={med} 
@@ -2007,6 +2038,103 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* BOX 2: TRILHA DE EVOLUÇÃO (DIVIDIDA POR NÍVEIS) */}
+                  <div 
+                    className="card" 
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: 16,
+                      backgroundColor: '#FAF5FF',
+                      borderColor: 'rgba(147, 51, 234, 0.1)',
+                      padding: '16px'
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: 15, color: '#6B21A8', fontWeight: 800 }}>
+                        🌱 Trilha de Evolução
+                      </h3>
+                      <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2 }}>
+                        Jornada progressiva para expansão gradual da capacidade meditativa e serenidade.
+                      </p>
+                    </div>
+
+                    {/* Nível Básico (Fases 1 a 3) */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', backgroundColor: '#DCFCE7', padding: '2px 8px', borderRadius: 12 }}>
+                          🟢 Nível Básico (3 a 5 min)
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-second)' }}>Ancoragem e respiração inicial</span>
+                      </div>
+                      <div 
+                        className="horizontal-scroll"
+                        {...dragScrollHandlers}
+                        style={{ cursor: 'grab' }}
+                      >
+                        {GUIDED_MEDITATIONS.filter(m => m.category === 'journey' && m.phaseNumber && m.phaseNumber <= 3).map((med) => (
+                          <MeditationCard 
+                            key={med.id}
+                            meditation={med} 
+                            isLocked={!isPremium && med.isPremium}
+                            onStart={(m) => setActiveMeditation(m)} 
+                          />
+                        ))}
+                        <div style={{ minWidth: 10, flexShrink: 0 }} />
+                      </div>
+                    </div>
+
+                    {/* Nível Intermediário (Fases 4 a 6) */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#CA8A04', backgroundColor: '#FEF08A', padding: '2px 8px', borderRadius: 12 }}>
+                          🟡 Nível Intermediário (7 a 12 min)
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-second)' }}>Superando desafios e harmonia plena</span>
+                      </div>
+                      <div 
+                        className="horizontal-scroll"
+                        {...dragScrollHandlers}
+                        style={{ cursor: 'grab' }}
+                      >
+                        {GUIDED_MEDITATIONS.filter(m => m.category === 'journey' && m.phaseNumber && m.phaseNumber >= 4 && m.phaseNumber <= 6).map((med) => (
+                          <MeditationCard 
+                            key={med.id}
+                            meditation={med} 
+                            isLocked={!isPremium && med.isPremium}
+                            onStart={(m) => setActiveMeditation(m)} 
+                          />
+                        ))}
+                        <div style={{ minWidth: 10, flexShrink: 0 }} />
+                      </div>
+                    </div>
+
+                    {/* Nível Avançado & Noturno (Fases 7 e 8) */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#9333EA', backgroundColor: '#F3E8FF', padding: '2px 8px', borderRadius: 12 }}>
+                          🔴 Nível Avançado & Noturno (8 a 19 min)
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-second)' }}>Descompressão noturna e quietude</span>
+                      </div>
+                      <div 
+                        className="horizontal-scroll"
+                        {...dragScrollHandlers}
+                        style={{ cursor: 'grab' }}
+                      >
+                        {GUIDED_MEDITATIONS.filter(m => m.category === 'journey' && m.phaseNumber && m.phaseNumber >= 7).map((med) => (
+                          <MeditationCard 
+                            key={med.id}
+                            meditation={med} 
+                            isLocked={!isPremium && med.isPremium}
+                            onStart={(m) => setActiveMeditation(m)} 
+                          />
+                        ))}
+                        <div style={{ minWidth: 10, flexShrink: 0 }} />
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
               )}
 
@@ -2191,18 +2319,38 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 4: PROFILE CONFIG & DIARY */}
+              {/* TAB: MINHA CONTA / PROFILE CONFIG & DIARY */}
               {activeTab === 'parent' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>
-                      {developmentMode === 'kids' ? 'Diário dos Pais & Ajustes' : 'Diário Pessoal & Ajustes'}
-                    </h2>
-                    <p style={{ fontSize: 13, color: 'var(--text-second)' }}>
-                      {developmentMode === 'kids' 
-                        ? 'Acompanhe o desenvolvimento e ajuste os parâmetros familiares.' 
-                        : 'Acompanhe seu progresso e ajuste as configurações do perfil.'}
-                    </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-main)' }}>
+                        Minha Conta
+                      </h2>
+                      <p style={{ fontSize: 13, color: 'var(--text-second)', marginTop: 2 }}>
+                        {developmentMode === 'kids' 
+                          ? 'Acompanhe o desenvolvimento familiar e ajuste as configurações.' 
+                          : 'Acompanhe seu progresso e ajuste suas preferências.'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab(previousTab || 'journey')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '6px 12px',
+                        backgroundColor: '#F3F4F6',
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 12,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: 'var(--text-main)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <ChevronLeft size={16} /> Voltar
+                    </button>
                   </div>
 
                   {/* Account panel */}
@@ -2733,35 +2881,35 @@ export default function App() {
 
             </div>
 
-            {/* TAB NAV BAR */}
+            {/* TAB NAV BAR (4 ABAS DEDICADAS) */}
             <div className="bottom-nav">
               <button 
-                onClick={() => { setActiveTab('journey'); setCurrentDevotional(null); }} 
-                className={`nav-tab ${activeTab === 'journey' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('journey'); setCurrentDevotional(null); setBibleOpen(false); }} 
+                className={`nav-tab ${activeTab === 'journey' && !bibleOpen ? 'active' : ''}`}
               >
-                <BookOpen size={20} />
+                <Compass size={20} />
                 <span>Trilhas</span>
               </button>
               <button 
-                onClick={() => { setActiveTab('calendar'); setCurrentDevotional(null); }} 
-                className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('meditation'); setCurrentDevotional(null); setBibleOpen(false); }} 
+                className={`nav-tab ${activeTab === 'meditation' && !bibleOpen ? 'active' : ''}`}
               >
-                <Calendar size={20} />
-                <span>Calendário</span>
+                <span style={{ fontSize: 18, lineHeight: 1 }}>🧘</span>
+                <span>Meditação</span>
               </button>
               <button 
-                onClick={() => { setActiveTab('crisis'); setCurrentDevotional(null); }} 
-                className={`nav-tab ${activeTab === 'crisis' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('crisis'); setCurrentDevotional(null); setBibleOpen(false); }} 
+                className={`nav-tab ${activeTab === 'crisis' && !bibleOpen ? 'active' : ''}`}
               >
                 <Heart size={20} />
                 <span>Situações</span>
               </button>
               <button 
-                onClick={() => { setActiveTab('parent'); setCurrentDevotional(null); }} 
-                className={`nav-tab ${activeTab === 'parent' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('bible'); setCurrentDevotional(null); setBibleOpen(true); }} 
+                className={`nav-tab ${activeTab === 'bible' || bibleOpen ? 'active' : ''}`}
               >
-                <Settings size={20} />
-                <span>Config</span>
+                <BookOpen size={20} />
+                <span>Bíblia</span>
               </button>
             </div>
           </>
@@ -3324,6 +3472,9 @@ export default function App() {
                 onClick={() => {
                   setBibleOpen(false);
                   setHighlightedVerses(null);
+                  if (activeTab === 'bible') {
+                    setActiveTab('journey');
+                  }
                 }}
                 style={{ 
                   background: 'none', 
