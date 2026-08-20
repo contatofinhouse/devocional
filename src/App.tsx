@@ -3,27 +3,13 @@ import {
   BookOpen, 
   Calendar, 
   Heart, 
-  HelpCircle, 
   ChevronLeft, 
   ChevronRight, 
   Check, 
   ShieldAlert, 
-  CheckSquare, 
-  Footprints, 
-  Flame as FlameIcon, 
-  HeartHandshake, 
-  Users, 
   Sparkles, 
-  Smile, 
-  Gift, 
-  Compass, 
-  Sun, 
-  ChevronDown, 
-  Wind, 
-  Moon, 
-  Sparkle,
-  Share2,
-  Bell,
+  Share2, 
+  Bell, 
   Settings
 } from 'lucide-react';
 
@@ -46,26 +32,8 @@ import { getFriendlyErrorMessage } from './utils/errorHelper';
 import { GUIDED_MEDITATIONS, type MeditationSession } from './data/mockMeditations';
 import { MeditationCard } from './components/MeditationCard';
 import { MeditationModal } from './components/MeditationModal';
+import { TrailThemeCard } from './components/TrailThemeCard';
 
-const iconMap: Record<string, React.ComponentType<any>> = {
-  ShieldAlert,
-  CheckSquare,
-  Footprints,
-  Flame: FlameIcon,
-  HeartHandshake,
-  Users,
-  Sparkles,
-  Smile,
-  Gift,
-  Compass,
-  Sun,
-  ChevronDown,
-  HelpCircle,
-  Lock: CheckSquare,
-  Wind,
-  Moon,
-  Sparkle
-};
 
 const BIBLE_BOOKS = [
   { name: 'Gênesis', testament: 'old' },
@@ -1989,75 +1957,28 @@ export default function App() {
                         <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2 }}>{trail.description}</p>
                       </div>
 
-                      {/* Path node layout style headspace */}
                       <div 
                         className="horizontal-scroll"
                         {...dragScrollHandlers}
                         style={{ cursor: 'grab' }}
                       >
                         {trail.themes.map((theme, themeIndex) => {
-                          const IconComp = iconMap[theme.icon] || HelpCircle;
                           const isCompleted = unlockedMedals.includes(theme.name);
                           const isLocked = !isPremium && themeIndex > 0;
                           
                           return (
-                            <button
+                            <TrailThemeCard
                               key={theme.id}
+                              theme={theme}
+                              trailName={trail.badgeName || trail.title}
+                              trailColor={trail.color}
+                              isCompleted={isCompleted}
+                              isLocked={isLocked}
                               onClick={() => handleOpenDevotional(theme.id, undefined, themeIndex)}
-                              style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: 6,
-                                background: 'none',
-                                border: 'none',
-                                minWidth: 70,
-                                flexShrink: 0,
-                                cursor: 'pointer',
-                                opacity: isLocked ? 0.55 : 1
-                              }}
-                            >
-                              <div style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: '50%',
-                                backgroundColor: isCompleted ? '#FFFFFF' : 'rgba(0,0,0,0.03)',
-                                border: `1.5px solid ${isCompleted ? trail.color : isLocked ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: isCompleted ? trail.color : 'var(--text-second)',
-                                transition: 'var(--transition-smooth)',
-                                position: 'relative'
-                              }}>
-                                {isLocked ? <span style={{ fontSize: 16 }}>🔒</span> : <IconComp size={18} />}
-                                {isCompleted && !isLocked && (
-                                  <div style={{
-                                    position: 'absolute',
-                                    bottom: -2,
-                                    right: -2,
-                                    backgroundColor: trail.color,
-                                    color: '#FFF',
-                                    borderRadius: '50%',
-                                    width: 14,
-                                    height: 14,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: 8,
-                                    fontWeight: 'bold'
-                                  }}>
-                                    ✓
-                                  </div>
-                                )}
-                              </div>
-                              <span style={{ fontSize: 11, color: 'var(--text-main)', textAlign: 'center', fontWeight: 700 }}>
-                                {theme.name}
-                              </span>
-                            </button>
+                            />
                           );
                         })}
-                        <div style={{ minWidth: 20, flexShrink: 0 }} />
+                        <div style={{ minWidth: 10, flexShrink: 0 }} />
                       </div>
                     </div>
                   ))}
@@ -2069,10 +1990,21 @@ export default function App() {
                       <p style={{ fontSize: 11, color: 'var(--text-second)', marginTop: 2 }}>Práticas guiadas de respiração e reprogramação de foco mental.</p>
                     </div>
 
-                    <MeditationCard 
-                      meditation={GUIDED_MEDITATIONS[0]} 
-                      onStart={(med) => setActiveMeditation(med)} 
-                    />
+                    <div 
+                      className="horizontal-scroll"
+                      {...dragScrollHandlers}
+                      style={{ cursor: 'grab' }}
+                    >
+                      {GUIDED_MEDITATIONS.map((med) => (
+                        <MeditationCard 
+                          key={med.id}
+                          meditation={med} 
+                          isLocked={!isPremium && med.isPremium}
+                          onStart={(m) => setActiveMeditation(m)} 
+                        />
+                      ))}
+                      <div style={{ minWidth: 10, flexShrink: 0 }} />
+                    </div>
                   </div>
 
                 </div>

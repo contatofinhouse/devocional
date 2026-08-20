@@ -49,71 +49,75 @@ export const TRAILS = [
   {
     id: 'carater',
     title: 'Construindo Caráter',
+    badgeName: 'Caráter',
     description: 'Valores essenciais para formar o coração e as atitudes.',
     color: '#FF6B6B',
     bgColor: '#FFF5F5',
     themes: [
-      { id: 'honestidade', name: 'Honestidade', icon: 'ShieldAlert' },
-      { id: 'responsabilidade', name: 'Responsabilidade', icon: 'CheckSquare' },
-      { id: 'perseveranca', name: 'Perseverança', icon: 'Footprints' },
-      { id: 'coragem', name: 'Coragem', icon: 'Flame' },
-      { id: 'obediencia', name: 'Obediência', icon: 'CheckSquare' },
-      { id: 'paciencia', name: 'Paciência', icon: 'Clock' },
-      { id: 'lealdade', name: 'Lealdade', icon: 'Users' },
-      { id: 'integridade', name: 'Integridade', icon: 'ShieldAlert' }
+      { id: 'honestidade', name: 'Honestidade', icon: 'ShieldAlert', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80' },
+      { id: 'responsabilidade', name: 'Responsabilidade', icon: 'CheckSquare', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80' },
+      { id: 'perseveranca', name: 'Perseverança', icon: 'Footprints', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80' },
+      { id: 'coragem', name: 'Coragem', icon: 'Flame', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80' },
+      { id: 'obediencia', name: 'Obediência', icon: 'CheckSquare', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=400&q=80' },
+      { id: 'paciencia', name: 'Paciência', icon: 'Clock', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=400&q=80' },
+      { id: 'lealdade', name: 'Lealdade', icon: 'Users', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=400&q=80' },
+      { id: 'integridade', name: 'Integridade', icon: 'ShieldAlert', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=400&q=80' }
     ]
   },
   {
     id: 'relacionamentos',
     title: 'Relacionamentos',
+    badgeName: 'Relacionamento',
     description: 'Como amar o próximo, fazer bons amigos e respeitar o lar.',
     color: '#4D96FF',
     bgColor: '#F0F5FF',
     themes: [
-      { id: 'perdao', name: 'Perdão', icon: 'HeartHandshake' },
-      { id: 'amizades', name: 'Amizades', icon: 'Users' },
-      { id: 'bondade', name: 'Bondade', icon: 'Sparkles' },
-      { id: 'respeito', name: 'Respeito', icon: 'Smile' },
-      { id: 'generosidade', name: 'Generosidade', icon: 'Gift' },
-      { id: 'compaixao', name: 'Compaixão', icon: 'Heart' },
-      { id: 'reconciliacao', name: 'Reconciliação', icon: 'HeartHandshake' },
-      { id: 'pacificacao', name: 'Pacificação', icon: 'Smile' },
-      { id: 'comunicacao', name: 'Comunicação', icon: 'MessageCircle' }
+      { id: 'generosidade', name: 'Generosidade', icon: 'Gift', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=600&q=80' },
+      { id: 'perdao', name: 'Perdão', icon: 'HeartHandshake', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80' },
+      { id: 'amizades', name: 'Amizades', icon: 'Users', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=400&q=80' },
+      { id: 'bondade', name: 'Bondade', icon: 'Sparkles', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?auto=format&fit=crop&w=400&q=80' },
+      { id: 'respeito', name: 'Respeito', icon: 'Smile', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80' },
+      { id: 'compaixao', name: 'Compaixão', icon: 'Heart', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=400&q=80' },
+      { id: 'reconciliacao', name: 'Reconciliação', icon: 'HeartHandshake', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&w=400&q=80' },
+      { id: 'pacificacao', name: 'Pacificação', icon: 'Smile', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=400&q=80' },
+      { id: 'comunicacao', name: 'Comunicação', icon: 'MessageCircle', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80' }
     ]
   },
   {
     id: 'vida-deus',
     title: 'Vida com Deus',
+    badgeName: 'Vida com Deus',
     description: 'Fortalecendo a fé, gratidão e o coração de servo.',
     color: '#6BCB77',
     bgColor: '#F4FBF4',
     themes: [
-      { id: 'fe', name: 'Fé', icon: 'Compass' },
-      { id: 'gratidao', name: 'Gratidão', icon: 'Sun' },
-      { id: 'humildade', name: 'Humildade', icon: 'ChevronDown' },
-      { id: 'servico', name: 'Serviço', icon: 'HandPlatter' },
-      { id: 'oracao', name: 'Oração', icon: 'MessageCircle' },
-      { id: 'louvor', name: 'Louvor', icon: 'Sparkles' },
-      { id: 'confianca', name: 'Confiança', icon: 'Compass' },
-      { id: 'temor', name: 'Temor a Deus', icon: 'ShieldAlert' }
+      { id: 'fe', name: 'Fé', icon: 'Compass', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80' },
+      { id: 'gratidao', name: 'Gratidão', icon: 'Sun', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=400&q=80' },
+      { id: 'humildade', name: 'Humildade', icon: 'ChevronDown', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80' },
+      { id: 'servico', name: 'Serviço', icon: 'HandPlatter', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=400&q=80' },
+      { id: 'oracao', name: 'Oração', icon: 'MessageCircle', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80' },
+      { id: 'louvor', name: 'Louvor', icon: 'Sparkles', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=400&q=80' },
+      { id: 'confianca', name: 'Confiança', icon: 'Compass', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=400&q=80' },
+      { id: 'temor', name: 'Temor a Deus', icon: 'ShieldAlert', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=400&q=80' }
     ]
   },
   {
     id: 'sabedoria',
     title: 'Sabedoria',
+    badgeName: 'Sabedoria',
     description: 'Lidando com emoções, escolhas difíceis e pressões do mundo.',
     color: '#F4D160',
     bgColor: '#FFFDF0',
     themes: [
-      { id: 'escolhas', name: 'Escolhas', icon: 'HelpCircle' },
-      { id: 'autocontrole', name: 'Autocontrole', icon: 'Lock' },
-      { id: 'ansiedade', name: 'Ansiedade', icon: 'Wind' },
-      { id: 'medo', name: 'Medo', icon: 'Moon' },
-      { id: 'influencia', name: 'Influência dos amigos', icon: 'Sparkle' },
-      { id: 'foco', name: 'Foco e Atenção', icon: 'CheckSquare' },
-      { id: 'moderacao', name: 'Moderação', icon: 'Lock' },
-      { id: 'resiliencia', name: 'Resiliência', icon: 'Footprints' },
-      { id: 'prudencia', name: 'Prudência', icon: 'HelpCircle' }
+      { id: 'ansiedade', name: 'Ansiedade', icon: 'Wind', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80' },
+      { id: 'escolhas', name: 'Escolhas', icon: 'HelpCircle', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80' },
+      { id: 'autocontrole', name: 'Autocontrole', icon: 'Lock', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=400&q=80' },
+      { id: 'medo', name: 'Medo', icon: 'Moon', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=400&q=80' },
+      { id: 'influencia', name: 'Influência dos amigos', icon: 'Sparkle', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80' },
+      { id: 'foco', name: 'Foco e Atenção', icon: 'CheckSquare', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80' },
+      { id: 'moderacao', name: 'Moderação', icon: 'Lock', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=600&q=80' },
+      { id: 'resiliencia', name: 'Resiliência', icon: 'Footprints', duration: '3 min', imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80' },
+      { id: 'prudencia', name: 'Prudência', icon: 'HelpCircle', duration: '2 min', imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80' }
     ]
   }
 ];

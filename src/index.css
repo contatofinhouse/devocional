@@ -29,6 +29,14 @@
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
+  scrollbar-width: none !important; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none !important; /* Hide scrollbar for IE, Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important; /* Hide scrollbar for Chrome, Safari, Opera, Android/iOS Webviews */
+  width: 0 !important;
+  height: 0 !important;
 }
 
 html, body {
@@ -91,6 +99,15 @@ body {
   padding: 24px 24px calc(110px + env(safe-area-inset-bottom, 0px)) 24px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.screen-content::-webkit-scrollbar,
+.custom-scroll::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Bottom Tab Navigation Bar */
@@ -280,6 +297,18 @@ button.btn-secondary:hover {
 
 .horizontal-scroll::-webkit-scrollbar {
   display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
+
+/* Trail and Meditation Theme Cards */
+.trail-theme-card {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trail-theme-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.09) !important;
+}
+.trail-theme-card:active {
+  transform: scale(0.97);
 }
 
 /* Splash Screen Styling */

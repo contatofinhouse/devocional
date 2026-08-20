@@ -1,0 +1,534 @@
+{
+  "mindfulness_mindset_1": {
+    "audioUrl": "/audio/meditacao_mindset.mp3",
+    "durationSeconds": 63,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Pousando no Momento Presente",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 19.4,
+        "text": "Comece trazendo suavemente sua atenção para o momento presente. Você pode fechar os olhos, se for confortável para você. Perceba o seu corpo sentado... sentindo o peso sobre a cadeira e sobre o chão. E respire fundo algumas vezes. Ao inspirar... traga mais oxigênio, renovando e despertando o corpo. E ao expirar... relaxe mais profundamente."
+      },
+      {
+        "id": 2,
+        "phase": "2. Escaneamento e Soltura",
+        "focus": "awareness",
+        "startSeconds": 19.4,
+        "endSeconds": 37.1,
+        "text": "Traga a atenção para os pés no chão... sinta o toque firme com o solo. Perceba as pernas apoiadas na cadeira... e as costas encostadas no assento. Traga a atenção para a área do abdômen... se houver tensão, deixe amolecer. Note as suas mãos... permita que os dedos se soltem e relaxem. Deixe os ombros caírem... destranque os dentes... suavize a testa."
+      },
+      {
+        "id": 3,
+        "phase": "3. Observação & Mindset de Paz",
+        "focus": "mindset",
+        "startSeconds": 37.1,
+        "endSeconds": 55.0,
+        "text": "Se pensamentos surgirem, apenas observe-os como nuvens passando no céu aberto. E volte suavemente a atenção para a respiração. Interiorize com calma em seu coração: Eu escolho a serenidade. Minha mente é clara, lúcida e governada por Deus. Eu descanso no presente."
+      },
+      {
+        "id": 4,
+        "phase": "4. Integração e Retorno",
+        "focus": "integration",
+        "startSeconds": 55.0,
+        "endSeconds": 63,
+        "text": "Perceba todo o seu corpo aqui presente. Faça mais uma respiração consciente. E quando se sentir pronto... abra suavemente os olhos."
+      }
+    ]
+  },
+  "meditacao_transito": {
+    "audioUrl": "/audio/meditacao_transito.mp3",
+    "durationSeconds": 49,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Postura & Olhos na Via",
+        "focus": "awareness",
+        "startSeconds": 0.0,
+        "endSeconds": 13.5,
+        "text": "Mantenha os olhos bem abertos e totalmente atentos na via. Ajuste a sua postura no banco... sinta o apoio firme das costas. Perceba as mãos no volante... solte o aperto exagerado dos dedos. Segure com firmeza, mas sem rigidez nos punhos."
+      },
+      {
+        "id": 2,
+        "phase": "2. Respiração no Fluxo & Desarme",
+        "focus": "breathing",
+        "startSeconds": 13.5,
+        "endSeconds": 30.4,
+        "text": "Aproveite o fluxo da rua ou uma parada no semáforo para respirar. Inspire suavemente pelo nariz... enchendo o abdômen... E solte o ar devagar pela boca... liberando a pressa e a impaciência. O trânsito tem o seu ritmo externo; sua paz interior depende de você. Destranque os dentes... solte o maxilar... relaxe os ombros."
+      },
+      {
+        "id": 3,
+        "phase": "3. Salmo 121 & Proteção",
+        "focus": "mindset",
+        "startSeconds": 30.4,
+        "endSeconds": 41.0,
+        "text": "Lembre-se da promessa do Salmo 121: O Senhor guardará a tua saída e a tua entrada, desde agora e para sempre. Você está guardado... conduzindo com calma, prudência e sabedoria."
+      },
+      {
+        "id": 4,
+        "phase": "4. Direção Segura e Serena",
+        "focus": "integration",
+        "startSeconds": 41.0,
+        "endSeconds": 49.0,
+        "text": "Faça mais uma respiração profunda. Mantenha a visão panorâmica e segura ao redor do seu veículo. E siga o seu trajeto em perfeita paz."
+      }
+    ]
+  },
+  "meditacao_sono": {
+    "audioUrl": "/audio/meditacao_sono.mp3",
+    "durationSeconds": 69,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Pouso no Descanso Noturno",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 12.3,
+        "text": "Deite-se confortavelmente em sua cama e feche suavemente os olhos. Sinta o peso do seu corpo acolhido pelo colchão e pelo travesseiro. Tudo o que aconteceu hoje já terminou... nada mais precisa ser resolvido esta noite."
+      },
+      {
+        "id": 2,
+        "phase": "2. Respiração Desacelerada (4-7-8)",
+        "focus": "breathing",
+        "startSeconds": 12.3,
+        "endSeconds": 29.6,
+        "text": "Inspire suavemente pelo nariz em quatro tempos... um... dois... três... quatro... Segure o ar por instantes com calma... E solte lentamente pela boca em oito tempos... esvaziando todo o peso do dia. Mais uma vez... inspire com leveza... retenha... E expire bem devagar, sentindo o corpo afundar no acolhimento da cama."
+      },
+      {
+        "id": 3,
+        "phase": "3. Soltura Muscular dos Pés à Cabeça",
+        "focus": "awareness",
+        "startSeconds": 29.6,
+        "endSeconds": 49.3,
+        "text": "Sinta o couro cabeludo e o crânio repousando no travesseiro. Suavize a testa... relaxe as pálpebras... solte as bochechas e a mandíbula. Deixe os ombros caírem... solte os braços, as mãos e os dedos. Sinta as costas inteiras tocando o leito... o peito e o abdômen respirando com calma. Sinta as pernas pesadas, aquecidas e relaxadas... até a sola dos pés."
+      },
+      {
+        "id": 4,
+        "phase": "4. Entrega Segura & Sono Restaurador",
+        "focus": "integration",
+        "startSeconds": 49.3,
+        "endSeconds": 69,
+        "text": "Entregue cada pensamento nas mãos de Deus. Em paz me deito e logo pego no sono, pois só Tu, Senhor, me fazes repousar em segurança. Deixe a respiração ficar cada vez mais sutil e silenciosa. Deixe o sono restaurador acolher você... Durma em perfeita paz."
+      }
+    ]
+  },
+  "meditacao_ansiedade": {
+    "audioUrl": "/audio/meditacao_ansiedade.mp3",
+    "durationSeconds": 49,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Pouso Seguro & Toque Acolhedor",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 11.5,
+        "text": "Coloque uma mão sobre o seu peito e a outra sobre o seu abdômen. Sinta o calor do seu próprio toque. Você está em um lugar seguro agora... nada de mal vai acontecer. Permita-se apenas pausar e respirar."
+      },
+      {
+        "id": 2,
+        "phase": "2. Respiração de Alívio Vagal",
+        "focus": "breathing",
+        "startSeconds": 11.5,
+        "endSeconds": 30.3,
+        "text": "Puxe o ar suavemente pelo nariz, sentindo a barriga empurrar a sua mão... Segure o ar por um instante... E sopre bem devagar pelos lábios entreabertos, como se soprasse uma vela sem apagá-la. Mais uma vez... inspire serenidade... segure... E sopre devagar... soltando o aperto no peito e na garganta. Sinta o coração se acalmar no seu próprio ritmo."
+      },
+      {
+        "id": 3,
+        "phase": "3. Âncora de Firmeza & Paz",
+        "focus": "mindset",
+        "startSeconds": 30.3,
+        "endSeconds": 43.3,
+        "text": "Sinta a firmeza dos seus pés apoiados no chão. Diga com carinho para si mesmo: Eu estou seguro... Esta sensação é temporária e já está passando. O controle de todas as coisas pertence a Deus."
+      },
+      {
+        "id": 4,
+        "phase": "4. Retorno Restaurado",
+        "focus": "integration",
+        "startSeconds": 43.3,
+        "endSeconds": 49,
+        "text": "A paz de Deus, que excede todo o entendimento, guarda o seu coração agora. Respire fundo... e abra os olhos com calma, sentindo-se amparado e renovado."
+      }
+    ]
+  },
+  "meditacao_trabalho": {
+    "audioUrl": "/audio/meditacao_trabalho.mp3",
+    "durationSeconds": 45,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Pausa Consciente & Postura",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 10.7,
+        "text": "Afaste os olhos da tela por alguns momentos. Apoie os pés no chão, repouse as mãos sobre as pernas e alinhe a postura. Esta pausa consciente restaura a sua lucidez e equilíbrio."
+      },
+      {
+        "id": 2,
+        "phase": "2. Oxigenação & Limpeza Mental",
+        "focus": "breathing",
+        "startSeconds": 10.7,
+        "endSeconds": 26.6,
+        "text": "Inspire profundamente pelo nariz, trazendo oxigênio puro para a mente... E expire pela boca, liberando a sobrecarga e a pressa. Você não precisa fazer tudo de uma vez; apenas foque na próxima tarefa certa com calma. Solte os ombros... destranque os dentes."
+      },
+      {
+        "id": 3,
+        "phase": "3. Sabedoria em Tiago 1:5",
+        "focus": "mindset",
+        "startSeconds": 26.6,
+        "endSeconds": 39.2,
+        "text": "A Palavra nos lembra: Se alguém precisa de sabedoria, peça a Deus, que a todos concede generosamente. Você tem serenidade para discernir e capacidade para realizar com excelência."
+      },
+      {
+        "id": 4,
+        "phase": "4. Retorno com Foco",
+        "focus": "integration",
+        "startSeconds": 39.2,
+        "endSeconds": 44.9,
+        "text": "Faça mais uma respiração profunda. Abra os olhos com determinação e paz, pronto para produzir com equilíbrio."
+      }
+    ]
+  },
+  "meditacao_despertar": {
+    "audioUrl": "/audio/meditacao_despertar.mp3",
+    "durationSeconds": 40,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Acolhimento do Novo Dia",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 8.7,
+        "text": "Bom dia! Sente-se com a coluna ereta e o peito aberto. Acolha a luz do novo dia com gratidão... As misericórdias do Senhor se renovaram hoje."
+      },
+      {
+        "id": 2,
+        "phase": "2. Respiração Revigorante",
+        "focus": "breathing",
+        "startSeconds": 8.7,
+        "endSeconds": 21.0,
+        "text": "Inspire com vigor pelo nariz, expandindo o peito de ar puro... E expire com um sorriso sereno, despertando todo o seu organismo com ânimo. Mais uma vez... puxe vitalidade e disposição... e solte qualquer resquício de sono."
+      },
+      {
+        "id": 3,
+        "phase": "3. Oração Matinal & Salmo 143",
+        "focus": "mindset",
+        "startSeconds": 21.0,
+        "endSeconds": 34.2,
+        "text": "Traga à mente três bênçãos reais da sua vida... e agradeça. Faze-me ouvir da Tua fidelidade pela manhã, pois em Ti confio. Mostra-me o caminho em que devo andar hoje."
+      },
+      {
+        "id": 4,
+        "phase": "4. Partida com Propósito",
+        "focus": "integration",
+        "startSeconds": 34.2,
+        "endSeconds": 39.9,
+        "text": "Abra os olhos com alegria e coragem. O seu dia será iluminado, produtivo e cheio de paz!"
+      }
+    ]
+  },
+  "jornada_fase_1_ancoragem_sonora": {
+    "audioUrl": "/audio/jornada_fase_1.mp3",
+    "durationSeconds": 53,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Percepção Postural & Sensações",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 17.3,
+        "text": "Inicie percebendo a postura em que você se encontra agora. Sentado... de pé... ou deitado. Perceba o seu corpo exatamente como ele está neste instante. Sintonize-se com as sensações físicas: peso, leveza, apoio, calor ou frescor. Tudo o que você precisa fazer é notá-las com curiosidade e gentileza."
+      },
+      {
+        "id": 2,
+        "phase": "2. Respiração de Abertura",
+        "focus": "breathing",
+        "startSeconds": 17.3,
+        "endSeconds": 24.8,
+        "text": "Respire fundo... e ao soltar o ar, relaxe. Apenas esteja plenamente presente e consciente."
+      },
+      {
+        "id": 3,
+        "phase": "3. Escuta Neutra dos Sons",
+        "focus": "awareness",
+        "startSeconds": 24.8,
+        "endSeconds": 44.0,
+        "text": "Agora, solte as sensações do corpo e volte a atenção para os sons ao redor. Sons dentro do ambiente ou do lado de fora. Sons mais altos ou quase imperceptíveis. Perceba também o silêncio entre os sons. Note os sons surgindo, ecoando e partindo... sem julgar ou criar histórias... apenas ouvindo."
+      },
+      {
+        "id": 4,
+        "phase": "4. Retorno e Abertura dos Olhos",
+        "focus": "integration",
+        "startSeconds": 44.0,
+        "endSeconds": 53,
+        "text": "Volte novamente a atenção para o seu corpo aqui presente. Faça mais uma respiração profunda... suavize a expressão. E quando estiver pronto... abra suavemente os olhos."
+      }
+    ]
+  },
+  "jornada_fase_2_escaneamento_rapido": {
+    "audioUrl": "/audio/jornada_fase_2.mp3",
+    "durationSeconds": 45,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Pousando no Corpo",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 13.7,
+        "text": "Comece trazendo a atenção para dentro do seu corpo. Feche os olhos se for confortável... perceba o peso do corpo sobre a cadeira e o chão. Faça algumas respirações profundas. Inspirando oxigênio renovador... e expirando relaxamento profundo."
+      },
+      {
+        "id": 2,
+        "phase": "2. Pés, Pernas, Costas e Abdômen",
+        "focus": "awareness",
+        "startSeconds": 13.7,
+        "endSeconds": 26.7,
+        "text": "Note os pés no chão: a pressão, o toque, a temperatura. Note as pernas e coxas na cadeira... e as costas encostadas no assento. Leve a atenção ao abdômen... se estiver tenso, deixe amolecer. Respire..."
+      },
+      {
+        "id": 3,
+        "phase": "3. Mãos, Ombros e Face",
+        "focus": "awareness",
+        "startSeconds": 26.7,
+        "endSeconds": 39.4,
+        "text": "Note as suas mãos... permita que os dedos se soltem e relaxem. Deixe os ombros caírem... solte o pescoço e a garganta. Destranque o maxilar... suavize os músculos do rosto e a testa."
+      },
+      {
+        "id": 4,
+        "phase": "4. Consciência Global e Conclusão",
+        "focus": "integration",
+        "startSeconds": 39.4,
+        "endSeconds": 45,
+        "text": "Sinta todo o seu corpo integrado em calma e presença. Faça mais uma respiração... e abra os seus olhos."
+      }
+    ]
+  },
+  "jornada_fase_3_respiracao_serena": {
+    "audioUrl": "/audio/jornada_fase_3.mp3",
+    "durationSeconds": 51,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Postura & Acomodação",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 12.4,
+        "text": "Encontre uma posição confortável, com a coluna ereta e sem tensão. Mãos repousando sobre as pernas. Perceba o corpo a partir de dentro: o peso, o apoio, o toque. Permita-se relaxar com curiosidade e presença."
+      },
+      {
+        "id": 2,
+        "phase": "2. Sintonizando o Fluxo da Respiração",
+        "focus": "breathing",
+        "startSeconds": 12.4,
+        "endSeconds": 27.0,
+        "text": "Comece a sintonizar o fluxo natural da respiração. Não precisa mudar nada; apenas sinta o ar entrando e saindo. Perceba onde é mais nítido: no abdômen subindo e descendo... no peito... ou no ar fresco nas narinas. Acompanhe uma respiração de cada vez."
+      },
+      {
+        "id": 3,
+        "phase": "3. Reconduzindo a Mente Gentilmente",
+        "focus": "awareness",
+        "startSeconds": 27.0,
+        "endSeconds": 44.2,
+        "text": "Se a mente divagar com pensamentos ou lembranças, não tem problema. Apenas note que viajou, diga baixinho 'pensamento'... e com gentileza retorne ao fôlego. Ficaremos alguns instantes em silêncio notando a respiração."
+      },
+      {
+        "id": 4,
+        "phase": "4. Gratidão e Retorno",
+        "focus": "integration",
+        "startSeconds": 44.2,
+        "endSeconds": 50.9,
+        "text": "Sinta todo o seu corpo presente. Ofereça a si mesmo gratidão por esta pausa de equilíbrio. Respire fundo e abra os olhos com serenidade."
+      }
+    ]
+  },
+  "jornada_fase_4_superando_desafios": {
+    "audioUrl": "/audio/jornada_fase_4.mp3",
+    "durationSeconds": 61,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. O Porto Seguro no Corpo",
+        "focus": "awareness",
+        "startSeconds": 0.0,
+        "endSeconds": 16.1,
+        "text": "Esta prática fortalece a serenidade diante de emoções ou sensações difíceis. Acomode-se confortavelmente. Primeiro, localize um ponto seguro e confortável no corpo: as mãos apoiadas ou os pés no chão. Deixe a atenção descansar nessa âncora estável por alguns instantes."
+      },
+      {
+        "id": 2,
+        "phase": "2. Olhando para o Desconforto com Calma",
+        "focus": "awareness",
+        "startSeconds": 16.1,
+        "endSeconds": 35.6,
+        "text": "Agora, se houver alguma emoção desafiadora presente (tristeza, ansiedade ou aperto no peito)... Deixe a atenção ir suavemente até onde essa sensação repercute no corpo. Observe por um instante, sem lutar contra ela... respire ao redor do desconforto. E retorne a atenção para o seu ponto de segurança nas mãos ou nos pés... dando-se uma pausa de alívio."
+      },
+      {
+        "id": 3,
+        "phase": "3. O Olhar Panorâmico & Impermanência",
+        "focus": "mindset",
+        "startSeconds": 35.6,
+        "endSeconds": 52.5,
+        "text": "Mais uma vez, observe a área difícil mantendo a maior parte do foco no porto seguro. Perceba: a sensação está mudando? Ela é temporária e já está diminuindo. Você é maior do que qualquer sentimento passageiro."
+      },
+      {
+        "id": 4,
+        "phase": "4. Autocompaixão & Paz",
+        "focus": "integration",
+        "startSeconds": 52.5,
+        "endSeconds": 60.9,
+        "text": "Acolha a si mesmo com profunda compaixão e carinho. Que possamos todos encontrar paz, amparo e fortaleza interior. Respire fundo e abra os olhos com calma."
+      }
+    ]
+  },
+  "jornada_fase_5_bondade_amorosa": {
+    "audioUrl": "/audio/jornada_fase_5.mp3",
+    "durationSeconds": 56,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Abertura do Coração",
+        "focus": "awareness",
+        "startSeconds": 0.0,
+        "endSeconds": 9.4,
+        "text": "Acomode-se com tranquilidade... Nesta prática cultivamos a bondade amorosa e o perdão sincero. Perceba seu corpo, deixando o peito se abrir com suavidade."
+      },
+      {
+        "id": 2,
+        "phase": "2. Enviando Votos a um Ser Querido",
+        "focus": "mindset",
+        "startSeconds": 9.4,
+        "endSeconds": 29.9,
+        "text": "Traga à mente a imagem de alguém querido — um filho, amigo ou animal de estimação. Sinta a presença calorosa dessa pessoa na sua frente... e comece a enviar-lhe votos sinceros: Que você esteja seguro de todo perigo. Que você seja verdadeiramente feliz e viva em paz. Que você tenha saúde, vitalidade e bem-estar."
+      },
+      {
+        "id": 3,
+        "phase": "3. Recebendo & Enviando a Si Mesmo",
+        "focus": "mindset",
+        "startSeconds": 29.9,
+        "endSeconds": 47.0,
+        "text": "Agora imagine essa pessoa retribuindo todo esse carinho para você... receba no seu coração: Que eu esteja seguro e guardado em paz. Que eu tenha saúde e discernimento. Que eu me acolha com paciência e graça."
+      },
+      {
+        "id": 4,
+        "phase": "4. Expansão Universal & Retorno",
+        "focus": "integration",
+        "startSeconds": 47.0,
+        "endSeconds": 56.0,
+        "text": "Expanda esse amor para seus familiares, amigos e inclusive para pessoas com quem teve divergências, liberando o perdão. Que todos nós possamos viver em harmonia e paz. Respire fundo, ancore essa ternura e abra os olhos com renovação."
+      }
+    ]
+  },
+  "jornada_fase_6_harmonia_plena": {
+    "audioUrl": "/audio/jornada_fase_6.mp3",
+    "durationSeconds": 61,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. A Âncora Respiratória",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 12.0,
+        "text": "Acomode-se na postura: coluna alinhada, ombros relaxados. Sintonize a respiração no abdômen ou nas narinas... Ela é sua âncora constante. Sinta o fluxo do ar entrando e saindo com naturalidade."
+      },
+      {
+        "id": 2,
+        "phase": "2. Ampliação para o Campo Auditivo",
+        "focus": "awareness",
+        "startSeconds": 12.0,
+        "endSeconds": 23.0,
+        "text": "Abra a consciência para os sons ao redor... dentro e fora da sala. Ouça sem rotular... perceba também o silêncio entre os sons."
+      },
+      {
+        "id": 3,
+        "phase": "3. Sensações Corporais & Integração",
+        "focus": "awareness",
+        "startSeconds": 23.0,
+        "endSeconds": 36.0,
+        "text": "Solte a audição e traga a atenção para as sensações corporais: calor, pulsar, peso ou formigamento. Observe o corpo com curiosidade... e retorne à respiração."
+      },
+      {
+        "id": 4,
+        "phase": "4. Silêncio Integrado & Conclusão",
+        "focus": "integration",
+        "startSeconds": 36.0,
+        "endSeconds": 61,
+        "text": "Unificamos agora a respiração, os sons e o corpo em uma presença integrada. Ficaremos em silêncio contemplativo por alguns momentos. Sinta a harmonia plena do seu ser. Deseje a si mesmo paz e saúde. Respire fundo e abra os olhos em perfeito equilíbrio."
+      }
+    ]
+  },
+  "jornada_fase_7_sono_restaurador": {
+    "audioUrl": "/audio/jornada_fase_7.mp3",
+    "durationSeconds": 64,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Preparação & Cabeça",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 14.1,
+        "text": "Deite-se confortavelmente para preparar o corpo para o sono. Se adormecer durante a prática, isso é perfeitamente natural. Sinta a cabeça pesada e acolhida no travesseiro. Solte o couro cabeludo, a testa, as pálpebras, as bochechas e a mandíbula."
+      },
+      {
+        "id": 2,
+        "phase": "2. Ombros e Braços",
+        "focus": "awareness",
+        "startSeconds": 14.1,
+        "endSeconds": 27.0,
+        "text": "Sinta os ombros liberando todo o cansaço. Desça pelo braço esquerdo até os dedos... e pelo braço direito até os dedos. Ambos os braços repousando totalmente soltos."
+      },
+      {
+        "id": 3,
+        "phase": "3. Tronco, Pernas e Pés",
+        "focus": "awareness",
+        "startSeconds": 27.0,
+        "endSeconds": 42.9,
+        "text": "Sinta as costas afundando no colchão. O peito e o abdômen respirando em ondas suaves e calmas. Desça a atenção pelas pernas e pés... pesados, aquecidos e relaxados."
+      },
+      {
+        "id": 4,
+        "phase": "4. Entrega ao Sono Seguro",
+        "focus": "integration",
+        "startSeconds": 42.9,
+        "endSeconds": 64,
+        "text": "Todo o seu corpo agora descansa em segurança. Entregue-se com confiança ao sono restaurador... Durma em profunda paz."
+      }
+    ]
+  },
+  "jornada_fase_8_imersao_plena": {
+    "audioUrl": "/audio/jornada_fase_8.mp3",
+    "durationSeconds": 70,
+    "steps": [
+      {
+        "id": 1,
+        "phase": "1. Postura & A Âncora Central",
+        "focus": "breathing",
+        "startSeconds": 0.0,
+        "endSeconds": 13.7,
+        "text": "Encontre sua postura meditativa: coluna ereta, peito aberto e relaxado. Deixe a atenção pousar na respiração como sua âncora firme. Acompanhe uma respiração de cada vez com curiosidade."
+      },
+      {
+        "id": 2,
+        "phase": "2. Navegando por Sons, Sensações e Emoções",
+        "focus": "awareness",
+        "startSeconds": 13.7,
+        "endSeconds": 33.1,
+        "text": "Abra a consciência para o que se destacar no momento presente: Se for um som, escute com atenção e volte ao fôlego. Se for uma sensação corporal, sinta-a sem lutar e retorne à respiração. Se for uma emoção, rotule-a com gentileza e volte para a âncora."
+      },
+      {
+        "id": 3,
+        "phase": "3. Silêncio & Quietude Interior",
+        "focus": "mindset",
+        "startSeconds": 33.1,
+        "endSeconds": 61.9,
+        "text": "Quando pensamentos surgirem, diga baixinho 'pensamento'... e solte. Permaneceremos agora em um espaço sereno de silêncio pleno e quietude interior."
+      },
+      {
+        "id": 4,
+        "phase": "4. Consagração das 8 Fases e Retorno",
+        "focus": "integration",
+        "startSeconds": 61.9,
+        "endSeconds": 70.0,
+        "text": "Sinta todo o seu ser unificado nesta presença serena e inabalável. Você completou com louvor as 8 fases da trilha de evolução. Respire fundo, agradeça por este momento de restauração e abra os olhos com clareza e propósito."
+      }
+    ]
+  }
+}

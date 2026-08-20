@@ -35,4 +35,11 @@ android/app/google-services.json
 playwright-report/
 test-results/
 backups/
+scratch/
+__pycache__/
+*.pyc
+test*.mp3
+test.mp3
+scripts/_temp_openrouter_audio/
+store-assets/temp_html/
 
