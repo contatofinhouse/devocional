@@ -84,7 +84,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/meditacao_mindset.mp3",
-    "durationSeconds": 210,
+    "durationSeconds": 394,
     "steps": [
       { "id": 1, "phase": "1. Interrupção & Postura", "focus": "breathing", "startSeconds": 0, "endSeconds": 30, "text": "Encontre uma posição ereta e confortável. Os pés bem apoiados no chão. Feche os olhos para interromper o fluxo de estímulos visuais." },
       { "id": 2, "phase": "2. Respiração Quadrada 4-4-6", "focus": "breathing", "startSeconds": 30, "endSeconds": 100, "text": "Inspire pelo nariz em quatro tempos... um... dois... três... quatro. Retenha o ar... um... dois... três... quatro. Expire devagar pela boca em seis tempos... um... dois... três... quatro... cinco... seis. Mais uma vez. Inspire... clareza e oxigênio. Retenha. E solte... qualquer pressa ou dispersão. E mais uma. Inspire. Segure. E solte devagar." },
@@ -132,7 +132,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/meditacao_ansiedade.mp3",
-    "durationSeconds": 270,
+    "durationSeconds": 462,
     "steps": [
       { "id": 1, "phase": "1. Segurança & Toque", "focus": "breathing", "startSeconds": 0, "endSeconds": 35, "text": "Você está em segurança agora. Este momento de ansiedade vai passar. Feche os olhos, ou repouse o olhar em um ponto fixo. Coloque uma mão sobre o peito e a outra sobre a barriga. Sinta o apoio das suas próprias mãos." },
       { "id": 2, "phase": "2. Respiração Vagal", "focus": "breathing", "startSeconds": 35, "endSeconds": 110, "text": "Vamos respirar juntos. Inspire pelo nariz em quatro tempos... um... dois... três... quatro. Segure com calma... um... dois... três... quatro. Expire devagar pela boca em seis tempos... um... dois... três... quatro... cinco... seis. Mais uma vez. Inspire, enchendo o abdômen. Retenha com suavidade. E solte bem devagar... sentindo os ombros descerem. De novo. Inspire. Segure. Solte." },
@@ -181,7 +181,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/meditacao_transito.mp3",
-    "durationSeconds": 240,
+    "durationSeconds": 342,
     "steps": [
       { "id": 1, "phase": "1. Postura & Volante", "focus": "awareness", "startSeconds": 0, "endSeconds": 40, "text": "Esta sessão é para a sua condução segura. Mantenha os olhos na via. Ajuste a postura no banco. Sinta o apoio das costas. Perceba as mãos no volante. Solte o aperto excessivo dos dedos. Segure com firmeza, mas sem rigidez." },
       { "id": 2, "phase": "2. Soltura & Respiração", "focus": "breathing", "startSeconds": 40, "endSeconds": 120, "text": "Relaxe os ombros. Deixe-os cair longe das orelhas. Destranque os dentes. Solte a mandíbula. Agora, aproveite o fluxo do trânsito ou uma parada para respirar. Inspire pelo nariz, enchendo o abdômen. E expire pela boca, soltando a pressa. Mais uma vez. Inspire calma. Expire impaciência." },
@@ -229,7 +229,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/meditacao_trabalho.mp3",
-    "durationSeconds": 240,
+    "durationSeconds": 298,
     "steps": [
       { "id": 1, "phase": "1. Pausa & Postura", "focus": "breathing", "startSeconds": 0, "endSeconds": 30, "text": "Faça uma pausa onde está. Sente-se com a coluna ereta. Os pés firmes no chão. As mãos sobre as pernas. Feche os olhos por alguns instantes." },
       { "id": 2, "phase": "2. Respiração & Descompressão", "focus": "breathing", "startSeconds": 30, "endSeconds": 100, "text": "Inspire profundamente pelo nariz. E ao soltar o ar... solte o acúmulo de telas, mensagens e urgências. Mais uma vez. Inspire espaço. Expire ruído mental. Relaxe os olhos por trás das pálpebras. Eles trabalham muito durante o dia. Solte a tensão da testa. Do pescoço. Dos ombros. Deixe as mãos se abrirem e descansarem." },
@@ -277,7 +277,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/meditacao_despertar.mp3",
-    "durationSeconds": 210,
+    "durationSeconds": 325,
     "steps": [
       { "id": 1, "phase": "1. Despertar & Postura", "focus": "breathing", "startSeconds": 0, "endSeconds": 30, "text": "Bom dia. Antes de começar o dia, dê a si mesmo este momento. Sente-se. Alongue suavemente a coluna. Abra o peito e os ombros." },
       { "id": 2, "phase": "2. Respiração Energizante", "focus": "breathing", "startSeconds": 30, "endSeconds": 85, "text": "Inspire pelo nariz com entusiasmo, enchendo os pulmões de ar. E expire soltando qualquer resquício de sono. Mais uma vez. Inspire disposição e energia. Expire cansaço e peso. E mais uma. Inspire. Sinta o corpo acordar. Expire. Solte tudo o que é de ontem." },
@@ -373,7 +373,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/meditacao_com_deus.mp3",
-    "durationSeconds": 420,
+    "durationSeconds": 448,
     "steps": [
       { "id": 1, "phase": "1. Abertura & Entrega", "focus": "breathing", "startSeconds": 0, "endSeconds": 55, "text": "Bem-vindo a este momento de comunhão e descanso na presença de Deus. Encontre uma posição confortável, com o coração aberto. Feche os olhos em reverência e paz. Faça uma respiração profunda. Ao soltar o ar, entregue toda sobrecarga, toda ansiedade e todo temor nas mãos do Criador." },
       { "id": 2, "phase": "2. Salmo 23 & Salmo 46", "focus": "mindset", "startSeconds": 55, "endSeconds": 215, "text": "Medite na promessa do Salmo 23: O Senhor é o meu pastor. Nada me faltará. Ele me faz repousar em pastos verdejantes. Leva-me para junto das águas de descanso. Sinta essas águas tranquilas lavando a sua alma. Toda pressa... todo medo... toda preocupação com o amanhã. Deus cuida de você. Ouça a voz de Deus no Salmo 46: Aquietai-vos... e sabei que Eu sou Deus. Aquietar-se é a decisão de soltar o controle e confiar na soberania do Pai. Deus é o nosso refúgio e fortaleza. Socorro bem presente nas tribulações." },
@@ -426,7 +426,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_1.mp3",
-    "durationSeconds": 200,
+    "durationSeconds": 298,
     "steps": [
       { "id": 1, "phase": "1. Acomodação & Contato", "focus": "breathing", "startSeconds": 0, "endSeconds": 30, "text": "Acomode-se onde você está. Pode fechar os olhos... ou repousar o olhar para baixo. Sinta o contato do seu corpo com a superfície que o apoia. O peso dos pés no chão... as mãos sobre as pernas. Faça uma respiração longa e solta." },
       { "id": 2, "phase": "2. Escuta Próxima", "focus": "awareness", "startSeconds": 30, "endSeconds": 75, "text": "E agora, leve toda a sua atenção para o campo dos sons. Você não precisa ir até os sons. Deixe que eles venham até você. Perceba os sons mais próximos... os sons desta sala. O som da sua própria respiração. Algum som sutil que talvez você não tivesse notado antes." },
@@ -475,7 +475,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_2.mp3",
-    "durationSeconds": 240,
+    "durationSeconds": 371,
     "steps": [
       { "id": 1, "phase": "1. Chegando ao Corpo", "focus": "breathing", "startSeconds": 0, "endSeconds": 40, "text": "Traga a sua atenção para dentro do corpo. Feche os olhos, se for confortável. Perceba o corpo sentado... onde quer que você esteja. Sinta o peso do corpo sobre o assento... sobre o chão. Faça algumas respirações profundas. E a cada inspiração... sinta o ar entrando e despertando o corpo. A cada expiração... relaxe um pouco mais profundamente." },
       { "id": 2, "phase": "2. Pés, Pernas & Abdômen", "focus": "awareness", "startSeconds": 40, "endSeconds": 110, "text": "Leve a atenção para os pés no chão. Sinta a sola dos pés em contato com o solo. O peso... a pressão... a vibração... o calor. Suba a atenção para as pernas apoiadas na cadeira. Pressão... pulsação... peso... leveza. Sinta as costas encostadas no assento. Traga a atenção para a área do abdômen. Se a barriga estiver tensa ou contraída... deixe amolecer. Respire." },
@@ -524,7 +524,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_3.mp3",
-    "durationSeconds": 330,
+    "durationSeconds": 452,
     "steps": [
       { "id": 1, "phase": "1. Postura & Acomodação", "focus": "breathing", "startSeconds": 0, "endSeconds": 35, "text": "Adote uma postura confortável, com a coluna naturalmente ereta. Feche suavemente os olhos. Permita que o corpo se acomode por completo." },
       { "id": 2, "phase": "2. Ponto de Nitidez", "focus": "breathing", "startSeconds": 35, "endSeconds": 120, "text": "Traga a atenção para a respiração natural. Não mude nada no ritmo do fôlego. Apenas observe o ar entrando... e o ar saindo. Onde a respiração é mais nítida para você agora? Pode ser o ar fresco entrando pelas narinas. Pode ser a expansão suave do peito. Ou o abdômen subindo na inspiração... e descendo na expiração. Escolha esse ponto de maior nitidez. Faça dele a sua âncora." },
@@ -574,7 +574,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_4.mp3",
-    "durationSeconds": 390,
+    "durationSeconds": 441,
     "steps": [
       { "id": 1, "phase": "1. Porto Seguro", "focus": "breathing", "startSeconds": 0, "endSeconds": 65, "text": "Acomode-se de forma gentil e acolhedora. Se desejar, coloque uma das mãos sobre o peito. Feche os olhos. Faça duas respirações longas e soltas, soltando o ar com alívio. Primeiro, vamos encontrar o seu porto seguro no corpo. Sinta os pés firmes no chão. Sinta o calor da mão no peito. Esse contato é o seu lugar de estabilidade. Sempre pode voltar a ele." },
       { "id": 2, "phase": "2. Reconhecer & Acolher", "focus": "awareness", "startSeconds": 65, "endSeconds": 170, "text": "Agora, traga à mente alguma situação recente que tenha gerado tensão, preocupação ou aperto. Não precisa ser algo enorme. Algo moderado. Reconheça: o que está sentindo agora? Pode nomear silenciosamente... ansiedade... frustração... medo... tristeza. Não tente resolver. Apenas reconheça o que está aí. Agora, acolha. Permita que a sensação exista sem julgamento. Diga interiormente: sim, isso está aqui agora." },
@@ -623,7 +623,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_5.mp3",
-    "durationSeconds": 450,
+    "durationSeconds": 516,
     "steps": [
       { "id": 1, "phase": "1. Coração & Calor", "focus": "awareness", "startSeconds": 0, "endSeconds": 60, "text": "Acomode-se com o peito aberto e as mãos relaxadas. Feche os olhos com tranquilidade. Faça duas ou três respirações longas, soltando qualquer pressa. Leve a atenção para a região do coração, no centro do peito. Sinta o calor nessa área. A respiração sutil. Permita que uma sensação de cuidado surja ali." },
       { "id": 2, "phase": "2. Ser Querido", "focus": "mindset", "startSeconds": 60, "endSeconds": 175, "text": "Traga à mente a imagem de alguém por quem você sinta um carinho espontâneo. Pode ser uma pessoa, um animal, alguém que naturalmente faz você sorrir. Veja o rosto dessa presença querida. E envie silenciosamente os seguintes votos de coração: Que você esteja seguro e protegido. Que você tenha paz no coração. Que você tenha saúde e bem-estar. Que você viva com alegria. Sinta o calor que nasce de desejar o bem a quem você ama." },
@@ -672,7 +672,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_6.mp3",
-    "durationSeconds": 510,
+    "durationSeconds": 356,
     "steps": [
       { "id": 1, "phase": "1. Fase Respiração", "focus": "breathing", "startSeconds": 0, "endSeconds": 75, "text": "Assuma uma postura estável, digna e confortável. Feche os olhos. Faça três respirações longas e intencionais. Fase um: a respiração. Acompanhe o ritmo natural do fôlego. O ar entrando... o ar saindo. Sem controlar. Apenas observando." },
       { "id": 2, "phase": "2. Fase Sons & Corpo", "focus": "awareness", "startSeconds": 75, "endSeconds": 215, "text": "Fase dois: os sons. Mantendo o fôlego presente... expanda a atenção para o campo sonoro. Sons próximos... sons distantes... o silêncio de fundo. Respiração e sons coexistindo na sua percepção. Fase três: o corpo. Agora inclua as sensações do corpo inteiro. O peso... a postura... a temperatura da pele... pulsações sutis. Três âncoras simultâneas: fôlego... sons... corpo. Tudo acontecendo ao mesmo tempo na sua consciência aberta." },
@@ -721,7 +721,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_7.mp3",
-    "durationSeconds": 570,
+    "durationSeconds": 484,
     "steps": [
       { "id": 1, "phase": "1. Preparação & Encerramento", "focus": "breathing", "startSeconds": 0, "endSeconds": 70, "text": "Deite-se confortavelmente, com o corpo estendido e os braços ao lado do tronco. Feche os olhos. Faça uma respiração profunda pelo nariz... e solte o ar devagar pela boca. Mais uma vez. Inspire... e solte, sentindo o corpo afundar na cama. O dia de hoje terminou. Tudo o que pôde ser feito foi feito. Agora é hora de descansar." },
       { "id": 2, "phase": "2. Cabeça, Rosto & Ombros", "focus": "awareness", "startSeconds": 70, "endSeconds": 200, "text": "Traga a atenção para o topo da cabeça. Sinta o couro cabeludo relaxando. A testa se abrindo... se alisando. As pálpebras pesadas e descansadas. Solte a mandíbula. Separe levemente os dentes. A língua solta na base da boca. Sinta o pescoço relaxando... a garganta solta. Os ombros afundam no travesseiro. Não há nada para carregar agora." },
@@ -770,7 +770,7 @@ export const GUIDED_MEDITATIONS: MeditationSession[] = [
       ]
     },
     "audioUrl": "/audio/jornada_fase_8.mp3",
-    "durationSeconds": 630,
+    "durationSeconds": 343,
     "steps": [
       { "id": 1, "phase": "1. Postura & Entrada", "focus": "breathing", "startSeconds": 0, "endSeconds": 70, "text": "Assuma a sua postura de prática. Coluna ereta, corpo relaxado. Feche os olhos. Faça três respirações lentas e conscientes. Sinta a clareza que se instala quando o corpo está quieto." },
       { "id": 2, "phase": "2. Presença Aberta", "focus": "awareness", "startSeconds": 70, "endSeconds": 185, "text": "Nesta prática, você não precisa fazer nada de especial. Apenas repouse na sua própria presença. Observe o que está acontecendo agora... sem escolher. O fôlego se move. Sons surgem e passam. Sensações mudam. Pensamentos aparecem como eventos na mente. Você não é os seus pensamentos. Você é o espaço amplo e calmo onde os pensamentos passam. Quando perceber que se perdeu em uma história, simplesmente note. E retorne ao silêncio." },
