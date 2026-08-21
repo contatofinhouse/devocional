@@ -33,6 +33,10 @@ import { GUIDED_MEDITATIONS, type MeditationSession } from './data/mockMeditatio
 import { MeditationCard } from './components/MeditationCard';
 import { MeditationModal } from './components/MeditationModal';
 import { TrailThemeCard } from './components/TrailThemeCard';
+import { BibleTabContent } from './components/BibleTabContent';
+import { BibleKidsStoryModal } from './components/BibleKidsStoryModal';
+import { BibleStoryModal } from './components/BibleStoryModal';
+import type { BibleStoryItem } from './data/mockBibleTrails';
 
 
 const BIBLE_BOOKS = [
@@ -217,6 +221,8 @@ export default function App() {
   const [currentDevotional, setCurrentDevotional] = useState<Devotional | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
   const [activeMeditation, setActiveMeditation] = useState<MeditationSession | null>(null);
+  const [selectedBibleStory, setSelectedBibleStory] = useState<BibleStoryItem | null>(null);
+  const [selectedBibleKidsStory, setSelectedBibleKidsStory] = useState<BibleStoryItem | null>(null);
 
   const getAgeFromBirthdate = (birthdateStr: string): number => {
     if (!birthdateStr) return 0;
@@ -1195,13 +1201,14 @@ export default function App() {
 
   // trailThemeIndex: position within trail (0 = free, >0 = premium)
   // nightNumber: calendar night number (1-5 = free, >5 = premium)
-  const handleOpenDevotional = async (id: string, customDevotional?: Devotional, trailThemeIndex?: number, nightNumber?: number) => {
+  const handleOpenDevotional = async (id: string, customDevotional?: Devotional, trailThemeIndex?: number, nightNumber?: number, trailIndex?: number) => {
     // Free tier limits:
-    // - Trails: only the 1st devotional per trail (index 0)
-    // - Calendar: only the first 5 nights
+    // - Trails: only the 1st devotional of the 1st trail (trailIndex 0, themeIndex 0)
+    // - Calendar: only the first 3 nights
     const isLocked =
       !isPremium &&
       (
+        (trailIndex !== undefined && trailIndex > 0) ||
         (trailThemeIndex !== undefined && trailThemeIndex > 0) ||
         (nightNumber !== undefined && nightNumber > 3)
       );
@@ -1941,7 +1948,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  {TRAILS.map((trail) => (
+                  {TRAILS.map((trail, trailIndex) => (
                     <div 
                       key={trail.id} 
                       className="card" 
@@ -1966,7 +1973,7 @@ export default function App() {
                       >
                         {trail.themes.map((theme, themeIndex) => {
                           const isCompleted = unlockedMedals.includes(theme.name);
-                          const isLocked = !isPremium && themeIndex > 0;
+                          const isLocked = !isPremium && (trailIndex > 0 || themeIndex > 0);
                           
                           return (
                             <TrailThemeCard
@@ -1976,7 +1983,7 @@ export default function App() {
                               trailColor={trail.color}
                               isCompleted={isCompleted}
                               isLocked={isLocked}
-                              onClick={() => handleOpenDevotional(theme.id, undefined, themeIndex)}
+                              onClick={() => handleOpenDevotional(theme.id, undefined, themeIndex, undefined, trailIndex)}
                             />
                           );
                         })}
@@ -2317,6 +2324,18 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* TAB 4: BÍBLIA & HISTÓRIAS */}
+              {activeTab === 'bible' && !bibleOpen && (
+                <BibleTabContent
+                  isPremium={isPremium}
+                  onOpenFullBible={() => setBibleOpen(true)}
+                  onSelectStory={(story) => setSelectedBibleStory(story)}
+                  onSelectKidsStory={(story) => setSelectedBibleKidsStory(story)}
+                  onOpenPaywall={() => setShowPaywall(true)}
+                  dragScrollHandlers={dragScrollHandlers}
+                />
               )}
 
               {/* TAB: MINHA CONTA / PROFILE CONFIG & DIARY */}
@@ -2905,8 +2924,8 @@ export default function App() {
                 <span>Situações</span>
               </button>
               <button 
-                onClick={() => { setActiveTab('bible'); setCurrentDevotional(null); setBibleOpen(true); }} 
-                className={`nav-tab ${activeTab === 'bible' || bibleOpen ? 'active' : ''}`}
+                onClick={() => { setActiveTab('bible'); setCurrentDevotional(null); setBibleOpen(false); }} 
+                className={`nav-tab ${activeTab === 'bible' && !bibleOpen ? 'active' : ''}`}
               >
                 <BookOpen size={20} />
                 <span>Bíblia</span>
@@ -3472,9 +3491,6 @@ export default function App() {
                 onClick={() => {
                   setBibleOpen(false);
                   setHighlightedVerses(null);
-                  if (activeTab === 'bible') {
-                    setActiveTab('journey');
-                  }
                 }}
                 style={{ 
                   background: 'none', 
@@ -3758,6 +3774,48 @@ export default function App() {
         onComplete={(feeling) => {
           showToast(`Sessão concluída! Sensação: ${feeling}.`, 'success');
           setActiveMeditation(null);
+        }}
+      />
+    )}
+
+    {/* MODAL DE HISTÓRIA BÍBLICA (MOMENTOS & NARRATIVAS) */}
+    {selectedBibleStory && (
+      <BibleStoryModal
+        story={selectedBibleStory}
+        onClose={() => setSelectedBibleStory(null)}
+        onShare={async () => {
+          try {
+            const shareText = `📖 ${selectedBibleStory.name} (${selectedBibleStory.biblicalReference})\n\n"${selectedBibleStory.content.biblicalTextQuote || selectedBibleStory.subtitle}"\n\nLeia e ouça no App Devocional & Bíblia!`;
+            if (navigator.share) {
+              await navigator.share({ title: selectedBibleStory.name, text: shareText });
+            } else {
+              await navigator.clipboard.writeText(shareText);
+              showToast('Texto copiado para a área de transferência!', 'success');
+            }
+          } catch (err) {
+            console.warn('Share error', err);
+          }
+        }}
+      />
+    )}
+
+    {/* MODAL DE HISTÓRIA BÍBLICA KIDS (CARROSSEL ILUSTRADO) */}
+    {selectedBibleKidsStory && (
+      <BibleKidsStoryModal
+        story={selectedBibleKidsStory}
+        onClose={() => setSelectedBibleKidsStory(null)}
+        onShare={async () => {
+          try {
+            const shareText = `👶 ${selectedBibleKidsStory.name}\n\n"${selectedBibleKidsStory.content.moralLesson || selectedBibleKidsStory.subtitle}"\n\nHistória infantil ilustrada no App Devocional & Bíblia!`;
+            if (navigator.share) {
+              await navigator.share({ title: selectedBibleKidsStory.name, text: shareText });
+            } else {
+              await navigator.clipboard.writeText(shareText);
+              showToast('Texto copiado para a área de transferência!', 'success');
+            }
+          } catch (err) {
+            console.warn('Share error', err);
+          }
         }}
       />
     )}

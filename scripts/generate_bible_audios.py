@@ -157,6 +157,18 @@ BIBLE_STORIES_AUDIO = {
     # ==========================================
     # HISTÓRIAS DA BÍBLIA KIDS (TIA BIA)
     # ==========================================
+    "kids_criacao.mp3": {
+        "voice": "shimmer",
+        "system_prompt": PROMPT_KIDS_STORY,
+        "segments": [
+            ("Oi amiguinho! Hoje vamos conhecer uma história linda e cheia de cores: A Criação do Mundo!", 3000),
+            ("Cena 1: A Luz no Escuro. No início de tudo, não havia nada além de escuridão. Então Papai do Céu olhou com amor e disse: Haja Luz! E uma luz brilhante e colorida surgiu iluminando todo o universo!", 3000),
+            ("Cena 2: Céu, Mares e a Terra. Deus separou as águas azuis, criou o céu fofinho de nuvens e a terra firme com montanhas, florestas e flores de todas as cores do arco-íris.", 3000),
+            ("Cena 3: O Sol, a Lua e os Bichinhos. Ele colocou um sol quentinho para o dia, uma lua prateada e milhares de estrelas para a noite. Depois encheu os mares com peixinhos e a terra com leões, passarinhos e cachorrinhos alegres!", 3000),
+            ("Cena 4: O Grande Amor por Nós. Por fim, Deus criou as pessoas para cuidarem do mundo com muito amor e serem Suas amigas queridas. Deus olhou para tudo o que fez e sorriu feliz: Ficou muito bom!", 2000),
+            ("Deus fez tudo com muito carinho e ama muito você!", 0),
+        ]
+    },
     "kids_noe.mp3": {
         "voice": "shimmer",
         "system_prompt": PROMPT_KIDS_STORY,
