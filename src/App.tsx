@@ -1089,18 +1089,18 @@ export default function App() {
       if (lessons && lessons.length > 0) {
         const stories = lessons.map(lesson => {
           // Assegura ordenação e mapeamento se houver arrays aninhados de questions e prayers
-          let questions = [];
+          let questions: string[] = [];
           if (lesson.dev_questions) {
             questions = (Array.isArray(lesson.dev_questions) ? lesson.dev_questions : [lesson.dev_questions])
-              .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-              .map(q => q.question_text);
+              .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+              .map((q: any) => q.question_text);
           }
 
-          let dialogue = [];
+          let dialogue: { role: any; text: string }[] = [];
           if (lesson.dev_prayers) {
             dialogue = (Array.isArray(lesson.dev_prayers) ? lesson.dev_prayers : [lesson.dev_prayers])
-              .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-              .map(p => ({ role: p.role, text: p.text_content }));
+              .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+              .map((p: any) => ({ role: p.role, text: p.text_content }));
           }
 
           return {
