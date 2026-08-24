@@ -1075,7 +1075,9 @@ export default function App() {
           reflection,
           challenge,
           final_message,
-          share_summary
+          share_summary,
+          dev_questions ( question_text, display_order ),
+          dev_prayers ( role, text_content, display_order )
         `)
         .eq('theme_id', themeId)
         .eq('development_mode', devMode)
@@ -1085,27 +1087,21 @@ export default function App() {
       if (error) throw error;
 
       if (lessons && lessons.length > 0) {
-        const lessonIds = lessons.map(l => l.id);
-        const { data: dbQuestions } = await supabase
-          .from('dev_questions')
-          .select('lesson_id, question_text, display_order')
-          .in('lesson_id', lessonIds)
-          .order('display_order', { ascending: true });
-
-        const { data: dbPrayers } = await supabase
-          .from('dev_prayers')
-          .select('lesson_id, role, text_content, display_order')
-          .in('lesson_id', lessonIds)
-          .order('display_order', { ascending: true });
-
         const stories = lessons.map(lesson => {
-          const questions = (dbQuestions || [])
-            .filter((q: any) => q.lesson_id === lesson.id)
-            .map((q: any) => q.question_text);
+          // Assegura ordenação e mapeamento se houver arrays aninhados de questions e prayers
+          let questions = [];
+          if (lesson.dev_questions) {
+            questions = (Array.isArray(lesson.dev_questions) ? lesson.dev_questions : [lesson.dev_questions])
+              .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+              .map(q => q.question_text);
+          }
 
-          const dialogue = (dbPrayers || [])
-            .filter((p: any) => p.lesson_id === lesson.id)
-            .map((p: any) => ({ role: p.role, text: p.text_content }));
+          let dialogue = [];
+          if (lesson.dev_prayers) {
+            dialogue = (Array.isArray(lesson.dev_prayers) ? lesson.dev_prayers : [lesson.dev_prayers])
+              .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+              .map(p => ({ role: p.role, text: p.text_content }));
+          }
 
           return {
             biblicalReference: lesson.biblical_reference,
