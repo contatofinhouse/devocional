@@ -14,7 +14,7 @@ if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.environ.get("API_KEY")
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "public", "audio")
 TEMP_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_temp_unified")

@@ -4,7 +4,7 @@ Teste rapido do gpt-4o-mini-tts com instructions em PT-BR
 import requests
 import os
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.environ.get("API_KEY")
 
 # Teste com 3 vozes + instructions diferentes
 TESTS = [

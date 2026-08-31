@@ -1,6 +1,6 @@
 import requests
 
-ELEVEN_API_KEY = "sk_24f570a6dfa4de59639076e9e62806d2755eb45e1d6a8433"
+ELEVEN_API_KEY = os.environ.get("API_KEY")
 
 print(f"Chave: {ELEVEN_API_KEY}")
 print(f"Comprimento: {len(ELEVEN_API_KEY)} chars")
