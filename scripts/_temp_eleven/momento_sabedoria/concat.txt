@@ -1,0 +1,5 @@
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_sabedoria/seg_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_sabedoria/sil_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_sabedoria/seg_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_sabedoria/sil_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_sabedoria/seg_002.mp3'

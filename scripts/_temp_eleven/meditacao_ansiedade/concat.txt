@@ -1,0 +1,7 @@
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/seg_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/sil_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/seg_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/sil_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/seg_002.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/sil_002.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_ansiedade/seg_003.mp3'

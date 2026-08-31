@@ -1,0 +1,5 @@
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_perdao/seg_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_perdao/sil_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_perdao/seg_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_perdao/sil_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/momento_perdao/seg_002.mp3'

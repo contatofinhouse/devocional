@@ -67,7 +67,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Filipenses 4:6-7',
         duration: '3 min',
         imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/meditacao_ansiedade.mp3',
+        audioUrl: '/audio/momento_ansiedade.mp3',
         audioVoice: 'nova',
         isFree: true, // 1º ITEM DA 1ª TRILHA É 100% GRATUITO
         content: {
@@ -90,7 +90,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Salmo 23:4 & Josué 1:9',
         duration: '3 min',
         imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/jornada_fase_1.mp3',
+        audioUrl: '/audio/momento_medo.mp3',
         audioVoice: 'onyx',
         isFree: false,
         content: {
@@ -113,7 +113,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Salmo 103:1-5',
         duration: '2 min',
         imageUrl: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/meditacao_mindset.mp3',
+        audioUrl: '/audio/momento_gratidao.mp3',
         audioVoice: 'nova',
         isFree: false,
         content: {
@@ -135,7 +135,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'João 14:27 & Salmo 46:10',
         duration: '3 min',
         imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/meditacao_sono.mp3',
+        audioUrl: '/audio/momento_paz.mp3',
         audioVoice: 'nova',
         isFree: false,
         content: {
@@ -157,7 +157,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Isaías 40:29-31',
         duration: '3 min',
         imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/jornada_fase_2.mp3',
+        audioUrl: '/audio/momento_forca.mp3',
         audioVoice: 'onyx',
         isFree: false,
         content: {
@@ -179,7 +179,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Tiago 1:5 & Provérbios 3:5-6',
         duration: '2 min',
         imageUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/meditacao_trabalho.mp3',
+        audioUrl: '/audio/momento_sabedoria.mp3',
         audioVoice: 'nova',
         isFree: false,
         content: {
@@ -201,7 +201,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Colossenses 3:13 & Mateus 18:21-22',
         duration: '3 min',
         imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/jornada_fase_3.mp3',
+        audioUrl: '/audio/momento_perdao.mp3',
         audioVoice: 'onyx',
         isFree: false,
         content: {
@@ -223,7 +223,7 @@ export const BIBLE_TRAILS: BibleTrail[] = [
         biblicalReference: 'Jeremias 29:11 & Romanos 15:13',
         duration: '2 min',
         imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80',
-        audioUrl: '/audio/meditacao_com_deus.mp3',
+        audioUrl: '/audio/momento_esperanca.mp3',
         audioVoice: 'nova',
         isFree: false,
         content: {

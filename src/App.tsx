@@ -10,7 +10,8 @@ import {
   ShieldAlert, 
   Sparkles, 
   Share2, 
-  Bell
+  Bell,
+  Wind
 } from 'lucide-react';
 
 import type { KidProfile, ParentLog, Devotional } from './data/mockDevotionals';
@@ -2909,7 +2910,7 @@ export default function App() {
                 onClick={() => { setActiveTab('meditation'); setCurrentDevotional(null); setBibleOpen(false); }} 
                 className={`nav-tab ${activeTab === 'meditation' && !bibleOpen ? 'active' : ''}`}
               >
-                <span style={{ fontSize: 18, lineHeight: 1 }}>🧘</span>
+                <Wind size={20} />
                 <span>Meditação</span>
               </button>
               <button 

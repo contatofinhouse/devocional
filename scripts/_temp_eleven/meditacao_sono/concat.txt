@@ -1,0 +1,7 @@
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/seg_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/sil_000.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/seg_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/sil_001.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/seg_002.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/sil_002.mp3'
+file 'C:/Users/rafae/Documents/FINHOUSE/SITES/devocional/scripts/_temp_eleven/meditacao_sono/seg_003.mp3'
